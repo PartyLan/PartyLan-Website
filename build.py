@@ -56,7 +56,7 @@ def valid_image_source(url):
     return bool(IMAGE_RE.match(url or ""))
 
 def validate_site(site):
-    for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","testimonials_section","final_cta","footer"]:
+    for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","faq_section","testimonials_section","final_cta","footer"]:
         if key not in site: err("site.json", key, "required top-level key is missing")
     meta = site.get("meta", {})
     req_string("site.json", meta, "title", "meta")
@@ -89,6 +89,23 @@ def validate_site(site):
     req_string("site.json", media, "alt", "hero.media")
     for sec in ["packages_section", "gallery_section", "space"]:
         req_string("site.json", site.get(sec, {}), "heading", sec, 55)
+    faq = site.get("faq_section", {})
+    req_string("site.json", faq, "eyebrow", "faq_section")
+    req_string("site.json", faq, "heading", "faq_section", 70)
+    req_string("site.json", faq, "description", "faq_section", 140)
+    faq_items = faq.get("items")
+    faq_ids = set()
+    if not isinstance(faq_items, list) or not faq_items:
+        err("site.json", "faq_section.items", "must contain FAQ items")
+    else:
+        for i, item in enumerate(faq_items):
+            ctx = f"faq_section.items[{i}]"
+            faq_id = req_string("site.json", item, "id", ctx)
+            if faq_id in faq_ids:
+                err("site.json", ctx, "duplicate FAQ id")
+            faq_ids.add(faq_id)
+            req_string("site.json", item, "question", ctx, 120)
+            req_string("site.json", item, "answer", ctx, 320)
     req_string("site.json", site.get("final_cta", {}), "heading", "final_cta", 55)
     req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 32)
 
@@ -253,6 +270,12 @@ def render_gallery(rows):
 def render_steps(steps):
     return "\n".join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(steps,1))
 
+def render_faq_items(items):
+    out = []
+    for item in items:
+        out.append(f'''<details class="faq-item" id="faq-{attr(item["id"])}"><summary>{esc(item["question"])}</summary><div class="faq-item__answer"><p>{esc(item["answer"])}</p></div></details>''')
+    return "\n".join(out)
+
 def render_reassurance(items):
     icons = {
         "delivered": "M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
@@ -291,6 +314,7 @@ def main():
         "{{gallery_eyebrow}}": esc(site["gallery_section"]["eyebrow"]), "{{gallery_heading}}": esc(site["gallery_section"]["heading"]), "{{gallery_description}}": esc(site["gallery_section"]["description"]), "{{gallery_items}}": render_gallery(gallery),
         "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
         "{{testimonials_section}}": "" if not testimonials else "<section class=\"section\"><h2>Testimonials</h2></section>",
+        "{{faq_eyebrow}}": esc(site["faq_section"]["eyebrow"]), "{{faq_heading}}": esc(site["faq_section"]["heading"]), "{{faq_description}}": esc(site["faq_section"]["description"]), "{{faq_items}}": render_faq_items(site["faq_section"]["items"]),
         "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
         "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_links}}": render_footer_links(site["navigation"])
     }
