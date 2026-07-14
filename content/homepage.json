@@ -50,15 +50,21 @@
   "reassurance": [
     {
       "id": "delivered",
-      "text": "Delivered and set up"
+      "text": "Delivered and set up",
+      "icon": "",
+      "icon_alt": ""
     },
     {
       "id": "hosted",
-      "text": "Hosted throughout"
+      "text": "Hosted throughout",
+      "icon": "",
+      "icon_alt": ""
     },
     {
       "id": "selected",
-      "text": "Games selected for the group"
+      "text": "Games selected for the group",
+      "icon": "",
+      "icon_alt": ""
     }
   ],
   "packages_section": {
@@ -84,24 +90,24 @@
         "id": "choose",
         "title": "Choose a package",
         "description": "Pick the hosted experience that best fits your group size and style of play.",
-        "image": "",
-        "image_alt": "Party.LAN package choices.",
+        "image": "/assets/images/gallery_group-fun_01.jpg",
+        "image_alt": "Guests comparing hosted Party.LAN package options.",
         "image_position": "center"
       },
       {
         "id": "venue",
         "title": "Tell us about the venue",
         "description": "Share the room type, access notes and anything useful for planning the setup.",
-        "image": "",
-        "image_alt": "Room or venue layout for a Party.LAN setup.",
+        "image": "/assets/images/gallery_venue-ambient.jpg",
+        "image_alt": "A room prepared for a flexible Party.LAN setup.",
         "image_position": "center"
       },
       {
         "id": "host",
         "title": "We deliver, set up and host",
         "description": "Your host brings the equipment, keeps play moving and packs everything away.",
-        "image": "",
-        "image_alt": "Party.LAN host setting up gaming equipment.",
+        "image": "/assets/images/gallery_host_01.jpg",
+        "image_alt": "A Party.LAN host helping prepare gaming equipment.",
         "image_position": "center"
       }
     ]
@@ -125,11 +131,7 @@
   "faq_section": {
     "eyebrow": "Frequently asked questions",
     "heading": "A few things you may want to know.",
-    "description": "Clear answers before you start planning.",
-    "terms_link": {
-      "text": "Need the full booking details? Read our Terms & Conditions.",
-      "href": "/terms/"
-    }
+    "description": "Clear answers before you start planning."
   },
   "final_cta": {
     "heading": "Ready to plan your party?",

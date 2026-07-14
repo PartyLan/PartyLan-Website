@@ -76,8 +76,9 @@ def validate_home(h):
     image_ok(f,'packages_page.hero.fallback_image',ph.get('fallback_image',''))
     image_ok(f,'packages_page.hero.fallback_image_dark',ph.get('fallback_image_dark',ph.get('fallback_image','')))
     if ph.get('image','').strip(): image_ok(f,'packages_page.hero.image',ph.get('image',''))
-    terms=h.get('faq_section',{}).get('terms_link',{})
-    if terms.get('href')!='/terms/': err(f,'faq_section.terms_link.href','expected /terms/')
+    for i,item in enumerate(h.get('reassurance',[])):
+        icon=item.get('icon','').strip()
+        if icon: image_ok(f,f'reassurance[{i}].icon',icon)
 def validate_packages(data):
     rows=data.get('packages',data if isinstance(data,list) else []); out=[]; ids=set(); orders=set(); f='content/packages.json'
     if not isinstance(rows,list): err(f,'packages','must be a list'); return []
@@ -118,6 +119,10 @@ def validate_rows(rel, required, kind, pkg_ids=None):
         if kind=='testimonial' and visible:
             if r.get('package') and r.get('package') not in pkg_ids: err(file,ctx,'invalid testimonial package reference')
             image_ok(file,ctx+'.image',r.get('image',''))
+        if kind=='faq':
+            label=(r.get('link_label') or '').strip(); href=(r.get('link_href') or '').strip()
+            if bool(label) != bool(href): err(file,ctx,'link_label and link_href must both be present or both be empty')
+            if href and href not in {'/terms/','/privacy/','/#booking','/packages/','/#faq'}: err(file,ctx,'unsupported local FAQ link route')
         if visible: out.append(r)
     return sorted(out,key=lambda r:r['_order'])
 def validate_legal(rel, key):
@@ -142,7 +147,7 @@ def footer(home,prefix=''):
     return f'<footer class="site-footer"><p>{esc(home["footer"]["tagline"])}</p><nav aria-label="Footer navigation">{links}</nav></footer>'
 def header(home,prefix=''):
     c=home['header']['availability_cta']
-    return f'''<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button><div class="site-menu" id="site-menu">{nav(home,prefix)}</div><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☾</span></button><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a></nav></header>'''
+    return f'''<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button><div class="site-menu" id="site-menu">{nav(home,prefix)}</div><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Light mode active. Switch to dark mode" title="Light mode active. Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☀</span></button><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a></nav></header>'''
 def head(home,title=None,desc=None):
     m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css"></head>'''
 def testimonial_section(home, rows):
@@ -164,11 +169,26 @@ def steps(home):
         out.append(f'<article class="step-card reveal"><div class="step-card__media">{media}</div><div class="step-card__body"><span class="step-card__number">{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></div></article>')
     return ''.join(out)
 def faq(home, rows):
-    items=''.join(f'<div class="faq-item"><h3><button aria-expanded="false" aria-controls="faq-{r["id"]}" id="faq-btn-{r["id"]}">{esc(r["question"])}<span aria-hidden="true">+</span></button></h3><div class="faq-item__answer" id="faq-{r["id"]}" role="region" aria-labelledby="faq-btn-{r["id"]}"><p>{esc(r["answer"])}</p></div></div>' for r in rows)
-    f=home['faq_section']; tl=f['terms_link']
-    return f'<section class="section faq-section" id="faq"><div class="faq-section__heading reveal"><p class="eyebrow">{esc(f["eyebrow"])}</p><h2>{esc(f["heading"])}</h2><p>{esc(f["description"])}</p></div><div><div class="faq-list">{items}</div><p class="faq-terms"><a href="{tl["href"]}">{esc(tl["text"])}</a></p></div></section>'
+    parts=[]
+    for r in rows:
+        link=''
+        if (r.get('link_label') or '').strip():
+            link=f'<p class="faq-item__link"><a href="{esc(r["link_href"])}">{esc(r["link_label"])}</a></p>'
+        parts.append(f'<div class="faq-item"><h3><button aria-expanded="false" aria-controls="faq-{r["id"]}" id="faq-btn-{r["id"]}">{esc(r["question"])}<span aria-hidden="true">+</span></button></h3><div class="faq-item__answer" id="faq-{r["id"]}" role="region" aria-labelledby="faq-btn-{r["id"]}"><p>{esc(r["answer"])}</p>{link}</div></div>')
+    items=''.join(parts)
+    f=home['faq_section']
+    return f'<section class="section faq-section" id="faq"><div class="faq-section__heading reveal"><p class="eyebrow">{esc(f["eyebrow"])}</p><h2>{esc(f["heading"])}</h2><p>{esc(f["description"])}</p></div><div><div class="faq-list">{items}</div></div></section>'
+def render_reassurance(items):
+    out=[]
+    for i in items:
+        if i.get('icon','').strip():
+            icon=f'<img src="{esc(i["icon"])}" alt="">'
+        else:
+            icon='✦'
+        out.append(f'<li><span class="reassurance__icon" aria-hidden="true">{icon}</span><span>{esc(i["text"])}</span></li>')
+    return ''.join(out)
 def home_page(home,gallery,faq_rows,testimonials):
-    h=home['hero']; reass=''.join(f'<li><span>{esc(i["text"])}</span></li>' for i in home['reassurance']); cta=home['final_cta']
+    h=home['hero']; reass=render_reassurance(home['reassurance']); cta=home['final_cta']
     return head(home)+'<body id="top"><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-motion"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt=""><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt=""></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--ghost" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-heading section-heading--center reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button" href="/packages/">{esc(cta['button']['label'])}</a></div></section></main><a class="mobile-booking" href="#booking">Check availability</a>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
 def package_cards(pkgs):
     out=[]

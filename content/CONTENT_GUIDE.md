@@ -188,3 +188,19 @@ Testimonials use centred text over the image with a local readability scrim rath
 ## Logo source and generated paths
 
 The authoritative logo files live in `content/images/Logo_Black_T.png` and `content/images/Logo_White_T.png`. The build validates and copies them through the content-image pipeline to `dist/assets/images/`, and rendered pages use `/assets/images/Logo_Black_T.png` and `/assets/images/Logo_White_T.png`. Do not edit, rename or duplicate the logo binaries.
+
+## Temporary How it works placeholder images
+
+The How it works cards currently use existing repository images as temporary placeholders. These paths live in `content/homepage.json` under each `how_it_works.steps` item. They must use generated browser paths such as `/assets/images/gallery_group-fun_01.jpg`, not `content/images/...` paths. Replace them later only with approved images already added to `content/images/`.
+
+## Reassurance icon slots
+
+Each reassurance item may include an optional `icon` path and `icon_alt`. Leave `icon` empty to show the current polished placeholder slot. If a future approved icon is added, reference it as `/assets/images/file-name.png` or another supported generated asset path. The build validates non-empty icon paths.
+
+## FAQ links and Terms entry
+
+FAQ rows may include optional `link_label` and `link_href` columns. Use both columns together or leave both empty. The Terms & Conditions link is now part of the Terms FAQ item rather than a separate button beneath the accordion.
+
+## Motion and reduced motion
+
+Hero and Shared Experience images use slow CSS pan/breathing animations. These are decorative and use transform/opacity only. Reduced-motion users keep all content and manual controls, but decorative pan/breathing and autoplay are disabled or paused.
