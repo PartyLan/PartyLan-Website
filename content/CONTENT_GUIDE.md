@@ -106,3 +106,29 @@ Preview:
 - Privacy: `http://127.0.0.1:8010/privacy/`
 
 If the build fails, read the validation message. It names the file, row or field that needs fixing.
+
+## Homepage versus Packages page
+
+The homepage is now focused on emotion, trust and enquiry. It does **not** show ONYX or JADE package cards or prices. The hero `View packages` button links to `/packages/`, where package comparison and pricing live.
+
+### Edit Packages-page copy
+
+Open `content/homepage.json` and edit the `packages_page` section:
+
+- `packages_page.hero.heading` controls the Packages-page hero heading.
+- `packages_page.hero.description` controls the supporting sentence.
+- `packages_page.hero.media.light` and `.dark` control the existing local hero images.
+- `packages_page.guidance` controls the guidance section beneath add-ons.
+- `packages_page.cta` controls the Packages-page final enquiry section.
+
+### Edit package detail buttons
+
+Open `content/packages.json`. The `details_button` field controls the large package detail control, for example `Explore ONYX`. The `enquiry_button` field controls the enquiry link, for example `Ask about ONYX`.
+
+### FAQ Terms link
+
+Open `content/homepage.json` and edit `faq_section.terms_link.text` for the visible Terms & Conditions prompt below the FAQ. Keep `faq_section.terms_link.href` as `/terms/` unless the Terms page route changes.
+
+### Preview the Packages page
+
+After running `python build.py`, preview `http://127.0.0.1:8010/packages/` as well as the homepage.
