@@ -9,22 +9,22 @@
   },
   "navigation": [
     {
+      "label": "Home",
+      "href": "/"
+    },
+    {
       "label": "Packages",
       "href": "/packages/"
     },
     {
       "label": "FAQ",
       "href": "/#faq"
-    },
-    {
-      "label": "Check availability",
-      "href": "/#booking"
     }
   ],
   "header": {
     "availability_cta": {
       "label": "Check availability",
-      "href": "#booking"
+      "href": "/#booking"
     },
     "logo_light": "/assets/images/Logo_Black_T.png",
     "logo_dark": "/assets/images/Logo_White_T.png"
@@ -38,8 +38,8 @@
       "href": "/packages/"
     },
     "secondary_cta": {
-      "label": "How it works",
-      "href": "#how-it-works"
+      "label": "See the experience",
+      "href": "#gallery"
     },
     "media": {
       "light": "/assets/images/gallery_hero_light.jpg",
@@ -83,17 +83,26 @@
       {
         "id": "choose",
         "title": "Choose a package",
-        "description": "Pick the hosted experience that best fits your group size and style of play."
+        "description": "Pick the hosted experience that best fits your group size and style of play.",
+        "image": "",
+        "image_alt": "Party.LAN package choices.",
+        "image_position": "center"
       },
       {
         "id": "venue",
         "title": "Tell us about the venue",
-        "description": "Share the room type, access notes and anything useful for planning the setup."
+        "description": "Share the room type, access notes and anything useful for planning the setup.",
+        "image": "",
+        "image_alt": "Room or venue layout for a Party.LAN setup.",
+        "image_position": "center"
       },
       {
         "id": "host",
         "title": "We deliver, set up and host",
-        "description": "Your host brings the equipment, keeps play moving and packs everything away."
+        "description": "Your host brings the equipment, keeps play moving and packs everything away.",
+        "image": "",
+        "image_alt": "Party.LAN host setting up gaming equipment.",
+        "image_position": "center"
       }
     ]
   },

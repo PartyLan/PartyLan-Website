@@ -160,3 +160,31 @@ The homepage header intentionally shows only Packages, FAQ and Check availabilit
 ## Wider fluid layout
 
 The site uses wider fluid containers for visual sections on large CSS viewports. This does not require content changes. Keep normal paragraph copy concise so it remains readable inside the designed text measures.
+
+## Header and theme button
+
+The visible header navigation is Home, Packages and FAQ, with Check availability as the separate action button. The Party.LAN logo still links home, but it is not the only Home route. The theme control is icon-only: moon means it will switch to dark mode, and sun means it will switch to light mode. Screen readers use the button's accessible label.
+
+## Hero secondary CTA
+
+The homepage hero secondary CTA now points to the Shared Moments gallery. Edit `hero.secondary_cta.label` and `hero.secondary_cta.href` in `content/homepage.json`; the approved default is `See the experience` linking to `#gallery`.
+
+## How it works optional images
+
+Each `how_it_works.steps` entry can include an optional future image:
+
+```json
+"image": "",
+"image_alt": "Party.LAN package choices.",
+"image_position": "center"
+```
+
+Leave `image` empty until an approved asset exists. The build will render a polished placeholder area and will not output a broken image. When adding an approved future image, place it under `content/images/`, reference it as `/assets/images/file-name.jpg`, and write meaningful `image_alt` text. Accepted `image_position` values are `center`, `top`, `bottom`, `left`, and `right`.
+
+## Testimonial layout and controls
+
+Testimonials use centred text over the image with a local readability scrim rather than a full-image dark wash. The indicator buttons sit inside a frosted capsule at the bottom of the image, and the play/pause button sits at the bottom-right. Clicking an indicator pauses autoplay. Dragging or swiping changes slides without accidentally toggling play/pause.
+
+## Logo source and generated paths
+
+The authoritative logo files live in `content/images/Logo_Black_T.png` and `content/images/Logo_White_T.png`. The build validates and copies them through the content-image pipeline to `dist/assets/images/`, and rendered pages use `/assets/images/Logo_Black_T.png` and `/assets/images/Logo_White_T.png`. Do not edit, rename or duplicate the logo binaries.

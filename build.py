@@ -48,7 +48,25 @@ def validate_home(h):
     for key in ['light','dark']: image_ok(f,'hero.media.'+key,h.get('hero',{}).get('media',{}).get(key,''))
     for key in ['logo_light','logo_dark']: image_ok(f,'header.'+key,h.get('header',{}).get(key,''))
     labels=[n.get('label') for n in h.get('navigation',[])]
-    if labels!=['Packages','FAQ','Check availability']: err(f,'navigation','expected Packages, FAQ and Check availability only')
+    if labels!=['Home','Packages','FAQ']: err(f,'navigation','expected Home, Packages and FAQ only')
+    hrefs={n.get('label'):n.get('href') for n in h.get('navigation',[])}
+    for label,expected in {'Home':'/','Packages':'/packages/','FAQ':'/#faq'}.items():
+        if hrefs.get(label)!=expected: err(f,'navigation.'+label,f'expected {expected}')
+    if h.get('header',{}).get('availability_cta',{}).get('href')!='/#booking': err(f,'header.availability_cta.href','expected /#booking')
+    sec=h.get('hero',{}).get('secondary_cta',{})
+    if sec.get('label')!='See the experience': err(f,'hero.secondary_cta.label','expected See the experience')
+    if sec.get('href')!='#gallery': err(f,'hero.secondary_cta.href','expected #gallery')
+    step_ids=set(); allowed_pos={'center','top','bottom','left','right'}
+    for i,step in enumerate(h.get('how_it_works',{}).get('steps',[])):
+        ctx=f'how_it_works.steps[{i}]'; sid=req_text(f,step,'id',ctx)
+        if sid in step_ids: err(f,ctx,'duplicate step ID')
+        step_ids.add(sid); req_text(f,step,'title',ctx); req_text(f,step,'description',ctx)
+        image=step.get('image','').strip()
+        if image:
+            image_ok(f,ctx+'.image',image)
+            req_text(f,step,'image_alt',ctx)
+        pos=step.get('image_position','center')
+        if pos not in allowed_pos: err(f,ctx+'.image_position','expected one of center, top, bottom, left or right')
     pp=h.get('packages_page',{})
     for key in ['meta_title','hero','intro','guidance','cta']:
         if key not in pp: err(f,'packages_page.'+key,'required Packages-page content is missing')
@@ -117,28 +135,34 @@ def copy_assets():
 def rel_href(href,prefix): return (prefix+href if href.startswith('#') else href)
 def nav(home,prefix=''):
     items=list(home['navigation'])
-    if prefix:
-        items=[{'label':'Home','href':'/'}]+items
-    links=''.join(f'<a class="{"site-menu__availability" if i["label"]=="Check availability" else ""}" href="{rel_href(i["href"],prefix)}">{esc(i["label"])}</a>' for i in items)
+    links=''.join(f'<a class="{"is-active" if (prefix=="" and i["label"]=="Home") or (prefix and i["label"]=="Packages" and prefix=="/packages") else ""}" href="{rel_href(i["href"],prefix)}">{esc(i["label"])}</a>' for i in items)
     return links
 def footer(home,prefix=''):
     links=''.join(f'<a href="{rel_href(l["href"],prefix)}">{esc(l["label"])}</a>' for l in home['footer']['links'])
     return f'<footer class="site-footer"><p>{esc(home["footer"]["tagline"])}</p><nav aria-label="Footer navigation">{links}</nav></footer>'
 def header(home,prefix=''):
     c=home['header']['availability_cta']
-    return f'''<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button><div class="site-menu" id="site-menu">{nav(home,prefix)}</div><button class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◐</span><span class="theme-toggle__label">Theme</span></button><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a></nav></header>'''
+    return f'''<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button><div class="site-menu" id="site-menu">{nav(home,prefix)}</div><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Switch to dark mode" title="Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☾</span></button><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a></nav></header>'''
 def head(home,title=None,desc=None):
     m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css"></head>'''
 def testimonial_section(home, rows):
     if not rows: return ''
     slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}"><div class="testimonial-slide__content"><blockquote><p>“{esc(r["quote"])}”</p></blockquote><p><b>{esc(r["name"])}</b>{", age "+esc(r["age"]) if r.get("age") else ""}</p><p>{esc(r.get("location",""))} {esc(r.get("package",""))}</p></div></article>' for i,r in enumerate(rows))
     dots=''.join(f'<button class="testimonial-dot" type="button" aria-label="Show testimonial {i+1} of {len(rows)}"><span></span></button>' for i,_ in enumerate(rows))
-    s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><div class="testimonial-dots">{dots}</div></div></section>'
+    s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><button class="showcase-toggle testimonial-toggle" type="button" aria-pressed="false" aria-label="Pause testimonials"><span aria-hidden="true">Ⅱ</span></button><div class="testimonial-dots">{dots}</div></div></section>'
 def showcase(home,gallery):
     slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}" data-caption="{esc(r["caption"])}"><img src="{r["image"]}" alt="{esc(r["alt"])}" loading="lazy"><figcaption>{esc(r["caption"])}</figcaption></figure>' for i,r in enumerate(gallery))
     g=home['gallery_section']; return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist"><button role="tab" aria-selected="true" data-gallery-tab="experience">{esc(g["tabs"]["experience"])}</button><button role="tab" aria-selected="false" data-gallery-tab="equipment">{esc(g["tabs"]["equipment"])}</button></div><div class="showcase" role="region" aria-label="Party.LAN image showcase"><div class="showcase-track">{slides}</div><button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div></section>'
 def steps(home):
-    return ''.join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(home['how_it_works']['steps'],1))
+    out=[]
+    for i,s in enumerate(home['how_it_works']['steps'],1):
+        pos=esc(s.get('image_position','center'))
+        if s.get('image','').strip():
+            media=f'<img src="{esc(s["image"])}" alt="{esc(s.get("image_alt",""))}" loading="lazy" style="object-position:{pos}">'
+        else:
+            media=f'<div class="step-card__placeholder" aria-hidden="true"><span>{i}</span></div>'
+        out.append(f'<article class="step-card reveal"><div class="step-card__media">{media}</div><div class="step-card__body"><span class="step-card__number">{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></div></article>')
+    return ''.join(out)
 def faq(home, rows):
     items=''.join(f'<div class="faq-item"><h3><button aria-expanded="false" aria-controls="faq-{r["id"]}" id="faq-btn-{r["id"]}">{esc(r["question"])}<span aria-hidden="true">+</span></button></h3><div class="faq-item__answer" id="faq-{r["id"]}" role="region" aria-labelledby="faq-btn-{r["id"]}"><p>{esc(r["answer"])}</p></div></div>' for r in rows)
     f=home['faq_section']; tl=f['terms_link']
@@ -158,7 +182,7 @@ def package_page(home, pkgs, addons):
     both=[a for a in addons if a['available_for']=='both']; specific=[a for a in addons if a['available_for']!='both']
     ordered=both+specific
     add=''.join(f'<li class="addon-row addon-row--{esc(a["available_for"])}"><span class="addon-marker" aria-hidden="true"></span><div class="addon-copy"><h3>{esc(a["title"])}</h3><p>{esc(a["description"])}</p></div><div class="addon-meta"><span class="addon-badge">{esc("Both" if a["available_for"]=="both" else a["available_for"].upper())}</span><strong>{esc(a["price_note"])}</strong></div></li>' for a in ordered)
-    return head(home,pp['meta_title'],pp['hero']['description'])+f'''<body id="top"><a class="skip-link" href="#main">Skip to content</a>{header(home,'/')}<main id="main"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt=""><img class="hero__image hero__image--dark" src="{dark}" alt=""></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages"><div class="addons-panel__intro"><h2>{esc(home['addons_section']['heading'])}</h2><p>{esc(home['addons_section']['description'])}</p></div><ul class="addon-list-structured">{add}</ul></section></section><section class="section package-guidance"><p class="eyebrow">{esc(pp['guidance']['eyebrow'])}</p><h2>{esc(pp['guidance']['heading'])}</h2><p>{esc(pp['guidance']['description'])}</p></section><section class="section final-cta" id="booking"><div><h2>{esc(pp['cta']['heading'])}</h2><p>{esc(pp['cta']['description'])}</p><a class="button" href="/#booking">{esc(pp['cta']['button_label'])}</a></div></section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>'''
+    return head(home,pp['meta_title'],pp['hero']['description'])+f'''<body id="top"><a class="skip-link" href="#main">Skip to content</a>{header(home,'/packages')}<main id="main"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt=""><img class="hero__image hero__image--dark" src="{dark}" alt=""></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages"><div class="addons-panel__intro"><h2>{esc(home['addons_section']['heading'])}</h2><p>{esc(home['addons_section']['description'])}</p></div><ul class="addon-list-structured">{add}</ul></section></section><section class="section package-guidance"><p class="eyebrow">{esc(pp['guidance']['eyebrow'])}</p><h2>{esc(pp['guidance']['heading'])}</h2><p>{esc(pp['guidance']['description'])}</p></section><section class="section final-cta" id="booking"><div><h2>{esc(pp['cta']['heading'])}</h2><p>{esc(pp['cta']['description'])}</p><a class="button" href="/#booking">{esc(pp['cta']['button_label'])}</a></div></section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>'''
 def legal_page(home,d):
     sections=''.join(f'<section><h2>{esc(k.replace("_"," ").title())}</h2><p>{esc(v)}</p></section>' for k,v in d['sections'].items())
     return head(home,d['title'])+f'<body id="top"><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="legal-page"><p><a href="/">← Homepage</a></p><h1>{esc(d["title"])}</h1><p class="draft-warning">{esc(d["draft_warning"])}</p>{sections}</main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
