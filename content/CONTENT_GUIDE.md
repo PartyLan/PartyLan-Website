@@ -204,3 +204,14 @@ FAQ rows may include optional `link_label` and `link_href` columns. Use both col
 ## Motion and reduced motion
 
 Hero and Shared Experience images use slow CSS pan/breathing animations. These are decorative and use transform/opacity only. Reduced-motion users keep all content and manual controls, but decorative pan/breathing and autoplay are disabled or paused.
+
+
+## Latest layout and interaction notes
+
+- Header navigation is intentionally limited to **Home**, **Packages** and **FAQ**, with **Check availability** as the separate header CTA. Do not add permanent How it works or Gallery links.
+- The Packages page uses a shared enquiry block in `packages_page.shared_enquiry` for “Not sure which package fits?” and the `Ask about packages` CTA. Individual package cards should not carry separate ONYX/JADE enquiry buttons.
+- How it works image fields currently use existing repository images as temporary placeholders. Replace each `image` value with a future `/assets/images/<filename>` path only after adding the source file to `content/images/`; keep `image_alt` meaningful and adjust `image_position` only to `center`, `top`, `bottom`, `left` or `right`.
+- Reassurance items reserve an icon-ready slot. Leave `icon` empty for the CSS placeholder, or set it to an existing `/assets/images/<filename>` asset when a future approved graphic is available.
+- FAQ records may include `link_label` and `link_href` together. The Terms & Conditions link is part of the FAQ answer itself, not a separate button below the accordion.
+- The wide visual container scales major image-led compositions for large CSS viewports; ordinary body copy remains constrained, so content editors do not need to shorten text for wide screens.
+- Hero, testimonial and showcase motion is decorative CSS transform/opacity animation only and is disabled for `prefers-reduced-motion`.

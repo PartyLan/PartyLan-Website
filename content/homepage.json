@@ -189,6 +189,12 @@
       "heading": "Ready to reserve a date?",
       "description": "Online enquiries are opening soon. Use the package details here to plan the right hosted experience.",
       "button_label": "Check availability"
+    },
+    "shared_enquiry": {
+      "heading": "Not sure which package fits?",
+      "description": "Tell us about the group, venue and the kind of experience you have in mind. We’ll help you choose the most suitable package.",
+      "button_label": "Ask about packages",
+      "href": "/#booking"
     }
   }
 }
