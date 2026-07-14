@@ -1,5 +1,9 @@
-id,image_light,image_dark,alt,caption,href,visible,display_order
-group-play,/assets/images/gallery_group-fun_01.jpg,/assets/images/gallery_group-fun_01.jpg,A group enjoying games together during a hosted gaming party,Shared gaming across multiple stations,,true,1
-racing,/assets/images/gallery_hardware_sim_01.jpg,/assets/images/gallery_hardware_sim_01.jpg,A guest using a racing simulator during a gaming party,Racing simulator experience,,true,2
-vr,/assets/images/gallery_hardware_vr_01.jpg,/assets/images/gallery_hardware_vr_01.jpg,A guest trying a virtual reality experience with others nearby,Hosted VR experience,,true,3
-hidden-invalid,/assets/gallery/missing.svg,/assets/gallery/missing-dark.svg,Hidden future image,Hidden optional draft,,false,4
+id,category,image,alt,caption,visible,display_order
+group-play,experience,/assets/images/gallery_group-fun_01.jpg,A group enjoying games together during a hosted gaming party,Shared gaming across multiple stations,true,1
+hosted-moment,experience,/assets/images/gallery_host_01.jpg,A hosted interaction during a gaming party,Hosted support keeps the party moving,true,2
+racing-play,experience,/assets/images/gallery_hardware_sim_01.jpg,A guest using a racing simulator during a gaming party,Racing simulator moments,true,3
+vr-play,experience,/assets/images/gallery_hardware_vr_01.jpg,A guest trying a virtual reality experience with others nearby,Hosted VR experience,true,4
+console-station,equipment,/assets/images/gallery_hardware_console_01.jpg,A gaming station with display and controller,Console gaming station,true,5
+controllers,equipment,/assets/images/gallery_hardware_console_02.jpg,Controllers and gaming hardware ready for party guests,Controllers and setup details,true,6
+racing-hardware,equipment,/assets/images/gallery_hardware_sim_02.jpg,Racing simulator hardware set up for an event,Racing hardware,true,7
+vr-hardware,equipment,/assets/images/gallery_hardware_vr_02.jpg,Virtual reality hardware ready for use,VR hardware,true,8
