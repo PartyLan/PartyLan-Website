@@ -132,3 +132,31 @@ Open `content/homepage.json` and edit `faq_section.terms_link.text` for the visi
 ### Preview the Packages page
 
 After running `python build.py`, preview `http://127.0.0.1:8010/packages/` as well as the homepage.
+
+## Optional future Packages-page hero image
+
+The Packages page supports a future hero image without requiring one today. In `content/homepage.json`, edit `packages_page.hero`:
+
+- Leave `image` as an empty string (`""`) to use the existing fallback.
+- `fallback_image` and `fallback_image_dark` must always point to valid existing images.
+- When a new approved image is added later, put it in `content/images/` and set `image` to `/assets/images/new-file-name.jpg`.
+- The build validates a non-empty `image`, but it will not fail just because `image` is empty.
+- Do not add or rename image files unless the site is being deliberately updated with approved assets.
+
+## Gallery autoplay, indicators and play/pause
+
+The Shared Moments gallery shows one large image at a time. JavaScript creates one indicator button per visible item in the selected category. Changing between `experience` and `equipment` resets the gallery to the first item in that category.
+
+The small circular control on the image pauses or plays automatic advancement. Clicking an indicator, swiping or dragging pauses the gallery. Under reduced-motion settings, automatic advancement remains off, but indicators and tabs still work.
+
+## Add-on grouping
+
+`content/addons.csv` still controls add-ons. Rows with `available_for` set to `both` are shown first, followed by package-specific rows for `onyx` and `jade`. The Packages page displays add-ons as one structured list rather than separate cards.
+
+## Subpage Home navigation
+
+The homepage header intentionally shows only Packages, FAQ and Check availability. Subpages automatically add a visible Home link before those items, so editors do not need to duplicate navigation content.
+
+## Wider fluid layout
+
+The site uses wider fluid containers for visual sections on large CSS viewports. This does not require content changes. Keep normal paragraph copy concise so it remains readable inside the designed text measures.

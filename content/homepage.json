@@ -160,11 +160,10 @@
       "eyebrow": "Packages",
       "heading": "Two epic ways to party",
       "description": "Choose the hosted experience that suits your group best.",
-      "media": {
-        "light": "/assets/images/gallery_hero_light.jpg",
-        "dark": "/assets/images/gallery_hero_dark.jpg",
-        "alt": "Party.LAN gaming party setup with guests playing together."
-      }
+      "image": "",
+      "fallback_image": "/assets/images/gallery_hero_light.jpg",
+      "fallback_image_dark": "/assets/images/gallery_hero_dark.jpg",
+      "alt": "Party.LAN gaming party setup with guests playing together."
     },
     "intro": {
       "heading": "Compare the experiences",
