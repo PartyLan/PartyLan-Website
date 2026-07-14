@@ -14,6 +14,7 @@ WARNINGS, ERRORS = [], []
 
 CSV_BOOL = {"true": True, "false": False}
 URL_RE = re.compile(r"^(#|/|https://|http://)")
+IMAGE_RE = re.compile(r"^(/assets/|https://)")
 PLACEHOLDER_RE = re.compile(r"{{[^{}]+}}")
 PRODUCTION_HOST = "https://partylan.co.uk"
 EXAMPLE_DOMAIN = "example" + ".com"
@@ -45,8 +46,14 @@ def req_link(file, obj, key, ctx):
     return value
 
 def asset_exists(url):
-    if not url.startswith("/assets/"): return True
+    if url.startswith("https://"):
+        return True
+    if not url.startswith("/assets/"):
+        return True
     return (STATIC / url.lstrip("/")).exists()
+
+def valid_image_source(url):
+    return bool(IMAGE_RE.match(url or ""))
 
 def validate_site(site):
     for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","testimonials_section","final_cta","footer"]:
@@ -77,7 +84,8 @@ def validate_site(site):
     media = hero.get("media", {})
     for theme in ["light", "dark"]:
         value = req_string("site.json", media, theme, "hero.media")
-        if value and not asset_exists(value): err("site.json", f"hero.media.{theme}", "theme image path does not exist")
+        if value and not valid_image_source(value): err("site.json", f"hero.media.{theme}", "image must be a local /assets/ path or absolute https:// URL")
+        elif value and not asset_exists(value): err("site.json", f"hero.media.{theme}", "theme image path does not exist")
     req_string("site.json", media, "alt", "hero.media")
     for sec in ["packages_section", "gallery_section", "space"]:
         req_string("site.json", site.get(sec, {}), "heading", sec, 55)
@@ -124,6 +132,7 @@ def validate_gallery(rows):
         for key in ["image_light", "image_dark"]:
             value = row.get(key, "").strip()
             if not value: err("gallery.csv", ctx, f"missing {key}")
+            elif not valid_image_source(value): err("gallery.csv", ctx, f"{key} must be a local /assets/ path or absolute https:// URL")
             elif not asset_exists(value): err("gallery.csv", ctx, f"{key} asset does not exist")
         href = row.get("href", "").strip()
         if href and not URL_RE.match(href): err("gallery.csv", ctx, "href is not a practical valid link")
@@ -215,11 +224,15 @@ def validate_rendered(html_out, site, packages):
 def render_list(items): return "\n".join(f"<li>{esc(i)}</li>" for i in items)
 def render_nav(items): return "\n".join(f'<a href="{attr(i["href"])}">{esc(i["label"])}</a>' for i in items)
 
+def render_footer_links(items):
+    valid = [i for i in items if i.get("href", "").startswith("#") and i.get("href") != "#top"]
+    return "\n".join(f'<a href="{attr(i["href"])}">{esc(i["label"])}</a>' for i in valid)
+
 def render_packages(packages):
     cards=[]
     for p in packages:
         features = render_list(p["features"])
-        cards.append(f'''<article class="package-card reveal"><div><p class="package-subtitle">{esc(p["subtitle"])}</p><h3>{esc(p["name"])}</h3><p class="package-price">{esc(p["price"])} <span>{esc(p["duration"])}</span></p><p class="package-capacity">{esc(p["capacity"])}</p></div><ul class="feature-list">{features}</ul><a class="button button--ghost" href="{attr(p["action"]["href"])}">{esc(p["action"]["label"])}</a></article>''')
+        cards.append(f'''<article class="package-card package-card--{attr(p["id"])} reveal"><div class="package-card__head"><p class="package-subtitle">{esc(p["subtitle"])}</p><h3>{esc(p["name"])}</h3><div class="package-meta"><p class="package-price">{esc(p["price"])}</p><p>{esc(p["duration"])}</p><p>{esc(p["capacity"])}</p></div></div><ul class="feature-list">{features}</ul><a class="button button--ghost" href="{attr(p["action"]["href"])}">{esc(p["action"]["label"])}</a></article>''')
     return "\n".join(cards)
 
 def render_gallery(rows):
@@ -235,7 +248,18 @@ def render_gallery(rows):
 def render_steps(steps):
     return "\n".join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(steps,1))
 
-def render_reassurance(items): return "\n".join(f'<li>{esc(i["text"])}</li>' for i in items)
+def render_reassurance(items):
+    icons = {
+        "delivered": "M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
+        "hosted": "M12 4a4 4 0 0 0-4 4v3a4 4 0 0 0 8 0V8a4 4 0 0 0-4-4Zm-7 16a7 7 0 0 1 14 0",
+        "selected": "M5 12l4 4L19 6M6 5h7M6 19h12"
+    }
+    out=[]
+    for i in items:
+        path=icons.get(i.get("id", ""), icons["selected"])
+        svg=f'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="{path}"/></svg>'
+        out.append(f'<li>{svg}<span>{esc(i["text"])}</span></li>')
+    return "\n".join(out)
 
 def main():
     site, packages = read_json(CONTENT/"site.json"), read_json(CONTENT/"packages.json")
@@ -263,7 +287,7 @@ def main():
         "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
         "{{testimonials_section}}": "" if not testimonials else "<section class=\"section\"><h2>Testimonials</h2></section>",
         "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
-        "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_note}}": esc(site["footer"]["note"])
+        "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_links}}": render_footer_links(site["navigation"])
     }
     html_out = template
     for k,v in replacements.items(): html_out = html_out.replace(k,v)
