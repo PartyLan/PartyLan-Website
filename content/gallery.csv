@@ -1,5 +1,8 @@
 id,image_light,image_dark,alt,caption,href,visible,display_order
-group-play,/assets/gallery/group-light.svg,/assets/gallery/group-dark.svg,Group of people playing together across several screens,Shared play across multiple stations,,true,1
-racing,/assets/gallery/racing-light.svg,/assets/gallery/racing-dark.svg,Guest using a racing simulator while friends watch,Racing moments with room for spectators,,true,2
-vr,/assets/gallery/vr-light.svg,/assets/gallery/vr-dark.svg,Guest trying VR with a host nearby,Hosted VR with a calm setup,,true,3
-hidden-invalid,/assets/gallery/missing.svg,/assets/gallery/missing-dark.svg,Hidden future image,Hidden optional draft,,false,4
+group-play,/assets/images/gallery_group-fun_01.jpg,/assets/images/gallery_group-fun_01.jpg,Guests playing together at a hosted gaming party,Shared play arranged around the group,,true,1
+racing,/assets/images/gallery_hardware_sim_01.jpg,/assets/images/gallery_hardware_sim_01.jpg,Racing simulator equipment ready for a party session,Racing moments with room for spectators,,true,2
+host-setup,/assets/images/gallery_host_01.jpg,/assets/images/gallery_host_01.jpg,A host preparing gaming equipment before guests arrive,Hosted setup so play can start smoothly,,true,3
+vr,/assets/images/gallery_hardware_vr_02.jpg,/assets/images/gallery_hardware_vr_02.jpg,VR equipment prepared for a hosted session,VR sessions guided at a calm pace,,true,4
+console,/assets/images/gallery_hardware_console_01.jpg,/assets/images/gallery_hardware_console_01.jpg,Gaming controllers and display equipment set up for guests,Flexible stations for different styles of play,,true,5
+venue,/assets/images/gallery_venue-ambient.jpg,/assets/images/gallery_venue-ambient.jpg,Venue space arranged for a hosted gaming party,Layouts adapted to your venue,,true,6
+hidden-invalid,/assets/gallery/missing.svg,/assets/gallery/missing-dark.svg,Hidden future image,Hidden optional draft,,false,7

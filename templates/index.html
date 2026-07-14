@@ -29,9 +29,13 @@
 </header>
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
-    <picture class="hero__picture">
-      <img class="theme-image" src="{{hero_light}}" data-light-src="{{hero_light}}" data-dark-src="{{hero_dark}}" alt="{{hero_alt}}" width="1920" height="720">
-    </picture>
+    <div class="hero__picture" aria-hidden="true">
+      <div class="hero__pan">
+        <img class="hero__image hero__image--light" src="{{hero_light}}" alt="" width="1920" height="720">
+        <img class="hero__image hero__image--dark" src="{{hero_dark}}" alt="" width="1920" height="720">
+      </div>
+    </div>
+    <span class="sr-only">{{hero_alt}}</span>
     <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__inner">
       <div class="hero__content reveal">
@@ -45,7 +49,7 @@
   <section class="reassurance" aria-label="Service reassurance"><ul>{{reassurance_items}}</ul></section>
   <section class="section" id="packages" aria-labelledby="packages-title"><div class="section-heading reveal"><p class="eyebrow">{{packages_eyebrow}}</p><h2 id="packages-title">{{packages_heading}}</h2><p>{{packages_description}}</p></div><div class="package-grid">{{package_cards}}</div></section>
   <section class="section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading section-heading--center reveal"><p class="eyebrow">{{how_eyebrow}}</p><h2 id="how-title">{{how_heading}}</h2></div><div class="steps-grid">{{steps}}</div></section>
-  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">{{gallery_eyebrow}}</p><h2 id="gallery-title">{{gallery_heading}}</h2><p>{{gallery_description}}</p></div><div class="gallery-grid">{{gallery_items}}</div></section>
+  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">{{gallery_eyebrow}}</p><h2 id="gallery-title">{{gallery_heading}}</h2><p>{{gallery_description}}</p></div><div class="gallery-ribbon reveal" aria-label="Party.LAN gallery"><div class="gallery-track">{{gallery_items}}</div></div></section>
   <section class="section room-planning" id="room-planning" aria-labelledby="space-title"><div class="room-planning__text reveal"><p class="eyebrow">{{space_eyebrow}}</p><h2 id="space-title">{{space_heading}}</h2><p>{{space_description}}</p></div><div class="room-planning__sketch reveal" aria-hidden="true"><span></span><span></span><span></span><span></span></div></section>
   {{testimonials_section}}
   <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">{{final_heading}}</h2><p>{{final_description}}</p><button class="button button--disabled" type="button" disabled aria-disabled="true">{{final_button_label}}</button></div></section>

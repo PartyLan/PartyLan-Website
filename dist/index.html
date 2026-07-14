@@ -10,7 +10,7 @@
   <meta property="og:description" content="Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.">
   <meta property="og:url" content="https://partylan.co.uk/">
   <meta property="og:type" content="website">
-  <meta property="og:image" content="https://partylan.co.uk/assets/hero-light-placeholder.svg">
+  <meta property="og:image" content="https://partylan.co.uk/assets/images/gallery_hero_,light.jpg">
   <meta name="theme-color" content="#f6efe4">
   <link rel="icon" href="/assets/logo-placeholder.svg" type="image/svg+xml">
   <script>(function(){try{var s=localStorage.getItem('partyLanTheme');var d=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=d;}catch(e){}}());</script>
@@ -33,9 +33,13 @@
 </header>
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
-    <picture class="hero__picture">
-      <img class="theme-image" src="/assets/hero-light-placeholder.svg" data-light-src="/assets/hero-light-placeholder.svg" data-dark-src="/assets/hero-dark-placeholder.svg" alt="Eight people enjoying a gaming party together across three displays." width="1920" height="720">
-    </picture>
+    <div class="hero__picture" aria-hidden="true">
+      <div class="hero__pan">
+        <img class="hero__image hero__image--light" src="/assets/images/gallery_hero_,light.jpg" alt="" width="1920" height="720">
+        <img class="hero__image hero__image--dark" src="/assets/images/gallery_hero_dark.jpg" alt="" width="1920" height="720">
+      </div>
+    </div>
+    <span class="sr-only">Guests enjoying a hosted gaming party setup with shared screens and equipment.</span>
     <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__inner">
       <div class="hero__content reveal">
@@ -62,9 +66,18 @@
   <section class="section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading section-heading--center reveal"><p class="eyebrow">Simple planning</p><h2 id="how-title">How it works</h2></div><div class="steps-grid"><article class="step-card reveal"><span>1</span><h3>Choose a package</h3><p>Pick the hosted experience that best fits your group size and style of play.</p></article>
 <article class="step-card reveal"><span>2</span><h3>Tell us about the venue</h3><p>Share the room type, access notes and anything useful for planning the setup.</p></article>
 <article class="step-card reveal"><span>3</span><h3>We deliver, set up and host</h3><p>Your host brings the equipment, keeps play moving and packs everything away.</p></article></div></section>
-  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">Shared moments</p><h2 id="gallery-title">Designed around people, not hardware.</h2><p>Shared play, racing and hosted VR arranged around the group and the venue.</p></div><div class="gallery-grid"><figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/group-light.svg" data-light-src="/assets/gallery/group-light.svg" data-dark-src="/assets/gallery/group-dark.svg" alt="Group of people playing together across several screens" loading="lazy" width="720" height="520"><figcaption>Shared play across multiple stations</figcaption></figure>
-<figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/racing-light.svg" data-light-src="/assets/gallery/racing-light.svg" data-dark-src="/assets/gallery/racing-dark.svg" alt="Guest using a racing simulator while friends watch" loading="lazy" width="720" height="520"><figcaption>Racing moments with room for spectators</figcaption></figure>
-<figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/vr-light.svg" data-light-src="/assets/gallery/vr-light.svg" data-dark-src="/assets/gallery/vr-dark.svg" alt="Guest trying VR with a host nearby" loading="lazy" width="720" height="520"><figcaption>Hosted VR with a calm setup</figcaption></figure></div></section>
+  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">Shared moments</p><h2 id="gallery-title">Designed around people, not hardware.</h2><p>Shared play, racing and hosted VR arranged around the group and the venue.</p></div><div class="gallery-ribbon reveal" aria-label="Party.LAN gallery"><div class="gallery-track"><figure class="gallery-card"><img src="/assets/images/gallery_group-fun_01.jpg" alt="Guests playing together at a hosted gaming party" loading="lazy" width="720" height="520"><figcaption>Shared play arranged around the group</figcaption></figure>
+<figure class="gallery-card"><img src="/assets/images/gallery_hardware_sim_01.jpg" alt="Racing simulator equipment ready for a party session" loading="lazy" width="720" height="520"><figcaption>Racing moments with room for spectators</figcaption></figure>
+<figure class="gallery-card"><img src="/assets/images/gallery_host_01.jpg" alt="A host preparing gaming equipment before guests arrive" loading="lazy" width="720" height="520"><figcaption>Hosted setup so play can start smoothly</figcaption></figure>
+<figure class="gallery-card"><img src="/assets/images/gallery_hardware_vr_02.jpg" alt="VR equipment prepared for a hosted session" loading="lazy" width="720" height="520"><figcaption>VR sessions guided at a calm pace</figcaption></figure>
+<figure class="gallery-card"><img src="/assets/images/gallery_hardware_console_01.jpg" alt="Gaming controllers and display equipment set up for guests" loading="lazy" width="720" height="520"><figcaption>Flexible stations for different styles of play</figcaption></figure>
+<figure class="gallery-card"><img src="/assets/images/gallery_venue-ambient.jpg" alt="Venue space arranged for a hosted gaming party" loading="lazy" width="720" height="520"><figcaption>Layouts adapted to your venue</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_group-fun_01.jpg" alt="Guests playing together at a hosted gaming party" loading="lazy" width="720" height="520"><figcaption>Shared play arranged around the group</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_hardware_sim_01.jpg" alt="Racing simulator equipment ready for a party session" loading="lazy" width="720" height="520"><figcaption>Racing moments with room for spectators</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_host_01.jpg" alt="A host preparing gaming equipment before guests arrive" loading="lazy" width="720" height="520"><figcaption>Hosted setup so play can start smoothly</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_hardware_vr_02.jpg" alt="VR equipment prepared for a hosted session" loading="lazy" width="720" height="520"><figcaption>VR sessions guided at a calm pace</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_hardware_console_01.jpg" alt="Gaming controllers and display equipment set up for guests" loading="lazy" width="720" height="520"><figcaption>Flexible stations for different styles of play</figcaption></figure>
+<figure class="gallery-card" aria-hidden="true"><img src="/assets/images/gallery_venue-ambient.jpg" alt="Venue space arranged for a hosted gaming party" loading="lazy" width="720" height="520"><figcaption>Layouts adapted to your venue</figcaption></figure></div></div></section>
   <section class="section room-planning" id="room-planning" aria-labelledby="space-title"><div class="room-planning__text reveal"><p class="eyebrow">Room planning</p><h2 id="space-title">More adaptable than it looks.</h2><p>Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event.</p></div><div class="room-planning__sketch reveal" aria-hidden="true"><span></span><span></span><span></span><span></span></div></section>
   
   <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">Ready to plan your party?</h2><p>Online enquiries are opening soon. Package details are available above.</p><button class="button button--disabled" type="button" disabled aria-disabled="true">Enquiries opening soon</button></div></section>

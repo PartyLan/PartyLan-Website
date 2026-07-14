@@ -50,6 +50,7 @@ button, .button { font: inherit; }
 /* Layout utilities */
 .skip-link { position: fixed; left: 1rem; top: -5rem; z-index: 20; background: var(--accent); color: var(--accent-contrast); padding: .7rem 1rem; border-radius: 999px; }
 .skip-link:focus { top: 1rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .section { max-width: var(--container); margin: 0 auto; padding: clamp(4rem, 7vw, 6rem) var(--pad); }
 .section-heading { max-width: 720px; margin-bottom: clamp(1.6rem, 3vw, 2.4rem); }
 .section-heading--center { margin-inline: auto; text-align: center; }
@@ -86,9 +87,13 @@ p { max-width: 66ch; }
 
 /* Hero */
 .hero { position: relative; min-height: clamp(560px, 64vw, 690px); isolation: isolate; overflow: hidden; }
-.hero__picture, .hero__picture img, .hero__shade { position: absolute; inset: 0; }
+.hero__picture, .hero__pan, .hero__image, .hero__shade { position: absolute; inset: 0; }
 .hero__picture { z-index: -2; }
-.hero__picture img { width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 52% center; transform: scale(1.01); }
+.hero__pan { animation: hero-pan 28s ease-in-out infinite alternate; transform: scale(1.035); transform-origin: center; }
+.hero__image { width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 52% center; opacity: 0; transition: opacity .55s ease; }
+.hero__image--light { opacity: 1; }
+html[data-theme="dark"] .hero__image--light { opacity: 0; }
+html[data-theme="dark"] .hero__image--dark { opacity: 1; }
 .hero__shade { z-index: -1; background: var(--hero-fade); pointer-events: none; }
 .hero__inner { max-width: var(--container); height: 100%; min-height: inherit; margin: 0 auto; padding: calc(var(--header-height) + 3rem) var(--pad) 4.2rem; display: flex; align-items: flex-end; }
 .hero__content { max-width: 620px; }
@@ -123,13 +128,16 @@ p { max-width: 66ch; }
 .step-card p { color: var(--muted); }
 
 /* Gallery */
-.gallery-grid { display: grid; grid-template-columns: minmax(0, 1.28fr) minmax(250px, .82fr); grid-template-rows: repeat(2, minmax(210px, 1fr)); gap: 1rem; }
-.gallery-card { min-width: 0; margin: 0; overflow: hidden; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
-.gallery-card:first-child { grid-row: span 2; }
-.gallery-card img { width: 100%; height: 100%; min-height: 230px; object-fit: cover; transition: transform .5s ease; }
+.gallery-section { max-width: none; padding-inline: 0; overflow: hidden; }
+.gallery-section .section-heading { max-width: var(--container); margin-inline: auto; padding-inline: var(--pad); }
+.gallery-ribbon { overflow-x: auto; scrollbar-width: thin; }
+.gallery-track { width: max-content; display: flex; gap: 1rem; padding-inline: max(var(--pad), calc((100vw - var(--container)) / 2 + var(--pad))); animation: gallery-ribbon 46s linear infinite; }
+.gallery-card { width: clamp(250px, 28vw, 390px); min-width: clamp(250px, 28vw, 390px); margin: 0; overflow: hidden; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.gallery-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; transition: transform .5s ease; }
 .gallery-card:hover img { transform: scale(1.015); }
 .gallery-card figcaption { padding: .75rem .9rem; color: var(--muted); font-size: .94rem; font-weight: 650; }
 .gallery-card a { display: block; height: 100%; text-decoration: none; }
+.gallery-ribbon:hover .gallery-track, .gallery-ribbon:focus-within .gallery-track { animation-play-state: paused; }
 
 /* Room planning */
 .room-planning { display: grid; grid-template-columns: minmax(0, .95fr) minmax(260px, .55fr); align-items: center; gap: clamp(1.5rem, 4vw, 3rem); }
@@ -157,6 +165,14 @@ p { max-width: 66ch; }
 .reveal { opacity: 1; transform: none; }
 .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .48s ease, transform .48s ease; }
 .js .reveal.is-visible { opacity: 1; transform: none; }
+@keyframes hero-pan {
+  from { transform: scale(1.035) translate3d(-.8%, -.4%, 0); }
+  to { transform: scale(1.035) translate3d(.8%, .4%, 0); }
+}
+@keyframes gallery-ribbon {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(calc(-50% - .5rem), 0, 0); }
+}
 
 /* Responsive breakpoints */
 @media (max-width: 920px) {
@@ -170,8 +186,7 @@ p { max-width: 66ch; }
   .steps-grid::before { left: 1.35rem; right: auto; top: .5rem; bottom: .5rem; border-top: 0; border-left: 1px solid var(--border); }
   .step-card { padding-left: 3.6rem; }
   .step-card span { position: absolute; left: 0; top: 0; }
-  .gallery-grid { grid-template-columns: 1fr; grid-template-rows: auto; }
-  .gallery-card:first-child { grid-row: auto; }
+  .gallery-track { animation-duration: 58s; }
 }
 
 @media (max-width: 560px) {
@@ -181,7 +196,7 @@ p { max-width: 66ch; }
   .theme-toggle__label { display: none; }
   .theme-toggle, .menu-toggle { min-height: 38px; padding: .48rem .68rem; }
   .hero { min-height: 560px; }
-  .hero__picture img { object-position: 58% center; }
+  .hero__image { object-position: 58% center; }
   .hero__inner { padding: calc(var(--header-height) + 1.8rem) 1rem 2.4rem; }
   h1 { font-size: clamp(2.1rem, 10vw, 2.75rem); }
   h2 { font-size: clamp(1.7rem, 8vw, 2.12rem); }
@@ -192,11 +207,14 @@ p { max-width: 66ch; }
   .package-meta p { border: 0; padding-right: 0; }
   .site-footer { display: block; }
   .site-footer nav { margin-top: 1rem; }
+  .gallery-ribbon { padding-bottom: .5rem; }
+  .gallery-track { width: auto; padding-inline: 1rem; animation: none; overflow-x: visible; }
+  .gallery-card { width: 78vw; min-width: 78vw; }
 }
 
 /* Reduced-motion handling */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   .js .reveal { opacity: 1; transform: none; }
-  .gallery-card:hover img, .hero__picture img { transform: none; }
+  .gallery-card:hover img, .hero__pan { transform: none; }
 }

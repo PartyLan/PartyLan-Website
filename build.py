@@ -9,6 +9,7 @@ ROOT = Path(__file__).parent.resolve()
 CONTENT = ROOT / "content"
 STATIC = ROOT / "static"
 DIST = ROOT / "dist"
+CONTENT_IMAGES = CONTENT / "images"
 TEMPLATE = ROOT / "templates" / "index.html"
 WARNINGS, ERRORS = [], []
 
@@ -48,6 +49,8 @@ def req_link(file, obj, key, ctx):
 def asset_exists(url):
     if url.startswith("https://"):
         return True
+    if url.startswith("/assets/images/"):
+        return (CONTENT_IMAGES / url.removeprefix("/assets/images/")).exists()
     if not url.startswith("/assets/"):
         return True
     return (STATIC / url.lstrip("/")).exists()
@@ -244,11 +247,12 @@ def render_gallery(rows):
     if not rows: return ""
     items=[]
     for r in rows:
-        img=f'<img class="theme-image" src="{attr(r["image_light"])}" data-light-src="{attr(r["image_light"])}" data-dark-src="{attr(r["image_dark"])}" alt="{attr(r["alt"])}" loading="lazy" width="720" height="520">'
+        img=f'<img src="{attr(r["image_light"])}" alt="{attr(r["alt"])}" loading="lazy" width="720" height="520">'
         body=f'{img}<figcaption>{esc(r.get("caption", ""))}</figcaption>' if r.get("caption") else img
         if r.get("href", "").strip(): body=f'<a href="{attr(r["href"].strip())}">{body}</a>'
-        items.append(f'<figure class="gallery-card reveal">{body}</figure>')
-    return "\n".join(items)
+        items.append(f'<figure class="gallery-card">{body}</figure>')
+    duplicate = [item.replace('<figure class="gallery-card">', '<figure class="gallery-card" aria-hidden="true">', 1) for item in items]
+    return "\n".join(items + duplicate)
 
 def render_steps(steps):
     return "\n".join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(steps,1))
@@ -299,6 +303,8 @@ def main():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir()
     shutil.copytree(STATIC, DIST, dirs_exist_ok=True)
+    if CONTENT_IMAGES.exists():
+        shutil.copytree(CONTENT_IMAGES, DIST / "assets" / "images", dirs_exist_ok=True)
     validate_rendered(html_out, site, packages)
     if ERRORS:
         print("Build failed with rendered-output validation errors:", file=sys.stderr)
