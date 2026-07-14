@@ -1,3 +1,4 @@
-id,quote,name,age,location,image_light,image_dark,alt,visible,display_order
-example-party,Everyone had something they wanted to play, and the host kept the whole party moving.,Alex,13,Leicester,/assets/hero-light-placeholder.svg,/assets/hero-dark-placeholder.svg,Example hosted gaming party scene.,true,1
-example-racing,The racing setup made the room feel like a proper event.,Maya,15,Nottingham,/assets/gallery/racing-light.svg,/assets/gallery/racing-dark.svg,Example racing game setup at a party.,true,2
+id,quote,name,attribution,age,location,package,image,alt,visible,display_order
+example-party,Everyone had something they wanted to play and the host kept the whole party moving.,Alex,Demo family,13,Leicester,onyx,/assets/images/gallery_testimonial_01.jpg,Demo image of a hosted gaming party,true,1
+example-racing,The racing setup made the room feel like a proper event.,Maya,Demo parent,15,Nottingham,jade,/assets/images/gallery_testimonial_02.jpg,Demo racing party image,true,2
+example-vr,The VR moment was the thing everyone talked about afterwards.,Sam,Demo guest,12,Derby,onyx,/assets/images/gallery_testimonial_03.jpg,Demo VR party image,true,3

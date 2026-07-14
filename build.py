@@ -1,450 +1,185 @@
 #!/usr/bin/env python3
-"""Small standard-library static build for the Party.LAN homepage."""
+"""Standard-library static build and content validation for Party.LAN."""
 from __future__ import annotations
-import csv, html, json, re, shutil, sys
-from html.parser import HTMLParser
+import csv, html, json, shutil, sys
 from pathlib import Path
-
-ROOT = Path(__file__).parent.resolve()
-CONTENT = ROOT / "content"
-CONTENT_IMAGES = CONTENT / "images"
-STATIC = ROOT / "static"
-DIST = ROOT / "dist"
-DIST_IMAGES = DIST / "assets" / "images"
-TEMPLATE = ROOT / "templates" / "index.html"
-WARNINGS, ERRORS = [], []
-
-CSV_BOOL = {"true": True, "false": False}
-URL_RE = re.compile(r"^(#|/|https://|http://)")
-IMAGE_RE = re.compile(r"^(/assets/|https://)")
-IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".avif"}
-IMAGE_OUTPUT_ALIASES = {
-    "gallery_hero_,light.jpg": "gallery_hero_light.jpg",
-    "gallery_testimonial)_01.jpg": "gallery_testimonial_02.jpg",
-}
-PLACEHOLDER_RE = re.compile(r"{{[^{}]+}}")
-PRODUCTION_HOST = "https://partylan.co.uk"
-EXAMPLE_DOMAIN = "example" + ".com"
-
-
-def err(file, key, reason): ERRORS.append(f"{file}: {key}: {reason}")
-def warn(file, key, reason): WARNINGS.append(f"{file}: {key}: {reason}")
-def esc(value): return html.escape(str(value), quote=True)
-def attr(value): return esc(value)
-
-def read_json(path):
+ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'static'; DIST=ROOT/'dist'; IMAGES=CONTENT/'images'
+ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
+REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','legal/terms.json','legal/privacy.json']
+PACKAGE_FACTS={'onyx':{'name':'ONYX','label':'Premium Experience','price':'£150','duration':'2 hours','capacity':'Up to 6 players','included':['PlayStation and Nintendo gaming','Racing simulator','VR hardware','Displays','Party host/operator','Free digital invitation']},'jade':{'name':'JADE','label':'Big Party','price':'£150','duration':'2 hours','capacity':'Up to 10 players','included':['Multiplayer gaming across multiple stations','Displays','Party host/operator','Free digital invitation']}}
+LEGAL_SECTIONS={'terms':['introduction','booking','payment','cancellation','venue_access','room_and_power_requirements','supervision','equipment_care','damage','travel','contact'],'privacy':['introduction','information_collected','purpose_of_processing','service_providers','retention','customer_rights','contact']}
+def err(f,k,r): ERRORS.append(f'{f} {k}: {r}')
+def esc(v): return html.escape(str(v), quote=True)
+def req_text(file,obj,key,ctx):
+    v=obj.get(key) if isinstance(obj,dict) else None
+    if not isinstance(v,str) or not v.strip(): err(file,ctx+'.'+key,'required text is empty'); return ''
+    return v.strip()
+def req_bool(file,row,key,ctx):
+    v=(row.get(key,'') or '').strip().lower()
+    if v not in BOOL: err(file,ctx,f'{key} must be true or false'); return False
+    return BOOL[v]
+def req_order(file,row,ctx,orders):
+    raw=(row.get('display_order','') or '').strip()
+    try: order=int(raw); assert order>0
+    except Exception: err(file,ctx,'display_order must be a positive integer'); return 999999
+    if order in orders: err(file,ctx,f'duplicate display_order {order}')
+    orders.add(order); return order
+def image_ok(file,ctx,value):
+    if not value: err(file,ctx,'referenced image is required'); return
+    if not value.startswith('/assets/images/'): err(file,ctx,'unsupported asset path; expected /assets/images/...'); return
+    if Path(value).suffix.lower() not in IMG_EXT: err(file,ctx,'unsupported image extension'); return
+    if not (IMAGES/value.removeprefix('/assets/images/')).is_file(): err(file,ctx,'referenced image does not exist')
+def read_json(rel):
+    p=CONTENT/rel
+    try: return json.loads(p.read_text(encoding='utf-8'))
+    except FileNotFoundError: err(str(Path('content')/rel),'$','missing required file'); return {}
+    except json.JSONDecodeError as e: err(str(Path('content')/rel),f'line {e.lineno}',f'malformed JSON: {e.msg}'); return {}
+def read_csv(rel):
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:
-        err(path.name, "$", f"invalid JSON ({exc})"); return {} if path.name == "site.json" else []
+        with (CONTENT/rel).open(newline='',encoding='utf-8') as fh: return list(csv.DictReader(fh))
+    except FileNotFoundError: err('content/'+rel,'$','missing required file'); return []
+    except csv.Error as e: err('content/'+rel,'$','malformed CSV: '+str(e)); return []
+def validate_home(h):
+    f='content/homepage.json'
+    for k in ['meta','navigation','header','hero','reassurance','testimonials_section','how_it_works','gallery_section','faq_section','final_cta','footer','packages_page','addons_section']:
+        if k not in h: err(f,k,'required top-level key is missing')
+    req_text(f,h.get('hero',{}),'title','hero'); req_text(f,h.get('hero',{}),'description','hero')
+    if h.get('hero',{}).get('primary_cta',{}).get('href')!='/packages/': err(f,'hero.primary_cta.href','expected /packages/')
+    for key in ['light','dark']: image_ok(f,'hero.media.'+key,h.get('hero',{}).get('media',{}).get(key,''))
+    for key in ['logo_light','logo_dark']: image_ok(f,'header.'+key,h.get('header',{}).get(key,''))
+    labels=[n.get('label') for n in h.get('navigation',[])]
+    if labels!=['Packages','FAQ','Check availability']: err(f,'navigation','expected Packages, FAQ and Check availability only')
+    pp=h.get('packages_page',{})
+    for key in ['meta_title','hero','intro','guidance','cta']:
+        if key not in pp: err(f,'packages_page.'+key,'required Packages-page content is missing')
+    req_text(f,pp.get('hero',{}),'heading','packages_page.hero'); req_text(f,pp.get('hero',{}),'description','packages_page.hero')
 
-def req_string(file, obj, key, ctx, max_len=None, warning_only=True):
-    value = obj.get(key) if isinstance(obj, dict) else None
-    if not isinstance(value, str) or not value.strip():
-        err(file, f"{ctx}.{key}", "required non-empty string is missing"); return ""
-    value = value.strip()
-    if max_len and len(value) > max_len:
-        (warn if warning_only else err)(file, f"{ctx}.{key}", f"length {len(value)} exceeds suggested {max_len} characters")
-    return value
-
-def req_link(file, obj, key, ctx):
-    value = req_string(file, obj, key, ctx)
-    if value and not URL_RE.match(value): err(file, f"{ctx}.{key}", "link must be an anchor, root-relative path or http(s) URL")
-    return value
-
-def asset_exists(url):
-    if url.startswith("https://"):
-        return True
-    if url.startswith("/assets/images/"):
-        requested = url.removeprefix("/assets/images/")
-        if (CONTENT_IMAGES / requested).is_file():
-            return True
-        return any(output == requested and (CONTENT_IMAGES / source).is_file() for source, output in IMAGE_OUTPUT_ALIASES.items())
-    if not url.startswith("/assets/"):
-        return True
-    return (STATIC / url.lstrip("/")).exists()
-
-def valid_image_source(url):
-    return bool(IMAGE_RE.match(url or ""))
-
-def validate_image_reference(file, ctx, value):
-    if not value:
-        err(file, ctx, "missing image source")
-    elif not valid_image_source(value):
-        err(file, ctx, "image must be a local /assets/ path or absolute https:// URL")
-    elif value.startswith("http://"):
-        err(file, ctx, "external image must use https://")
-    elif value.startswith("/assets/images/") and Path(value).suffix.lower() not in IMAGE_EXTENSIONS:
-        err(file, ctx, "local content image uses an unsupported extension")
-    elif not asset_exists(value):
-        err(file, ctx, "referenced asset does not exist")
-
-def validate_content_images():
-    if not CONTENT_IMAGES.exists():
-        err("content/images", "$", "source image directory is missing")
-        return
-    outputs = set()
-    malformed = re.compile(r"[^a-z0-9_./-]")
-    for path in CONTENT_IMAGES.rglob("*"):
-        if path.is_dir():
-            continue
-        rel = path.relative_to(CONTENT_IMAGES)
-        rel_posix = rel.as_posix()
-        if malformed.search(rel_posix) or "," in rel_posix:
-            if rel_posix not in IMAGE_OUTPUT_ALIASES:
-                err("content/images", rel_posix, "filename must be lowercase with underscores, hyphens or nested directories only")
-            else:
-                warn("content/images", rel_posix, f"malformed upstream filename is copied as {IMAGE_OUTPUT_ALIASES[rel_posix]}")
-        if path.suffix.lower() not in IMAGE_EXTENSIONS:
-            err("content/images", rel_posix, f"unsupported image extension {path.suffix}")
-            continue
-        output = IMAGE_OUTPUT_ALIASES.get(rel_posix, rel_posix).lower()
-        if output in outputs:
-            err("content/images", rel_posix, "duplicate output filename")
-        outputs.add(output)
-
-def copy_content_images():
-    if DIST_IMAGES.exists():
-        shutil.rmtree(DIST_IMAGES)
-    DIST_IMAGES.mkdir(parents=True, exist_ok=True)
-    for path in CONTENT_IMAGES.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:
-            continue
-        rel = path.relative_to(CONTENT_IMAGES)
-        rel_posix = rel.as_posix()
-        dest = DIST_IMAGES / IMAGE_OUTPUT_ALIASES.get(rel_posix, rel_posix)
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(path, dest)
-
-def validate_site(site):
-    for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","faq_section","testimonials_section","final_cta","footer"]:
-        if key not in site: err("site.json", key, "required top-level key is missing")
-    meta = site.get("meta", {})
-    req_string("site.json", meta, "title", "meta")
-    req_string("site.json", meta, "description", "meta", 170)
-    canonical = req_link("site.json", meta, "canonical_url", "meta")
-    if canonical and canonical.rstrip("/") != PRODUCTION_HOST:
-        err("site.json", "meta.canonical_url", f"must be {PRODUCTION_HOST}/ for production previews")
-    if EXAMPLE_DOMAIN in json.dumps(meta):
-        err("site.json", "meta", "sample domain must not remain in production metadata")
-    if not asset_exists(meta.get("og_image", "")): err("site.json", "meta.og_image", "referenced asset does not exist")
-    labels = set()
-    for i, item in enumerate(site.get("navigation", [])):
-        label = req_string("site.json", item, "label", f"navigation[{i}]", 24)
-        req_link("site.json", item, "href", f"navigation[{i}]")
-        if label in labels: err("site.json", f"navigation[{i}]", "duplicate navigation label")
-        labels.add(label)
-    hero = site.get("hero", {})
-    req_string("site.json", hero, "eyebrow", "hero")
-    req_string("site.json", hero, "title", "hero", 70)
-    req_string("site.json", hero, "description", "hero", 180)
-    for cta_key in ["primaryCta", "secondaryCta"]:
-        cta = hero.get(cta_key, {})
-        req_string("site.json", cta, "label", f"hero.{cta_key}", 24)
-        req_link("site.json", cta, "href", f"hero.{cta_key}")
-    media = hero.get("media", {})
-    for theme in ["light", "dark"]:
-        value = req_string("site.json", media, theme, "hero.media")
-        validate_image_reference("site.json", f"hero.media.{theme}", value)
-    req_string("site.json", media, "alt", "hero.media")
-    for sec in ["packages_section", "gallery_section", "space"]:
-        req_string("site.json", site.get(sec, {}), "heading", sec, 55)
-    faq = site.get("faq_section", {})
-    req_string("site.json", faq, "eyebrow", "faq_section")
-    req_string("site.json", faq, "heading", "faq_section", 70)
-    req_string("site.json", faq, "description", "faq_section", 140)
-    faq_items = faq.get("items")
-    faq_ids = set()
-    if not isinstance(faq_items, list) or not faq_items:
-        err("site.json", "faq_section.items", "must contain FAQ items")
-    else:
-        for i, item in enumerate(faq_items):
-            ctx = f"faq_section.items[{i}]"
-            faq_id = req_string("site.json", item, "id", ctx)
-            if faq_id in faq_ids:
-                err("site.json", ctx, "duplicate FAQ id")
-            faq_ids.add(faq_id)
-            req_string("site.json", item, "question", ctx, 120)
-            req_string("site.json", item, "answer", ctx, 320)
-    testimonials = site.get("testimonials_section", {})
-    req_string("site.json", testimonials, "eyebrow", "testimonials_section")
-    req_string("site.json", testimonials, "heading", "testimonials_section", 70)
-    req_string("site.json", testimonials, "description", "testimonials_section", 160)
-    req_string("site.json", site.get("final_cta", {}), "heading", "final_cta", 55)
-    req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 32)
-
-def validate_packages(packages):
-    ids = set()
-    for i, pkg in enumerate(packages):
-        ctx = f"packages[{i}]"
-        pid = req_string("packages.json", pkg, "id", ctx)
-        if pid in ids: err("packages.json", ctx, "duplicate package id")
+    ph=pp.get('hero',{})
+    image_ok(f,'packages_page.hero.fallback_image',ph.get('fallback_image',''))
+    image_ok(f,'packages_page.hero.fallback_image_dark',ph.get('fallback_image_dark',ph.get('fallback_image','')))
+    if ph.get('image','').strip(): image_ok(f,'packages_page.hero.image',ph.get('image',''))
+    terms=h.get('faq_section',{}).get('terms_link',{})
+    if terms.get('href')!='/terms/': err(f,'faq_section.terms_link.href','expected /terms/')
+def validate_packages(data):
+    rows=data.get('packages',data if isinstance(data,list) else []); out=[]; ids=set(); orders=set(); f='content/packages.json'
+    if not isinstance(rows,list): err(f,'packages','must be a list'); return []
+    for p in rows:
+        ctx=f'package "{p.get("id","")}"'; pid=req_text(f,p,'id',ctx)
+        if pid in ids: err(f,ctx,'duplicate ID')
         ids.add(pid)
-        for key in ["name","subtitle","price","duration","capacity"]: req_string("packages.json", pkg, key, ctx, 55 if key in ["name","subtitle"] else None)
-        if not pkg.get("price"): err("packages.json", f"{ctx}.price", "missing package price")
-        if not pkg.get("capacity"): err("packages.json", f"{ctx}.capacity", "missing package capacity")
-        feats = pkg.get("features")
-        if not isinstance(feats, list) or not feats: err("packages.json", f"{ctx}.features", "must contain feature strings")
+        if pid not in PACKAGE_FACTS: err(f,ctx,'invalid package ID')
         else:
-            for j, feat in enumerate(feats):
-                if not isinstance(feat, str) or not feat.strip(): err("packages.json", f"{ctx}.features[{j}]", "empty feature")
-                elif len(feat) > 180: warn("packages.json", f"{ctx}.features[{j}]", "feature is longer than suggested 180 characters")
-        req_string("packages.json", pkg.get("action", {}), "label", f"{ctx}.action", 24)
-        req_link("packages.json", pkg.get("action", {}), "href", f"{ctx}.action")
-
-def read_csv(path):
-    with path.open(newline="", encoding="utf-8") as fh: return list(csv.DictReader(fh))
-
-def validate_gallery(rows):
-    out, ids = [], set()
-    for n, row in enumerate(rows, start=2):
-        rid = row.get("id", "").strip(); ctx = f"row {n} ({rid or 'no id'})"
-        if not rid: err("gallery.csv", ctx, "missing id"); continue
-        if rid in ids: err("gallery.csv", ctx, "duplicate id")
-        ids.add(rid)
-        raw_visible = row.get("visible", "").strip().lower()
-        if raw_visible not in CSV_BOOL: err("gallery.csv", ctx, "visible must be true or false"); continue
-        try: order = int(row.get("display_order", ""))
-        except ValueError: err("gallery.csv", ctx, "display_order must be an integer"); continue
-        row["visible_bool"] = CSV_BOOL[raw_visible]; row["order_int"] = order
-        if not row["visible_bool"]: continue
-        if not row.get("alt", "").strip(): err("gallery.csv", ctx, "missing image alternative text")
-        if len(row.get("caption", "")) > 120: warn("gallery.csv", ctx, "caption exceeds suggested 120 characters")
-        for key in ["image_light", "image_dark"]:
-            value = row.get(key, "").strip()
-            validate_image_reference("gallery.csv", f"{ctx}.{key}", value)
-        href = row.get("href", "").strip()
-        if href and not URL_RE.match(href): err("gallery.csv", ctx, "href is not a practical valid link")
-        out.append(row)
-    return sorted(out, key=lambda r: r["order_int"])
-
-def validate_testimonials(rows):
-    out, ids, orders = [], set(), set()
-    for n, row in enumerate(rows, start=2):
-        rid = row.get("id", "").strip(); ctx = f"row {n} ({rid or 'no id'})"
-        if not rid: continue
-        if rid in ids: err("testimonials.csv", ctx, "duplicate id")
-        ids.add(rid)
-        raw_visible = row.get("visible", "").strip().lower()
-        if raw_visible not in CSV_BOOL: err("testimonials.csv", ctx, "visible must be true or false"); continue
-        visible = CSV_BOOL[raw_visible]
-        if not visible: continue
-        for key in ["quote", "name", "location", "alt"]:
-            req_string("testimonials.csv", row, key, ctx, 260 if key == "quote" else 120)
-        try:
-            age = int(row.get("age", ""))
-            if age <= 0 or age > 120: err("testimonials.csv", ctx, "age must be a sensible positive integer")
-        except ValueError:
-            err("testimonials.csv", ctx, "age must be an integer")
-        try:
-            order = int(row.get("display_order", ""))
-            if order <= 0: err("testimonials.csv", ctx, "display_order must be a positive integer")
-            if order in orders: err("testimonials.csv", ctx, "duplicate display_order")
-            orders.add(order); row["order_int"] = order
-        except ValueError:
-            err("testimonials.csv", ctx, "display_order must be an integer")
-        for key in ["image_light", "image_dark"]:
-            value = row.get(key, "").strip()
-            validate_image_reference("testimonials.csv", f"{ctx}.{key}", value)
-        out.append(row)
-    return sorted(out, key=lambda r: r["order_int"])
-
-
-class RenderedDocumentParser(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.ids = set()
-        self.links = []
-        self.assets = []
-        self.package_features = {}
-        self._current_package = None
-        self._in_feature = False
-        self._feature_parts = []
-
-    def handle_starttag(self, tag, attrs):
-        attrs = dict(attrs)
-        if attrs.get("id"):
-            self.ids.add(attrs["id"])
-        if tag == "a" and attrs.get("href"):
-            self.links.append(attrs["href"])
-        if tag in {"img", "script"} and attrs.get("src"):
-            self.assets.append(attrs["src"])
-        if tag == "link" and attrs.get("href"):
-            self.assets.append(attrs["href"])
-        if tag == "article" and "package-card" in attrs.get("class", ""):
-            self._current_package = ""
-        if self._current_package is not None and tag == "li":
-            self._in_feature = True
-            self._feature_parts = []
-
-    def handle_endtag(self, tag):
-        if tag == "li" and self._in_feature and self._current_package is not None:
-            feature = "".join(self._feature_parts).strip()
-            if feature:
-                self.package_features.setdefault(self._current_package, []).append(feature)
-            self._in_feature = False
-        if tag == "article" and self._current_package is not None:
-            self._current_package = None
-
-    def handle_data(self, data):
-        if self._current_package is not None and not self._current_package and data.strip() in {"ONYX", "JADE"}:
-            self._current_package = data.strip()
-            self.package_features.setdefault(self._current_package, [])
-        if self._in_feature:
-            self._feature_parts.append(data)
-
-
-def validate_rendered(html_out, site, packages):
-    if EXAMPLE_DOMAIN in html_out:
-        err("dist/index.html", "metadata", "sample domain must not appear in generated public files")
-    placeholders = sorted(set(PLACEHOLDER_RE.findall(html_out)))
-    if placeholders:
-        err("dist/index.html", "template", "unresolved template placeholders remain: " + ", ".join(placeholders))
-    parser = RenderedDocumentParser()
-    parser.feed(html_out)
-    for item in site.get("navigation", []):
-        href = item.get("href", "")
-        if href.startswith("#") and href[1:] not in parser.ids:
-            err("dist/index.html", f"navigation {item.get('label', href)}", f"anchor {href} does not exist in rendered document")
-        elif href.startswith("/") and href not in {"/", "/index.html"}:
-            err("dist/index.html", f"navigation {item.get('label', href)}", f"links to unavailable page {href}")
-    for pkg in packages:
-        rendered = parser.package_features.get(pkg.get("name"), [])
-        missing = [feat for feat in pkg.get("features", []) if feat not in rendered]
-        if missing:
-            err("dist/index.html", f"package {pkg.get('name')}", "omitted configured features: " + "; ".join(missing))
-    for asset in parser.assets:
-        if asset.startswith("/") and not (DIST / asset.lstrip("/")).exists():
-            err("dist/index.html", asset, "referenced local asset is missing")
-        if asset.startswith("/content/images/"):
-            err("dist/index.html", asset, "generated HTML must not reference content/images")
-
-def render_list(items): return "\n".join(f"<li>{esc(i)}</li>" for i in items)
-def render_nav(items):
-    links = []
-    for i in items:
-        class_attr = ' class="site-menu__availability"' if i.get("href") == "#booking" else ""
-        links.append(f'<a{class_attr} href="{attr(i["href"])}">{esc(i["label"])}</a>')
-    return "\n".join(links)
-
-def render_footer_links(items):
-    valid = [i for i in items if i.get("href", "").startswith("#") and i.get("href") != "#top"]
-    return "\n".join(f'<a href="{attr(i["href"])}">{esc(i["label"])}</a>' for i in valid)
-
-def render_packages(packages):
-    cards=[]
-    for p in packages:
-        features = render_list(p["features"])
-        cards.append(f'''<article class="package-card package-card--{attr(p["id"])} reveal"><div class="package-card__head"><p class="package-subtitle">{esc(p["subtitle"])}</p><h3>{esc(p["name"])}</h3><div class="package-meta"><p class="package-price">{esc(p["price"])}</p><p>{esc(p["duration"])}</p><p>{esc(p["capacity"])}</p></div></div><ul class="feature-list">{features}</ul><a class="button button--ghost" href="{attr(p["action"]["href"])}">{esc(p["action"]["label"])}</a></article>''')
-    return "\n".join(cards)
-
-def render_gallery(rows):
-    if not rows: return ""
-    items=[]
-    for r in rows:
-        img=f'<img class="theme-image" src="{attr(r["image_light"])}" data-light-src="{attr(r["image_light"])}" data-dark-src="{attr(r["image_dark"])}" alt="{attr(r["alt"])}" loading="lazy" width="720" height="520">'
-        body=f'{img}<figcaption>{esc(r.get("caption", ""))}</figcaption>' if r.get("caption") else img
-        if r.get("href", "").strip(): body=f'<a href="{attr(r["href"].strip())}">{body}</a>'
-        items.append(f'<figure class="gallery-card reveal">{body}</figure>')
-    return "\n".join(items)
-
-def render_steps(steps):
-    return "\n".join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(steps,1))
-
-def render_faq_items(items):
-    out = []
-    for item in items:
-        out.append(f'''<details class="faq-item" id="faq-{attr(item["id"])}"><summary>{esc(item["question"])}</summary><div class="faq-item__answer"><p>{esc(item["answer"])}</p></div></details>''')
-    return "\n".join(out)
-
-def render_testimonials_section(section, rows):
-    if not rows:
-        return ""
-    dots = ""
-    if len(rows) > 1:
-        dots = '<div class="testimonial-dots" role="tablist" aria-label="Choose testimonial">' + "\n".join(
-            f'<button class="testimonial-dot{" is-active" if i == 1 else ""}" type="button" aria-label="Show testimonial {i} of {len(rows)}" aria-current="{"true" if i == 1 else "false"}" data-testimonial-dot="{i - 1}"><span></span></button>'
-            for i, _ in enumerate(rows, 1)
-        ) + "</div>"
-    slides = []
-    for i, row in enumerate(rows):
-        active = " is-active" if i == 0 else ""
-        slides.append(f'''<article class="testimonial-slide{active}" data-testimonial-slide="{i}">
-  <img class="testimonial-slide__image theme-image" src="{attr(row["image_light"])}" data-light-src="{attr(row["image_light"])}" data-dark-src="{attr(row["image_dark"])}" alt="{attr(row["alt"])}" loading="lazy" width="1440" height="540">
-  <div class="testimonial-slide__overlay" aria-hidden="true"></div>
-  <div class="testimonial-slide__content">
-    <blockquote class="testimonial-quote"><p>“{esc(row["quote"])}”</p></blockquote>
-    <p class="testimonial-person">{esc(row["name"])}, age {esc(row["age"])}</p>
-    <p class="testimonial-location">{esc(row["location"])}</p>
-  </div>
-</article>''')
-    return f'''<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title">
-  <div class="section-heading reveal">
-    <p class="eyebrow">{esc(section["eyebrow"])}</p>
-    <h2 id="testimonials-title">{esc(section["heading"])}</h2>
-    <p>{esc(section["description"])}</p>
-  </div>
-  <div class="testimonial-stage reveal" aria-label="Customer testimonials">
-    {"".join(slides)}
-    {dots}
-  </div>
-</section>'''
-
-def render_reassurance(items):
-    icons = {
-        "delivered": "M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
-        "hosted": "M12 4a4 4 0 0 0-4 4v3a4 4 0 0 0 8 0V8a4 4 0 0 0-4-4Zm-7 16a7 7 0 0 1 14 0",
-        "selected": "M5 12l4 4L19 6M6 5h7M6 19h12"
-    }
-    out=[]
-    for i in items:
-        path=icons.get(i.get("id", ""), icons["selected"])
-        svg=f'<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="{path}"/></svg>'
-        out.append(f'<li>{svg}<span>{esc(i["text"])}</span></li>')
-    return "\n".join(out)
-
-def main():
-    site, packages = read_json(CONTENT/"site.json"), read_json(CONTENT/"packages.json")
-    validate_content_images()
-    validate_site(site); validate_packages(packages)
-    gallery = validate_gallery(read_csv(CONTENT/"gallery.csv"))
-    testimonials = validate_testimonials(read_csv(CONTENT/"testimonials.csv"))
-    if ERRORS:
-        print("Build failed with validation errors:", file=sys.stderr)
-        print("\n".join(f"- {e}" for e in ERRORS), file=sys.stderr); sys.exit(1)
-    template = TEMPLATE.read_text(encoding="utf-8")
-    h=site["hero"]
-    replacements = {
-        "{{meta_title}}": esc(site["meta"]["title"]), "{{meta_description}}": esc(site["meta"]["description"]),
-        "{{canonical_url}}": attr(site["meta"]["canonical_url"]), "{{og_image}}": attr(PRODUCTION_HOST + site["meta"]["og_image"]),
-        "{{theme_color_light}}": attr(site["meta"].get("theme_color_light", "#f6efe4")), "{{nav_links}}": render_nav(site["navigation"]),
-        "{{availability_label}}": esc(site["header"]["availabilityCta"]["label"]), "{{availability_href}}": attr(site["header"]["availabilityCta"]["href"]),
-        "{{hero_eyebrow}}": esc(h["eyebrow"]), "{{hero_title}}": esc(h["title"]), "{{hero_description}}": esc(h["description"]),
-        "{{hero_primary_label}}": esc(h["primaryCta"]["label"]), "{{hero_primary_href}}": attr(h["primaryCta"]["href"]),
-        "{{hero_secondary_label}}": esc(h["secondaryCta"]["label"]), "{{hero_secondary_href}}": attr(h["secondaryCta"]["href"]),
-        "{{hero_light}}": attr(h["media"]["light"]), "{{hero_dark}}": attr(h["media"]["dark"]), "{{hero_alt}}": attr(h["media"]["alt"]),
-        "{{reassurance_items}}": render_reassurance(site["reassurance"]), "{{packages_heading}}": esc(site["packages_section"]["heading"]),
-        "{{packages_eyebrow}}": esc(site["packages_section"]["eyebrow"]), "{{packages_description}}": esc(site["packages_section"]["description"]), "{{package_cards}}": render_packages(packages),
-        "{{how_eyebrow}}": esc(site["how_it_works"]["eyebrow"]), "{{how_heading}}": esc(site["how_it_works"]["heading"]), "{{steps}}": render_steps(site["how_it_works"]["steps"]),
-        "{{gallery_eyebrow}}": esc(site["gallery_section"]["eyebrow"]), "{{gallery_heading}}": esc(site["gallery_section"]["heading"]), "{{gallery_description}}": esc(site["gallery_section"]["description"]), "{{gallery_items}}": render_gallery(gallery),
-        "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
-        "{{testimonials_section}}": render_testimonials_section(site["testimonials_section"], testimonials),
-        "{{faq_eyebrow}}": esc(site["faq_section"]["eyebrow"]), "{{faq_heading}}": esc(site["faq_section"]["heading"]), "{{faq_description}}": esc(site["faq_section"]["description"]), "{{faq_items}}": render_faq_items(site["faq_section"]["items"]),
-        "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
-        "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_links}}": render_footer_links(site["navigation"])
-    }
-    html_out = template
-    for k,v in replacements.items(): html_out = html_out.replace(k,v)
+            facts=PACKAGE_FACTS[pid]
+            for key in ['name','label','price','duration','capacity']:
+                if p.get(key)!=facts[key]: err(f,ctx,f'{key} must remain {facts[key]}')
+            if p.get('included')!=facts['included']: err(f,ctx,'package business-detail inconsistencies in included list')
+        for key in ['summary','addon_intro','enquiry_note','enquiry_button','details_button']: req_text(f,p,key,ctx)
+        if not isinstance(p.get('visible'),bool): err(f,ctx,'visible must be JSON true or false')
+        try: order=int(p.get('display_order')); assert order>0
+        except Exception: err(f,ctx,'display_order must be a positive integer'); order=999999
+        if order in orders: err(f,ctx,'duplicate display_order')
+        orders.add(order); p['_order']=order
+        exp=p.get('expanded',{})
+        for key in ['overview','suited_to','age_guidance','room_guidance']: req_text(f,exp,key,ctx+'.expanded')
+        if p.get('visible'): out.append(p)
+    if ids != {'onyx','jade'}: err(f,'packages','both ONYX and JADE must exist')
+    return sorted(out,key=lambda r:r['_order'])
+def validate_rows(rel, required, kind, pkg_ids=None):
+    rows=read_csv(rel); out=[]; ids=set(); orders=set(); file='content/'+rel
+    for n,r in enumerate(rows,start=2):
+        ctx=f'row {n}'; rid=(r.get('id') or '').strip()
+        if not rid: err(file,ctx,'missing id'); continue
+        if rid in ids: err(file,ctx,'duplicate ID')
+        ids.add(rid); visible=req_bool(file,r,'visible',ctx); r['_order']=req_order(file,r,ctx,orders)
+        for key in required:
+            if visible and not (r.get(key) or '').strip(): err(file,ctx,f'{key} is required')
+        if kind=='addon' and r.get('available_for') not in {'onyx','jade','both'}: err(file,ctx,f'unknown available_for value "{r.get("available_for")}"; expected onyx, jade or both')
+        if kind=='gallery':
+            if r.get('category') not in {'experience','equipment'}: err(file,ctx,'invalid gallery category; expected experience or equipment')
+            if visible: image_ok(file,ctx+'.image',r.get('image',''))
+        if kind=='testimonial' and visible:
+            if r.get('package') and r.get('package') not in pkg_ids: err(file,ctx,'invalid testimonial package reference')
+            image_ok(file,ctx+'.image',r.get('image',''))
+        if visible: out.append(r)
+    return sorted(out,key=lambda r:r['_order'])
+def validate_legal(rel, key):
+    d=read_json(Path('legal')/(rel+'.json')); file=f'content/legal/{rel}.json'
+    req_text(file,d,'title','page'); req_text(file,d,'draft_warning','page')
+    for s in LEGAL_SECTIONS[key]: req_text(file,d.get('sections',{}),s,'sections')
+    return d
+def copy_assets():
     if DIST.exists(): shutil.rmtree(DIST)
-    DIST.mkdir()
-    shutil.copytree(STATIC, DIST, dirs_exist_ok=True)
-    copy_content_images()
-    validate_rendered(html_out, site, packages)
+    DIST.mkdir(); shutil.copytree(STATIC,DIST,dirs_exist_ok=True)
+    dest=DIST/'assets'/'images'; dest.mkdir(parents=True,exist_ok=True)
+    for p in IMAGES.rglob('*'):
+        if p.is_file() and p.suffix.lower() in IMG_EXT:
+            d=dest/p.relative_to(IMAGES); d.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,d)
+def rel_href(href,prefix): return (prefix+href if href.startswith('#') else href)
+def nav(home,prefix=''):
+    items=list(home['navigation'])
+    if prefix:
+        items=[{'label':'Home','href':'/'}]+items
+    links=''.join(f'<a class="{"site-menu__availability" if i["label"]=="Check availability" else ""}" href="{rel_href(i["href"],prefix)}">{esc(i["label"])}</a>' for i in items)
+    return links
+def footer(home,prefix=''):
+    links=''.join(f'<a href="{rel_href(l["href"],prefix)}">{esc(l["label"])}</a>' for l in home['footer']['links'])
+    return f'<footer class="site-footer"><p>{esc(home["footer"]["tagline"])}</p><nav aria-label="Footer navigation">{links}</nav></footer>'
+def header(home,prefix=''):
+    c=home['header']['availability_cta']
+    return f'''<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button><div class="site-menu" id="site-menu">{nav(home,prefix)}</div><button class="theme-toggle" type="button" aria-pressed="false"><span aria-hidden="true">◐</span><span class="theme-toggle__label">Theme</span></button><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a></nav></header>'''
+def head(home,title=None,desc=None):
+    m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css"></head>'''
+def testimonial_section(home, rows):
+    if not rows: return ''
+    slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}"><div class="testimonial-slide__content"><blockquote><p>“{esc(r["quote"])}”</p></blockquote><p><b>{esc(r["name"])}</b>{", age "+esc(r["age"]) if r.get("age") else ""}</p><p>{esc(r.get("location",""))} {esc(r.get("package",""))}</p></div></article>' for i,r in enumerate(rows))
+    dots=''.join(f'<button class="testimonial-dot" type="button" aria-label="Show testimonial {i+1} of {len(rows)}"><span></span></button>' for i,_ in enumerate(rows))
+    s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><div class="testimonial-dots">{dots}</div></div></section>'
+def showcase(home,gallery):
+    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}" data-caption="{esc(r["caption"])}"><img src="{r["image"]}" alt="{esc(r["alt"])}" loading="lazy"><figcaption>{esc(r["caption"])}</figcaption></figure>' for i,r in enumerate(gallery))
+    g=home['gallery_section']; return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist"><button role="tab" aria-selected="true" data-gallery-tab="experience">{esc(g["tabs"]["experience"])}</button><button role="tab" aria-selected="false" data-gallery-tab="equipment">{esc(g["tabs"]["equipment"])}</button></div><div class="showcase" role="region" aria-label="Party.LAN image showcase"><div class="showcase-track">{slides}</div><button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div></section>'
+def steps(home):
+    return ''.join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(home['how_it_works']['steps'],1))
+def faq(home, rows):
+    items=''.join(f'<div class="faq-item"><h3><button aria-expanded="false" aria-controls="faq-{r["id"]}" id="faq-btn-{r["id"]}">{esc(r["question"])}<span aria-hidden="true">+</span></button></h3><div class="faq-item__answer" id="faq-{r["id"]}" role="region" aria-labelledby="faq-btn-{r["id"]}"><p>{esc(r["answer"])}</p></div></div>' for r in rows)
+    f=home['faq_section']; tl=f['terms_link']
+    return f'<section class="section faq-section" id="faq"><div class="faq-section__heading reveal"><p class="eyebrow">{esc(f["eyebrow"])}</p><h2>{esc(f["heading"])}</h2><p>{esc(f["description"])}</p></div><div><div class="faq-list">{items}</div><p class="faq-terms"><a href="{tl["href"]}">{esc(tl["text"])}</a></p></div></section>'
+def home_page(home,gallery,faq_rows,testimonials):
+    h=home['hero']; reass=''.join(f'<li><span>{esc(i["text"])}</span></li>' for i in home['reassurance']); cta=home['final_cta']
+    return head(home)+'<body id="top"><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-motion"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt=""><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt=""></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--ghost" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-heading section-heading--center reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button" href="/packages/">{esc(cta['button']['label'])}</a></div></section></main><a class="mobile-booking" href="#booking">Check availability</a>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
+def package_cards(pkgs):
+    out=[]
+    for p in pkgs:
+        feats=''.join(f'<li>{esc(x)}</li>' for x in p['included'])
+        out.append(f'''<article class="package-card package-card--{p['id']} reveal" id="package-{p['id']}"><div class="package-card__top"><p class="package-subtitle">{esc(p['label'])}</p><h2>{esc(p['name'])}</h2><p>{esc(p['summary'])}</p></div><div class="package-facts"><strong>{esc(p['price'])}</strong><span>{esc(p['duration'])}</span><span>{esc(p['capacity'])}</span></div><ul class="feature-list">{feats}</ul><button class="package-expand" type="button" aria-expanded="false">{esc(p['details_button'])}<span aria-hidden="true">⌄</span></button><div class="package-details"><p>{esc(p['expanded']['overview'])}</p><dl><dt>Suited to</dt><dd>{esc(p['expanded']['suited_to'])}</dd><dt>Age/group guidance</dt><dd>{esc(p['expanded']['age_guidance'])}</dd><dt>Room guidance</dt><dd>{esc(p['expanded']['room_guidance'])}</dd></dl><p>{esc(p['enquiry_note'])}</p></div><a class="button" href="/#booking">{esc(p['enquiry_button'])}</a></article>''')
+    return ''.join(out)
+def package_page(home, pkgs, addons):
+    pp=home['packages_page']; ph=pp['hero']
+    light=ph.get('image') or ph.get('fallback_image'); dark=ph.get('image') or ph.get('fallback_image_dark', light)
+    both=[a for a in addons if a['available_for']=='both']; specific=[a for a in addons if a['available_for']!='both']
+    ordered=both+specific
+    add=''.join(f'<li class="addon-row addon-row--{esc(a["available_for"])}"><span class="addon-marker" aria-hidden="true"></span><div class="addon-copy"><h3>{esc(a["title"])}</h3><p>{esc(a["description"])}</p></div><div class="addon-meta"><span class="addon-badge">{esc("Both" if a["available_for"]=="both" else a["available_for"].upper())}</span><strong>{esc(a["price_note"])}</strong></div></li>' for a in ordered)
+    return head(home,pp['meta_title'],pp['hero']['description'])+f'''<body id="top"><a class="skip-link" href="#main">Skip to content</a>{header(home,'/')}<main id="main"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt=""><img class="hero__image hero__image--dark" src="{dark}" alt=""></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages"><div class="addons-panel__intro"><h2>{esc(home['addons_section']['heading'])}</h2><p>{esc(home['addons_section']['description'])}</p></div><ul class="addon-list-structured">{add}</ul></section></section><section class="section package-guidance"><p class="eyebrow">{esc(pp['guidance']['eyebrow'])}</p><h2>{esc(pp['guidance']['heading'])}</h2><p>{esc(pp['guidance']['description'])}</p></section><section class="section final-cta" id="booking"><div><h2>{esc(pp['cta']['heading'])}</h2><p>{esc(pp['cta']['description'])}</p><a class="button" href="/#booking">{esc(pp['cta']['button_label'])}</a></div></section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>'''
+def legal_page(home,d):
+    sections=''.join(f'<section><h2>{esc(k.replace("_"," ").title())}</h2><p>{esc(v)}</p></section>' for k,v in d['sections'].items())
+    return head(home,d['title'])+f'<body id="top"><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="legal-page"><p><a href="/">← Homepage</a></p><h1>{esc(d["title"])}</h1><p class="draft-warning">{esc(d["draft_warning"])}</p>{sections}</main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+def main():
+    for rel in REQUIRED_FILES:
+        if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
+    home=read_json(Path('homepage.json')); validate_home(home)
+    pkgs=validate_packages(read_json(Path('packages.json'))); pkg_ids={p['id'] for p in pkgs}
+    addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
+    gallery=validate_rows('gallery.csv',['category','image','alt','caption'],'gallery')
+    faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
+    live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
+    demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
+    terms=validate_legal('terms','terms'); privacy=validate_legal('privacy','privacy')
     if ERRORS:
-        print("Build failed with rendered-output validation errors:", file=sys.stderr)
-        print("\n".join(f"- {e}" for e in ERRORS), file=sys.stderr); sys.exit(1)
-    (DIST/"index.html").write_text(html_out, encoding="utf-8")
-    print(f"Built dist/index.html with {len(packages)} packages, {len(gallery)} gallery items and {len(testimonials)} testimonials.")
-    for w in WARNINGS: print(f"Warning: {w}")
-
-if __name__ == "__main__": main()
+        print('Build failed with content validation errors:',file=sys.stderr); print('\n'.join('- '+e for e in ERRORS),file=sys.stderr); sys.exit(1)
+    copy_assets()
+    (DIST/'index.html').write_text(home_page(home,gallery,faq_rows,live),encoding='utf-8')
+    (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo),encoding='utf-8')
+    (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons),encoding='utf-8')
+    (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms),encoding='utf-8')
+    (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy),encoding='utf-8')
+    print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials and {len(faq_rows)} FAQs.')
+if __name__=='__main__': main()

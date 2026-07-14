@@ -1,0 +1,6 @@
+id,title,description,available_for,price_note,visible,display_order
+extra-time,Additional time,Extend the hosted session if availability allows.,both,Price confirmed during enquiry,true,1
+extra-station,Additional gaming station,Ask about adding another station where room and power allow.,jade,Ask for options,true,2
+specialist-experience,Selected specialist experience,Ask about adding selected specialist experiences to suit the group.,onyx,Ask for availability,true,3
+extra-equipment,Additional equipment,Extra displays or equipment may be possible depending on the venue.,both,Price confirmed during enquiry,true,4
+future-upgrade,Future upgrade,Planned upgrades can be discussed when available.,both,Ask for availability,false,5

@@ -1,0 +1,183 @@
+{
+  "meta": {
+    "title": "Party.LAN hosted gaming parties",
+    "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
+    "canonical_url": "https://partylan.co.uk/",
+    "og_image": "/assets/images/gallery_hero_light.jpg",
+    "theme_color_light": "#f6efe4",
+    "theme_color_dark": "#141827"
+  },
+  "navigation": [
+    {
+      "label": "Packages",
+      "href": "/packages/"
+    },
+    {
+      "label": "FAQ",
+      "href": "/#faq"
+    },
+    {
+      "label": "Check availability",
+      "href": "/#booking"
+    }
+  ],
+  "header": {
+    "availability_cta": {
+      "label": "Check availability",
+      "href": "#booking"
+    },
+    "logo_light": "/assets/images/Logo_Black_T.png",
+    "logo_dark": "/assets/images/Logo_White_T.png"
+  },
+  "hero": {
+    "eyebrow": "Hosted gaming parties",
+    "title": "Bring everyone together. We’ll handle the rest.",
+    "description": "PlayStation, Nintendo, racing and VR experiences brought directly to your venue, with setup and a dedicated host included.",
+    "primary_cta": {
+      "label": "View packages",
+      "href": "/packages/"
+    },
+    "secondary_cta": {
+      "label": "How it works",
+      "href": "#how-it-works"
+    },
+    "media": {
+      "light": "/assets/images/gallery_hero_light.jpg",
+      "dark": "/assets/images/gallery_hero_dark.jpg",
+      "alt": "Guests enjoying a hosted gaming party together across multiple displays."
+    }
+  },
+  "reassurance": [
+    {
+      "id": "delivered",
+      "text": "Delivered and set up"
+    },
+    {
+      "id": "hosted",
+      "text": "Hosted throughout"
+    },
+    {
+      "id": "selected",
+      "text": "Games selected for the group"
+    }
+  ],
+  "packages_section": {
+    "eyebrow": "Packages",
+    "heading": "Choose the experience that fits your party.",
+    "description": "Two clear hosted options, both built around shared play and a calm setup process."
+  },
+  "addons_section": {
+    "heading": "Make it your own",
+    "description": "Add extra time, selected experiences or additional equipment to either package."
+  },
+  "testimonials_section": {
+    "eyebrow": "Party stories",
+    "heading": "What the day felt like.",
+    "description": "Real experiences from hosted Party.LAN events.",
+    "demo_label": "Demo testimonial"
+  },
+  "how_it_works": {
+    "eyebrow": "Simple planning",
+    "heading": "How it works",
+    "steps": [
+      {
+        "id": "choose",
+        "title": "Choose a package",
+        "description": "Pick the hosted experience that best fits your group size and style of play."
+      },
+      {
+        "id": "venue",
+        "title": "Tell us about the venue",
+        "description": "Share the room type, access notes and anything useful for planning the setup."
+      },
+      {
+        "id": "host",
+        "title": "We deliver, set up and host",
+        "description": "Your host brings the equipment, keeps play moving and packs everything away."
+      }
+    ]
+  },
+  "gallery_section": {
+    "eyebrow": "Shared moments",
+    "heading": "See the experience. Explore the setup.",
+    "description": "Switch between the atmosphere of the party and the equipment used to create it.",
+    "tabs": {
+      "experience": "The experience",
+      "equipment": "The equipment"
+    }
+  },
+  "room_planning": {
+    "eyebrow": "Room planning",
+    "heading": "More adaptable than it looks.",
+    "description": "Send us a room photo and we’ll help plan the layout. Party.LAN helps assess the room, access and power so you do not need technical knowledge — a photograph or rough dimensions are enough.",
+    "link_label": "Check availability",
+    "link_href": "#booking"
+  },
+  "faq_section": {
+    "eyebrow": "Frequently asked questions",
+    "heading": "A few things you may want to know.",
+    "description": "Clear answers before you start planning.",
+    "terms_link": {
+      "text": "Need the full booking details? Read our Terms & Conditions.",
+      "href": "/terms/"
+    }
+  },
+  "final_cta": {
+    "heading": "Ready to plan your party?",
+    "description": "Online enquiries are opening soon. Package details are available above.",
+    "button": {
+      "label": "Enquiries opening soon"
+    }
+  },
+  "footer": {
+    "tagline": "Hosted gaming parties, delivered to your venue.",
+    "links": [
+      {
+        "label": "Packages",
+        "href": "/packages/"
+      },
+      {
+        "label": "FAQ",
+        "href": "/#faq"
+      },
+      {
+        "label": "Terms & Conditions",
+        "href": "/terms/"
+      },
+      {
+        "label": "Privacy Policy",
+        "href": "/privacy/"
+      },
+      {
+        "label": "Contact",
+        "href": "/#booking"
+      }
+    ]
+  },
+  "packages_page": {
+    "meta_title": "Party.LAN packages",
+    "hero": {
+      "eyebrow": "Packages",
+      "heading": "Two epic ways to party",
+      "description": "Choose the hosted experience that suits your group best.",
+      "image": "",
+      "fallback_image": "/assets/images/gallery_hero_light.jpg",
+      "fallback_image_dark": "/assets/images/gallery_hero_dark.jpg",
+      "alt": "Party.LAN gaming party setup with guests playing together."
+    },
+    "intro": {
+      "heading": "Compare the experiences",
+      "description": "Both packages include delivery, setup and a party host/operator, with optional add-ons discussed during enquiry."
+    },
+    "guidance": {
+      "eyebrow": "Planning help",
+      "heading": "Not sure which package fits?",
+      "description": "Tell us about the group, room and style of party you want. We will help confirm the best hosted setup before anything is agreed."
+    },
+    "cta": {
+      "heading": "Ready to reserve a date?",
+      "description": "Online enquiries are opening soon. Use the package details here to plan the right hosted experience.",
+      "button_label": "Check availability"
+    }
+  }
+}
