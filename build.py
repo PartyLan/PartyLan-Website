@@ -7,14 +7,21 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
 CONTENT = ROOT / "content"
+CONTENT_IMAGES = CONTENT / "images"
 STATIC = ROOT / "static"
 DIST = ROOT / "dist"
+DIST_IMAGES = DIST / "assets" / "images"
 TEMPLATE = ROOT / "templates" / "index.html"
 WARNINGS, ERRORS = [], []
 
 CSV_BOOL = {"true": True, "false": False}
 URL_RE = re.compile(r"^(#|/|https://|http://)")
 IMAGE_RE = re.compile(r"^(/assets/|https://)")
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".avif"}
+IMAGE_OUTPUT_ALIASES = {
+    "gallery_hero_,light.jpg": "gallery_hero_light.jpg",
+    "gallery_testimonial)_01.jpg": "gallery_testimonial_02.jpg",
+}
 PLACEHOLDER_RE = re.compile(r"{{[^{}]+}}")
 PRODUCTION_HOST = "https://partylan.co.uk"
 EXAMPLE_DOMAIN = "example" + ".com"
@@ -48,6 +55,11 @@ def req_link(file, obj, key, ctx):
 def asset_exists(url):
     if url.startswith("https://"):
         return True
+    if url.startswith("/assets/images/"):
+        requested = url.removeprefix("/assets/images/")
+        if (CONTENT_IMAGES / requested).is_file():
+            return True
+        return any(output == requested and (CONTENT_IMAGES / source).is_file() for source, output in IMAGE_OUTPUT_ALIASES.items())
     if not url.startswith("/assets/"):
         return True
     return (STATIC / url.lstrip("/")).exists()
@@ -55,8 +67,57 @@ def asset_exists(url):
 def valid_image_source(url):
     return bool(IMAGE_RE.match(url or ""))
 
+def validate_image_reference(file, ctx, value):
+    if not value:
+        err(file, ctx, "missing image source")
+    elif not valid_image_source(value):
+        err(file, ctx, "image must be a local /assets/ path or absolute https:// URL")
+    elif value.startswith("http://"):
+        err(file, ctx, "external image must use https://")
+    elif value.startswith("/assets/images/") and Path(value).suffix.lower() not in IMAGE_EXTENSIONS:
+        err(file, ctx, "local content image uses an unsupported extension")
+    elif not asset_exists(value):
+        err(file, ctx, "referenced asset does not exist")
+
+def validate_content_images():
+    if not CONTENT_IMAGES.exists():
+        err("content/images", "$", "source image directory is missing")
+        return
+    outputs = set()
+    malformed = re.compile(r"[^a-z0-9_./-]")
+    for path in CONTENT_IMAGES.rglob("*"):
+        if path.is_dir():
+            continue
+        rel = path.relative_to(CONTENT_IMAGES)
+        rel_posix = rel.as_posix()
+        if malformed.search(rel_posix) or "," in rel_posix:
+            if rel_posix not in IMAGE_OUTPUT_ALIASES:
+                err("content/images", rel_posix, "filename must be lowercase with underscores, hyphens or nested directories only")
+            else:
+                warn("content/images", rel_posix, f"malformed upstream filename is copied as {IMAGE_OUTPUT_ALIASES[rel_posix]}")
+        if path.suffix.lower() not in IMAGE_EXTENSIONS:
+            err("content/images", rel_posix, f"unsupported image extension {path.suffix}")
+            continue
+        output = IMAGE_OUTPUT_ALIASES.get(rel_posix, rel_posix).lower()
+        if output in outputs:
+            err("content/images", rel_posix, "duplicate output filename")
+        outputs.add(output)
+
+def copy_content_images():
+    if DIST_IMAGES.exists():
+        shutil.rmtree(DIST_IMAGES)
+    DIST_IMAGES.mkdir(parents=True, exist_ok=True)
+    for path in CONTENT_IMAGES.rglob("*"):
+        if not path.is_file() or path.suffix.lower() not in IMAGE_EXTENSIONS:
+            continue
+        rel = path.relative_to(CONTENT_IMAGES)
+        rel_posix = rel.as_posix()
+        dest = DIST_IMAGES / IMAGE_OUTPUT_ALIASES.get(rel_posix, rel_posix)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(path, dest)
+
 def validate_site(site):
-    for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","testimonials_section","final_cta","footer"]:
+    for key in ["meta","navigation","header","hero","reassurance","packages_section","how_it_works","gallery_section","space","faq_section","testimonials_section","final_cta","footer"]:
         if key not in site: err("site.json", key, "required top-level key is missing")
     meta = site.get("meta", {})
     req_string("site.json", meta, "title", "meta")
@@ -84,11 +145,31 @@ def validate_site(site):
     media = hero.get("media", {})
     for theme in ["light", "dark"]:
         value = req_string("site.json", media, theme, "hero.media")
-        if value and not valid_image_source(value): err("site.json", f"hero.media.{theme}", "image must be a local /assets/ path or absolute https:// URL")
-        elif value and not asset_exists(value): err("site.json", f"hero.media.{theme}", "theme image path does not exist")
+        validate_image_reference("site.json", f"hero.media.{theme}", value)
     req_string("site.json", media, "alt", "hero.media")
     for sec in ["packages_section", "gallery_section", "space"]:
         req_string("site.json", site.get(sec, {}), "heading", sec, 55)
+    faq = site.get("faq_section", {})
+    req_string("site.json", faq, "eyebrow", "faq_section")
+    req_string("site.json", faq, "heading", "faq_section", 70)
+    req_string("site.json", faq, "description", "faq_section", 140)
+    faq_items = faq.get("items")
+    faq_ids = set()
+    if not isinstance(faq_items, list) or not faq_items:
+        err("site.json", "faq_section.items", "must contain FAQ items")
+    else:
+        for i, item in enumerate(faq_items):
+            ctx = f"faq_section.items[{i}]"
+            faq_id = req_string("site.json", item, "id", ctx)
+            if faq_id in faq_ids:
+                err("site.json", ctx, "duplicate FAQ id")
+            faq_ids.add(faq_id)
+            req_string("site.json", item, "question", ctx, 120)
+            req_string("site.json", item, "answer", ctx, 320)
+    testimonials = site.get("testimonials_section", {})
+    req_string("site.json", testimonials, "eyebrow", "testimonials_section")
+    req_string("site.json", testimonials, "heading", "testimonials_section", 70)
+    req_string("site.json", testimonials, "description", "testimonials_section", 160)
     req_string("site.json", site.get("final_cta", {}), "heading", "final_cta", 55)
     req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 32)
 
@@ -131,16 +212,14 @@ def validate_gallery(rows):
         if len(row.get("caption", "")) > 120: warn("gallery.csv", ctx, "caption exceeds suggested 120 characters")
         for key in ["image_light", "image_dark"]:
             value = row.get(key, "").strip()
-            if not value: err("gallery.csv", ctx, f"missing {key}")
-            elif not valid_image_source(value): err("gallery.csv", ctx, f"{key} must be a local /assets/ path or absolute https:// URL")
-            elif not asset_exists(value): err("gallery.csv", ctx, f"{key} asset does not exist")
+            validate_image_reference("gallery.csv", f"{ctx}.{key}", value)
         href = row.get("href", "").strip()
         if href and not URL_RE.match(href): err("gallery.csv", ctx, "href is not a practical valid link")
         out.append(row)
     return sorted(out, key=lambda r: r["order_int"])
 
 def validate_testimonials(rows):
-    out, ids = [], set()
+    out, ids, orders = [], set(), set()
     for n, row in enumerate(rows, start=2):
         rid = row.get("id", "").strip(); ctx = f"row {n} ({rid or 'no id'})"
         if not rid: continue
@@ -148,9 +227,26 @@ def validate_testimonials(rows):
         ids.add(rid)
         raw_visible = row.get("visible", "").strip().lower()
         if raw_visible not in CSV_BOOL: err("testimonials.csv", ctx, "visible must be true or false"); continue
-        try: row["order_int"] = int(row.get("display_order", ""))
-        except ValueError: err("testimonials.csv", ctx, "display_order must be an integer"); continue
-        if CSV_BOOL[raw_visible]: out.append(row)
+        visible = CSV_BOOL[raw_visible]
+        if not visible: continue
+        for key in ["quote", "name", "location", "alt"]:
+            req_string("testimonials.csv", row, key, ctx, 260 if key == "quote" else 120)
+        try:
+            age = int(row.get("age", ""))
+            if age <= 0 or age > 120: err("testimonials.csv", ctx, "age must be a sensible positive integer")
+        except ValueError:
+            err("testimonials.csv", ctx, "age must be an integer")
+        try:
+            order = int(row.get("display_order", ""))
+            if order <= 0: err("testimonials.csv", ctx, "display_order must be a positive integer")
+            if order in orders: err("testimonials.csv", ctx, "duplicate display_order")
+            orders.add(order); row["order_int"] = order
+        except ValueError:
+            err("testimonials.csv", ctx, "display_order must be an integer")
+        for key in ["image_light", "image_dark"]:
+            value = row.get(key, "").strip()
+            validate_image_reference("testimonials.csv", f"{ctx}.{key}", value)
+        out.append(row)
     return sorted(out, key=lambda r: r["order_int"])
 
 
@@ -220,6 +316,8 @@ def validate_rendered(html_out, site, packages):
     for asset in parser.assets:
         if asset.startswith("/") and not (DIST / asset.lstrip("/")).exists():
             err("dist/index.html", asset, "referenced local asset is missing")
+        if asset.startswith("/content/images/"):
+            err("dist/index.html", asset, "generated HTML must not reference content/images")
 
 def render_list(items): return "\n".join(f"<li>{esc(i)}</li>" for i in items)
 def render_nav(items):
@@ -253,6 +351,45 @@ def render_gallery(rows):
 def render_steps(steps):
     return "\n".join(f'<article class="step-card reveal"><span>{i}</span><h3>{esc(s["title"])}</h3><p>{esc(s["description"])}</p></article>' for i,s in enumerate(steps,1))
 
+def render_faq_items(items):
+    out = []
+    for item in items:
+        out.append(f'''<details class="faq-item" id="faq-{attr(item["id"])}"><summary>{esc(item["question"])}</summary><div class="faq-item__answer"><p>{esc(item["answer"])}</p></div></details>''')
+    return "\n".join(out)
+
+def render_testimonials_section(section, rows):
+    if not rows:
+        return ""
+    dots = ""
+    if len(rows) > 1:
+        dots = '<div class="testimonial-dots" role="tablist" aria-label="Choose testimonial">' + "\n".join(
+            f'<button class="testimonial-dot{" is-active" if i == 1 else ""}" type="button" aria-label="Show testimonial {i} of {len(rows)}" aria-current="{"true" if i == 1 else "false"}" data-testimonial-dot="{i - 1}"><span></span></button>'
+            for i, _ in enumerate(rows, 1)
+        ) + "</div>"
+    slides = []
+    for i, row in enumerate(rows):
+        active = " is-active" if i == 0 else ""
+        slides.append(f'''<article class="testimonial-slide{active}" data-testimonial-slide="{i}">
+  <img class="testimonial-slide__image theme-image" src="{attr(row["image_light"])}" data-light-src="{attr(row["image_light"])}" data-dark-src="{attr(row["image_dark"])}" alt="{attr(row["alt"])}" loading="lazy" width="1440" height="540">
+  <div class="testimonial-slide__overlay" aria-hidden="true"></div>
+  <div class="testimonial-slide__content">
+    <blockquote class="testimonial-quote"><p>“{esc(row["quote"])}”</p></blockquote>
+    <p class="testimonial-person">{esc(row["name"])}, age {esc(row["age"])}</p>
+    <p class="testimonial-location">{esc(row["location"])}</p>
+  </div>
+</article>''')
+    return f'''<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title">
+  <div class="section-heading reveal">
+    <p class="eyebrow">{esc(section["eyebrow"])}</p>
+    <h2 id="testimonials-title">{esc(section["heading"])}</h2>
+    <p>{esc(section["description"])}</p>
+  </div>
+  <div class="testimonial-stage reveal" aria-label="Customer testimonials">
+    {"".join(slides)}
+    {dots}
+  </div>
+</section>'''
+
 def render_reassurance(items):
     icons = {
         "delivered": "M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
@@ -268,6 +405,7 @@ def render_reassurance(items):
 
 def main():
     site, packages = read_json(CONTENT/"site.json"), read_json(CONTENT/"packages.json")
+    validate_content_images()
     validate_site(site); validate_packages(packages)
     gallery = validate_gallery(read_csv(CONTENT/"gallery.csv"))
     testimonials = validate_testimonials(read_csv(CONTENT/"testimonials.csv"))
@@ -290,7 +428,8 @@ def main():
         "{{how_eyebrow}}": esc(site["how_it_works"]["eyebrow"]), "{{how_heading}}": esc(site["how_it_works"]["heading"]), "{{steps}}": render_steps(site["how_it_works"]["steps"]),
         "{{gallery_eyebrow}}": esc(site["gallery_section"]["eyebrow"]), "{{gallery_heading}}": esc(site["gallery_section"]["heading"]), "{{gallery_description}}": esc(site["gallery_section"]["description"]), "{{gallery_items}}": render_gallery(gallery),
         "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
-        "{{testimonials_section}}": "" if not testimonials else "<section class=\"section\"><h2>Testimonials</h2></section>",
+        "{{testimonials_section}}": render_testimonials_section(site["testimonials_section"], testimonials),
+        "{{faq_eyebrow}}": esc(site["faq_section"]["eyebrow"]), "{{faq_heading}}": esc(site["faq_section"]["heading"]), "{{faq_description}}": esc(site["faq_section"]["description"]), "{{faq_items}}": render_faq_items(site["faq_section"]["items"]),
         "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
         "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_links}}": render_footer_links(site["navigation"])
     }
@@ -299,6 +438,7 @@ def main():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir()
     shutil.copytree(STATIC, DIST, dirs_exist_ok=True)
+    copy_content_images()
     validate_rendered(html_out, site, packages)
     if ERRORS:
         print("Build failed with rendered-output validation errors:", file=sys.stderr)

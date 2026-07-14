@@ -1,5 +1,5 @@
 id,image_light,image_dark,alt,caption,href,visible,display_order
-group-play,/assets/gallery/group-light.svg,/assets/gallery/group-dark.svg,Group of people playing together across several screens,Shared play across multiple stations,,true,1
-racing,/assets/gallery/racing-light.svg,/assets/gallery/racing-dark.svg,Guest using a racing simulator while friends watch,Racing moments with room for spectators,,true,2
-vr,/assets/gallery/vr-light.svg,/assets/gallery/vr-dark.svg,Guest trying VR with a host nearby,Hosted VR with a calm setup,,true,3
+group-play,/assets/images/gallery_group-fun_01.jpg,/assets/images/gallery_group-fun_01.jpg,A group enjoying games together during a hosted gaming party,Shared gaming across multiple stations,,true,1
+racing,/assets/images/gallery_hardware_sim_01.jpg,/assets/images/gallery_hardware_sim_01.jpg,A guest using a racing simulator during a gaming party,Racing simulator experience,,true,2
+vr,/assets/images/gallery_hardware_vr_01.jpg,/assets/images/gallery_hardware_vr_01.jpg,A guest trying a virtual reality experience with others nearby,Hosted VR experience,,true,3
 hidden-invalid,/assets/gallery/missing.svg,/assets/gallery/missing-dark.svg,Hidden future image,Hidden optional draft,,false,4

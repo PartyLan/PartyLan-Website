@@ -3,15 +3,11 @@
     "title": "Party.LAN hosted gaming parties",
     "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
     "canonical_url": "https://partylan.co.uk/",
-    "og_image": "/assets/hero-light-placeholder.svg",
+    "og_image": "/assets/images/gallery_hero_light.jpg",
     "theme_color_light": "#f6efe4",
     "theme_color_dark": "#141827"
   },
   "navigation": [
-    {
-      "label": "Home",
-      "href": "#top"
-    },
     {
       "label": "Packages",
       "href": "#packages"
@@ -23,6 +19,10 @@
     {
       "label": "Gallery",
       "href": "#gallery"
+    },
+    {
+      "label": "FAQ",
+      "href": "#faq"
     },
     {
       "label": "Check availability",
@@ -48,9 +48,9 @@
       "href": "#how-it-works"
     },
     "media": {
-      "light": "/assets/hero-light-placeholder.svg",
-      "dark": "/assets/hero-dark-placeholder.svg",
-      "alt": "Eight people enjoying a gaming party together across three displays."
+      "light": "/assets/images/gallery_hero_light.jpg",
+      "dark": "/assets/images/gallery_hero_dark.jpg",
+      "alt": "Guests enjoying a hosted gaming party together across multiple displays."
     }
   },
   "reassurance": [
@@ -103,10 +103,42 @@
     "heading": "More adaptable than it looks.",
     "description": "Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event."
   },
+  "faq_section": {
+    "eyebrow": "Frequently asked questions",
+    "heading": "A few things you may want to know.",
+    "description": "Clear answers before you start planning.",
+    "items": [
+      {
+        "id": "package-difference",
+        "question": "What is the difference between ONYX and JADE?",
+        "answer": "ONYX is a premium experience for up to 6 players and includes PlayStation and Nintendo gaming, racing and VR. JADE is designed for larger groups of up to 10 players playing across multiple stations."
+      },
+      {
+        "id": "players",
+        "question": "How many people can take part?",
+        "answer": "ONYX accommodates up to 6 players. JADE accommodates up to 10 players."
+      },
+      {
+        "id": "setup",
+        "question": "Do I need to set anything up?",
+        "answer": "No. We deliver the equipment, set everything up and host the gaming session."
+      },
+      {
+        "id": "room",
+        "question": "How much room will I need?",
+        "answer": "The best layout depends on the venue and package. Send us a photograph or approximate room dimensions and we’ll help confirm a suitable arrangement."
+      },
+      {
+        "id": "games",
+        "question": "Can the games be selected for the group?",
+        "answer": "Yes. Games can be selected around the group and the type of experience you want."
+      }
+    ]
+  },
   "testimonials_section": {
-    "eyebrow": "Testimonials",
-    "heading": "What guests say",
-    "empty_note": "Testimonials will appear here after real customer permission is confirmed."
+    "eyebrow": "Party stories",
+    "heading": "What the day felt like.",
+    "description": "Real experiences from hosted Party.LAN events."
   },
   "final_cta": {
     "heading": "Ready to plan your party?",
