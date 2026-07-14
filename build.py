@@ -222,7 +222,12 @@ def validate_rendered(html_out, site, packages):
             err("dist/index.html", asset, "referenced local asset is missing")
 
 def render_list(items): return "\n".join(f"<li>{esc(i)}</li>" for i in items)
-def render_nav(items): return "\n".join(f'<a href="{attr(i["href"])}">{esc(i["label"])}</a>' for i in items)
+def render_nav(items):
+    links = []
+    for i in items:
+        class_attr = ' class="site-menu__availability"' if i.get("href") == "#booking" else ""
+        links.append(f'<a{class_attr} href="{attr(i["href"])}">{esc(i["label"])}</a>')
+    return "\n".join(links)
 
 def render_footer_links(items):
     valid = [i for i in items if i.get("href", "").startswith("#") and i.get("href") != "#top"]

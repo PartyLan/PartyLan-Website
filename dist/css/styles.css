@@ -80,6 +80,7 @@ p { max-width: 66ch; }
 .site-menu { display: flex; align-items: center; gap: .85rem; }
 .site-menu a { color: var(--muted); font-size: .94rem; font-weight: 650; text-decoration: none; }
 .site-menu a:hover { color: var(--text); }
+.site-menu__availability { display: none; }
 .menu-toggle { display: none; }
 .theme-toggle { min-width: 42px; padding-inline: .75rem; font-size: .92rem; }
 
@@ -163,6 +164,7 @@ p { max-width: 66ch; }
   .site-menu { position: absolute; left: var(--pad); right: var(--pad); top: calc(100% + .45rem); display: none; flex-direction: column; align-items: stretch; padding: .8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
   .site-menu.is-open { display: flex; }
   .site-menu a { padding: .65rem; }
+  .site-menu__availability { display: block; }
   .header-cta { display: none; }
   .package-grid, .steps-grid, .room-planning { grid-template-columns: 1fr; }
   .steps-grid::before { left: 1.35rem; right: auto; top: .5rem; bottom: .5rem; border-top: 0; border-left: 1px solid var(--border); }
