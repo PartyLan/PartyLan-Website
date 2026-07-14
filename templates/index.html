@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{meta_title}}</title>
+  <meta name="description" content="{{meta_description}}">
+  <link rel="canonical" href="{{canonical_url}}">
+  <meta property="og:title" content="{{meta_title}}">
+  <meta property="og:description" content="{{meta_description}}">
+  <meta property="og:image" content="{{og_image}}">
+  <meta name="theme-color" content="{{theme_color_light}}">
+  <link rel="icon" href="/assets/logo-placeholder.svg" type="image/svg+xml">
+  <script>(function(){try{var s=localStorage.getItem('partyLanTheme');var d=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=d;}catch(e){}}());</script>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body id="top">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <nav class="nav-shell" aria-label="Main navigation">
+    <a class="brand" href="#top"><img src="/assets/logo-placeholder.svg" alt="Party.LAN" width="148" height="40"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu">Menu</button>
+    <div class="site-menu" id="site-menu">{{nav_links}}</div>
+    <button class="theme-toggle" type="button" aria-pressed="false">Use dark theme</button>
+    <a class="button button--small" href="{{availability_href}}">{{availability_label}}</a>
+  </nav>
+</header>
+<main id="main">
+  <section class="hero section" aria-labelledby="hero-title">
+    <div class="hero__content reveal"><p class="eyebrow">{{hero_eyebrow}}</p><h1 id="hero-title">{{hero_title}}</h1><p>{{hero_description}}</p><div class="button-row"><a class="button" href="{{hero_primary_href}}">{{hero_primary_label}}</a><a class="button button--ghost" href="{{hero_secondary_href}}">{{hero_secondary_label}}</a></div></div>
+    <div class="hero__media reveal"><img class="theme-image" src="{{hero_light}}" data-light-src="{{hero_light}}" data-dark-src="{{hero_dark}}" alt="{{hero_alt}}" width="920" height="640"></div>
+  </section>
+  <section class="reassurance" aria-label="Service reassurance"><ul>{{reassurance_items}}</ul></section>
+  <section class="section" id="packages" aria-labelledby="packages-title"><div class="section-heading reveal"><p class="eyebrow">{{packages_eyebrow}}</p><h2 id="packages-title">{{packages_heading}}</h2><p>{{packages_description}}</p></div><div class="package-grid">{{package_cards}}</div></section>
+  <section class="section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading reveal"><p class="eyebrow">{{how_eyebrow}}</p><h2 id="how-title">{{how_heading}}</h2></div><div class="steps-grid">{{steps}}</div></section>
+  <section class="section gallery-section" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">{{gallery_eyebrow}}</p><h2 id="gallery-title">{{gallery_heading}}</h2><p>{{gallery_description}}</p></div><div class="gallery-track">{{gallery_items}}</div></section>
+  <section class="section split-panel" aria-labelledby="space-title"><div class="reveal"><p class="eyebrow">{{space_eyebrow}}</p><h2 id="space-title">{{space_heading}}</h2></div><p class="reveal">{{space_description}}</p></section>
+  {{testimonials_section}}
+  <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">{{final_heading}}</h2><p>{{final_description}}</p><a class="button" href="{{final_button_href}}">{{final_button_label}}</a></div></section>
+</main>
+<footer class="site-footer"><p>{{footer_tagline}}</p><p>{{footer_note}}</p></footer>
+<script src="/js/main.js" defer></script>
+</body>
+</html>

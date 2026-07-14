@@ -1,0 +1,4 @@
+[
+  {"id":"onyx","name":"ONYX","subtitle":"Premium Experience","price":"£150","duration":"2 hours","capacity":"Up to 6 players","features":["PlayStation and Nintendo gaming","Racing simulator","VR hardware","Displays","Party host/operator","Free digital invitation"],"action":{"label":"Ask about ONYX","href":"#booking"}},
+  {"id":"jade","name":"JADE","subtitle":"Big Party","price":"£150","duration":"2 hours","capacity":"Up to 10 players","features":["Multiplayer gaming across multiple stations","Displays","Party host/operator","Free digital invitation"],"action":{"label":"Ask about JADE","href":"#booking"}}
+]
