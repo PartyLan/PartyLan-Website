@@ -26,40 +26,53 @@
 <a href="#packages">Packages</a>
 <a href="#how-it-works">How it works</a>
 <a href="#gallery">Gallery</a>
-<a href="#booking">Check availability</a></div>
-    <button class="theme-toggle" type="button" aria-pressed="false">Use dark theme</button>
-    <a class="button button--small" href="#booking">Check availability</a>
+<a class="site-menu__availability" href="#booking">Check availability</a></div>
+    <button class="theme-toggle" type="button" aria-pressed="false"><span class="theme-toggle__icon" aria-hidden="true">◐</span><span class="theme-toggle__label">Theme</span></button>
+    <a class="button button--small header-cta" href="#booking">Check availability</a>
   </nav>
 </header>
 <main id="main">
-  <section class="hero section" aria-labelledby="hero-title">
-    <div class="hero__content reveal"><p class="eyebrow">Hosted gaming parties</p><h1 id="hero-title">Bring everyone together. We’ll handle the rest.</h1><p>PlayStation, Nintendo, racing and VR experiences brought directly to your venue, with setup and a dedicated host included.</p><div class="button-row"><a class="button" href="#packages">View packages</a><a class="button button--ghost" href="#how-it-works">How it works</a></div></div>
-    <div class="hero__media reveal"><img class="theme-image" src="/assets/hero-light-placeholder.svg" data-light-src="/assets/hero-light-placeholder.svg" data-dark-src="/assets/hero-dark-placeholder.svg" alt="Eight people enjoying a gaming party together across three displays." width="920" height="640"></div>
+  <section class="hero" aria-labelledby="hero-title">
+    <picture class="hero__picture">
+      <img class="theme-image" src="/assets/hero-light-placeholder.svg" data-light-src="/assets/hero-light-placeholder.svg" data-dark-src="/assets/hero-dark-placeholder.svg" alt="Eight people enjoying a gaming party together across three displays." width="1920" height="720">
+    </picture>
+    <div class="hero__shade" aria-hidden="true"></div>
+    <div class="hero__inner">
+      <div class="hero__content reveal">
+        <p class="eyebrow">Hosted gaming parties</p>
+        <h1 id="hero-title">Bring everyone together. We’ll handle the rest.</h1>
+        <p>PlayStation, Nintendo, racing and VR experiences brought directly to your venue, with setup and a dedicated host included.</p>
+        <div class="button-row"><a class="button" href="#packages">View packages</a><a class="button button--ghost" href="#how-it-works">How it works</a></div>
+      </div>
+    </div>
   </section>
-  <section class="reassurance" aria-label="Service reassurance"><ul><li>Delivered and set up</li>
-<li>Hosted throughout</li>
-<li>Games selected for the group</li></ul></section>
-  <section class="section" id="packages" aria-labelledby="packages-title"><div class="section-heading reveal"><p class="eyebrow">Packages</p><h2 id="packages-title">Choose the experience that fits your party.</h2><p>Two clear hosted options, both built around shared play and a calm setup process.</p></div><div class="package-grid"><article class="package-card reveal"><div><p class="package-subtitle">Premium Experience</p><h3>ONYX</h3><p class="package-price">£150 <span>2 hours</span></p><p class="package-capacity">Up to 6 players</p></div><ul class="feature-list"><li>PlayStation and Nintendo gaming</li>
+  <section class="reassurance" aria-label="Service reassurance"><ul><li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z"/></svg><span>Delivered and set up</span></li>
+<li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4a4 4 0 0 0-4 4v3a4 4 0 0 0 8 0V8a4 4 0 0 0-4-4Zm-7 16a7 7 0 0 1 14 0"/></svg><span>Hosted throughout</span></li>
+<li><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 12l4 4L19 6M6 5h7M6 19h12"/></svg><span>Games selected for the group</span></li></ul></section>
+  <section class="section" id="packages" aria-labelledby="packages-title"><div class="section-heading reveal"><p class="eyebrow">Packages</p><h2 id="packages-title">Choose the experience that fits your party.</h2><p>Two clear hosted options, both built around shared play and a calm setup process.</p></div><div class="package-grid"><article class="package-card package-card--onyx reveal"><div class="package-card__head"><p class="package-subtitle">Premium Experience</p><h3>ONYX</h3><div class="package-meta"><p class="package-price">£150</p><p>2 hours</p><p>Up to 6 players</p></div></div><ul class="feature-list"><li>PlayStation and Nintendo gaming</li>
 <li>Racing simulator</li>
 <li>VR hardware</li>
 <li>Displays</li>
 <li>Party host/operator</li>
 <li>Free digital invitation</li></ul><a class="button button--ghost" href="#booking">Ask about ONYX</a></article>
-<article class="package-card reveal"><div><p class="package-subtitle">Big Party</p><h3>JADE</h3><p class="package-price">£150 <span>2 hours</span></p><p class="package-capacity">Up to 10 players</p></div><ul class="feature-list"><li>Multiplayer gaming across multiple stations</li>
+<article class="package-card package-card--jade reveal"><div class="package-card__head"><p class="package-subtitle">Big Party</p><h3>JADE</h3><div class="package-meta"><p class="package-price">£150</p><p>2 hours</p><p>Up to 10 players</p></div></div><ul class="feature-list"><li>Multiplayer gaming across multiple stations</li>
 <li>Displays</li>
 <li>Party host/operator</li>
 <li>Free digital invitation</li></ul><a class="button button--ghost" href="#booking">Ask about JADE</a></article></div></section>
-  <section class="section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading reveal"><p class="eyebrow">Simple planning</p><h2 id="how-title">How it works</h2></div><div class="steps-grid"><article class="step-card reveal"><span>1</span><h3>Choose a package</h3><p>Pick the hosted experience that best fits your group size and style of play.</p></article>
+  <section class="section" id="how-it-works" aria-labelledby="how-title"><div class="section-heading section-heading--center reveal"><p class="eyebrow">Simple planning</p><h2 id="how-title">How it works</h2></div><div class="steps-grid"><article class="step-card reveal"><span>1</span><h3>Choose a package</h3><p>Pick the hosted experience that best fits your group size and style of play.</p></article>
 <article class="step-card reveal"><span>2</span><h3>Tell us about the venue</h3><p>Share the room type, access notes and anything useful for planning the setup.</p></article>
 <article class="step-card reveal"><span>3</span><h3>We deliver, set up and host</h3><p>Your host brings the equipment, keeps play moving and packs everything away.</p></article></div></section>
-  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">Shared moments</p><h2 id="gallery-title">Designed around people, not hardware.</h2><p>Placeholder scenes show the kind of human-focused photography planned for the finished site.</p></div><div class="gallery-track"><figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/group-light.svg" data-light-src="/assets/gallery/group-light.svg" data-dark-src="/assets/gallery/group-dark.svg" alt="Group of people playing together across several screens" loading="lazy" width="720" height="520"><figcaption>Shared play across multiple stations</figcaption></figure>
+  <section class="section gallery-section" id="gallery" aria-labelledby="gallery-title"><div class="section-heading reveal"><p class="eyebrow">Shared moments</p><h2 id="gallery-title">Designed around people, not hardware.</h2><p>Shared play, racing and hosted VR arranged around the group and the venue.</p></div><div class="gallery-grid"><figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/group-light.svg" data-light-src="/assets/gallery/group-light.svg" data-dark-src="/assets/gallery/group-dark.svg" alt="Group of people playing together across several screens" loading="lazy" width="720" height="520"><figcaption>Shared play across multiple stations</figcaption></figure>
 <figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/racing-light.svg" data-light-src="/assets/gallery/racing-light.svg" data-dark-src="/assets/gallery/racing-dark.svg" alt="Guest using a racing simulator while friends watch" loading="lazy" width="720" height="520"><figcaption>Racing moments with room for spectators</figcaption></figure>
 <figure class="gallery-card reveal"><img class="theme-image" src="/assets/gallery/vr-light.svg" data-light-src="/assets/gallery/vr-light.svg" data-dark-src="/assets/gallery/vr-dark.svg" alt="Guest trying VR with a host nearby" loading="lazy" width="720" height="520"><figcaption>Hosted VR with a calm setup</figcaption></figure></div></section>
-  <section class="section split-panel" aria-labelledby="space-title"><div class="reveal"><p class="eyebrow">Room planning</p><h2 id="space-title">More adaptable than it looks.</h2></div><p class="reveal">Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event.</p></section>
+  <section class="section room-planning" id="room-planning" aria-labelledby="space-title"><div class="room-planning__text reveal"><p class="eyebrow">Room planning</p><h2 id="space-title">More adaptable than it looks.</h2><p>Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event.</p></div><div class="room-planning__sketch reveal" aria-hidden="true"><span></span><span></span><span></span><span></span></div></section>
   
-  <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">Ready to plan your party?</h2><p>Final enquiry details are being confirmed. For this preview, enquiries are not open yet.</p><button class="button button--disabled" type="button" disabled aria-disabled="true">Enquiries opening soon</button></div></section>
+  <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">Ready to plan your party?</h2><p>Online enquiries are opening soon. Package details are available above.</p><button class="button button--disabled" type="button" disabled aria-disabled="true">Enquiries opening soon</button></div></section>
 </main>
-<footer class="site-footer"><p>Hosted gaming parties, carefully planned.</p><p>Website preview for hosted gaming party packages.</p></footer>
+<footer class="site-footer"><p>Hosted gaming parties, delivered to your venue.</p><nav aria-label="Footer navigation"><a href="#packages">Packages</a>
+<a href="#how-it-works">How it works</a>
+<a href="#gallery">Gallery</a>
+<a href="#booking">Check availability</a></nav></footer>
 <script src="/js/main.js" defer></script>
 </body>
 </html>
