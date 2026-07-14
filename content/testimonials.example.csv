@@ -1,0 +1,3 @@
+id,quote,name,age,location,image_light,image_dark,alt,visible,display_order
+example-party,Everyone had something they wanted to play, and the host kept the whole party moving.,Alex,13,Leicester,/assets/hero-light-placeholder.svg,/assets/hero-dark-placeholder.svg,Example hosted gaming party scene.,true,1
+example-racing,The racing setup made the room feel like a proper event.,Maya,15,Nottingham,/assets/gallery/racing-light.svg,/assets/gallery/racing-dark.svg,Example racing game setup at a party.,true,2

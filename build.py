@@ -106,6 +106,10 @@ def validate_site(site):
             faq_ids.add(faq_id)
             req_string("site.json", item, "question", ctx, 120)
             req_string("site.json", item, "answer", ctx, 320)
+    testimonials = site.get("testimonials_section", {})
+    req_string("site.json", testimonials, "eyebrow", "testimonials_section")
+    req_string("site.json", testimonials, "heading", "testimonials_section", 70)
+    req_string("site.json", testimonials, "description", "testimonials_section", 160)
     req_string("site.json", site.get("final_cta", {}), "heading", "final_cta", 55)
     req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 32)
 
@@ -157,7 +161,7 @@ def validate_gallery(rows):
     return sorted(out, key=lambda r: r["order_int"])
 
 def validate_testimonials(rows):
-    out, ids = [], set()
+    out, ids, orders = [], set(), set()
     for n, row in enumerate(rows, start=2):
         rid = row.get("id", "").strip(); ctx = f"row {n} ({rid or 'no id'})"
         if not rid: continue
@@ -165,9 +169,29 @@ def validate_testimonials(rows):
         ids.add(rid)
         raw_visible = row.get("visible", "").strip().lower()
         if raw_visible not in CSV_BOOL: err("testimonials.csv", ctx, "visible must be true or false"); continue
-        try: row["order_int"] = int(row.get("display_order", ""))
-        except ValueError: err("testimonials.csv", ctx, "display_order must be an integer"); continue
-        if CSV_BOOL[raw_visible]: out.append(row)
+        visible = CSV_BOOL[raw_visible]
+        if not visible: continue
+        for key in ["quote", "name", "location", "alt"]:
+            req_string("testimonials.csv", row, key, ctx, 260 if key == "quote" else 120)
+        try:
+            age = int(row.get("age", ""))
+            if age <= 0 or age > 120: err("testimonials.csv", ctx, "age must be a sensible positive integer")
+        except ValueError:
+            err("testimonials.csv", ctx, "age must be an integer")
+        try:
+            order = int(row.get("display_order", ""))
+            if order <= 0: err("testimonials.csv", ctx, "display_order must be a positive integer")
+            if order in orders: err("testimonials.csv", ctx, "duplicate display_order")
+            orders.add(order); row["order_int"] = order
+        except ValueError:
+            err("testimonials.csv", ctx, "display_order must be an integer")
+        for key in ["image_light", "image_dark"]:
+            value = row.get(key, "").strip()
+            if not value: err("testimonials.csv", ctx, f"missing {key}")
+            elif not valid_image_source(value): err("testimonials.csv", ctx, f"{key} must be a local /assets/ path or absolute https:// URL")
+            elif value.startswith("http://"): err("testimonials.csv", ctx, f"{key} must use https:// for external images")
+            elif not asset_exists(value): err("testimonials.csv", ctx, f"{key} asset does not exist")
+        out.append(row)
     return sorted(out, key=lambda r: r["order_int"])
 
 
@@ -276,6 +300,39 @@ def render_faq_items(items):
         out.append(f'''<details class="faq-item" id="faq-{attr(item["id"])}"><summary>{esc(item["question"])}</summary><div class="faq-item__answer"><p>{esc(item["answer"])}</p></div></details>''')
     return "\n".join(out)
 
+def render_testimonials_section(section, rows):
+    if not rows:
+        return ""
+    dots = ""
+    if len(rows) > 1:
+        dots = '<div class="testimonial-dots" role="tablist" aria-label="Choose testimonial">' + "\n".join(
+            f'<button class="testimonial-dot{" is-active" if i == 1 else ""}" type="button" aria-label="Show testimonial {i} of {len(rows)}" aria-current="{"true" if i == 1 else "false"}" data-testimonial-dot="{i - 1}"><span></span></button>'
+            for i, _ in enumerate(rows, 1)
+        ) + "</div>"
+    slides = []
+    for i, row in enumerate(rows):
+        active = " is-active" if i == 0 else ""
+        slides.append(f'''<article class="testimonial-slide{active}" data-testimonial-slide="{i}">
+  <img class="testimonial-slide__image theme-image" src="{attr(row["image_light"])}" data-light-src="{attr(row["image_light"])}" data-dark-src="{attr(row["image_dark"])}" alt="{attr(row["alt"])}" loading="lazy" width="1440" height="540">
+  <div class="testimonial-slide__overlay" aria-hidden="true"></div>
+  <div class="testimonial-slide__content">
+    <blockquote class="testimonial-quote"><p>“{esc(row["quote"])}”</p></blockquote>
+    <p class="testimonial-person">{esc(row["name"])}, age {esc(row["age"])}</p>
+    <p class="testimonial-location">{esc(row["location"])}</p>
+  </div>
+</article>''')
+    return f'''<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title">
+  <div class="section-heading reveal">
+    <p class="eyebrow">{esc(section["eyebrow"])}</p>
+    <h2 id="testimonials-title">{esc(section["heading"])}</h2>
+    <p>{esc(section["description"])}</p>
+  </div>
+  <div class="testimonial-stage reveal" aria-label="Customer testimonials">
+    {"".join(slides)}
+    {dots}
+  </div>
+</section>'''
+
 def render_reassurance(items):
     icons = {
         "delivered": "M4 13h10V5H4v8Zm10 0h3l3-3v3h2M7 17a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z",
@@ -313,7 +370,7 @@ def main():
         "{{how_eyebrow}}": esc(site["how_it_works"]["eyebrow"]), "{{how_heading}}": esc(site["how_it_works"]["heading"]), "{{steps}}": render_steps(site["how_it_works"]["steps"]),
         "{{gallery_eyebrow}}": esc(site["gallery_section"]["eyebrow"]), "{{gallery_heading}}": esc(site["gallery_section"]["heading"]), "{{gallery_description}}": esc(site["gallery_section"]["description"]), "{{gallery_items}}": render_gallery(gallery),
         "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
-        "{{testimonials_section}}": "" if not testimonials else "<section class=\"section\"><h2>Testimonials</h2></section>",
+        "{{testimonials_section}}": render_testimonials_section(site["testimonials_section"], testimonials),
         "{{faq_eyebrow}}": esc(site["faq_section"]["eyebrow"]), "{{faq_heading}}": esc(site["faq_section"]["heading"]), "{{faq_description}}": esc(site["faq_section"]["description"]), "{{faq_items}}": render_faq_items(site["faq_section"]["items"]),
         "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
         "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_links}}": render_footer_links(site["navigation"])

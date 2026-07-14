@@ -136,9 +136,9 @@
     ]
   },
   "testimonials_section": {
-    "eyebrow": "Testimonials",
-    "heading": "What guests say",
-    "empty_note": "Testimonials will appear here after real customer permission is confirmed."
+    "eyebrow": "Party stories",
+    "heading": "What the day felt like.",
+    "description": "Real experiences from hosted Party.LAN events."
   },
   "final_cta": {
     "heading": "Ready to plan your party?",
