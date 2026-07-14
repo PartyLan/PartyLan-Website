@@ -2,18 +2,17 @@
   "meta": {
     "title": "Party.LAN hosted gaming parties",
     "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
-    "canonical_url": "https://example.com/",
-    "canonical_note": "Owner confirmation required before launch.",
+    "canonical_url": "https://partylan.co.uk/",
     "og_image": "/assets/hero-light-placeholder.svg",
     "theme_color_light": "#f6efe4",
     "theme_color_dark": "#141827"
   },
   "navigation": [
     {"label": "Home", "href": "#top"},
-    {"label": "Pricing", "href": "/pricing/"},
-    {"label": "About", "href": "/about/"},
-    {"label": "FAQ", "href": "/faq/"},
-    {"label": "Contact", "href": "/contact/"}
+    {"label": "Packages", "href": "#packages"},
+    {"label": "How it works", "href": "#how-it-works"},
+    {"label": "Gallery", "href": "#gallery"},
+    {"label": "Check availability", "href": "#booking"}
   ],
   "header": {"availabilityCta": {"label": "Check availability", "href": "#booking"}},
   "hero": {
@@ -38,6 +37,6 @@
   "gallery_section": {"eyebrow": "Shared moments", "heading": "Designed around people, not hardware.", "description": "Placeholder scenes show the kind of human-focused photography planned for the finished site."},
   "space": {"eyebrow": "Room planning", "heading": "More adaptable than it looks.", "description": "Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event."},
   "testimonials_section": {"eyebrow": "Testimonials", "heading": "What guests say", "empty_note": "Testimonials will appear here after real customer permission is confirmed."},
-  "final_cta": {"heading": "Ready to plan your party?", "description": "Tell us a little about your date, venue and group. We’ll help shape the right setup.", "button": {"label": "Check availability", "href": "#booking"}},
-  "footer": {"tagline": "Hosted gaming parties, carefully planned.", "note": "Domain, service area and contact details require owner confirmation before launch."}
+  "final_cta": {"heading": "Ready to plan your party?", "description": "Final enquiry details are being confirmed. For this preview, enquiries are not open yet.", "button": {"label": "Enquiries opening soon"}},
+  "footer": {"tagline": "Hosted gaming parties, carefully planned.", "note": "Website preview for hosted gaming party packages."}
 }

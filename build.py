@@ -2,6 +2,7 @@
 """Small standard-library static build for the Party.LAN homepage."""
 from __future__ import annotations
 import csv, html, json, re, shutil, sys
+from html.parser import HTMLParser
 from pathlib import Path
 
 ROOT = Path(__file__).parent.resolve()
@@ -13,6 +14,9 @@ WARNINGS, ERRORS = [], []
 
 CSV_BOOL = {"true": True, "false": False}
 URL_RE = re.compile(r"^(#|/|https://|http://)")
+PLACEHOLDER_RE = re.compile(r"{{[^{}]+}}")
+PRODUCTION_HOST = "https://partylan.co.uk"
+EXAMPLE_DOMAIN = "example" + ".com"
 
 
 def err(file, key, reason): ERRORS.append(f"{file}: {key}: {reason}")
@@ -50,7 +54,11 @@ def validate_site(site):
     meta = site.get("meta", {})
     req_string("site.json", meta, "title", "meta")
     req_string("site.json", meta, "description", "meta", 170)
-    req_link("site.json", meta, "canonical_url", "meta")
+    canonical = req_link("site.json", meta, "canonical_url", "meta")
+    if canonical and canonical.rstrip("/") != PRODUCTION_HOST:
+        err("site.json", "meta.canonical_url", f"must be {PRODUCTION_HOST}/ for production previews")
+    if EXAMPLE_DOMAIN in json.dumps(meta):
+        err("site.json", "meta", "sample domain must not remain in production metadata")
     if not asset_exists(meta.get("og_image", "")): err("site.json", "meta.og_image", "referenced asset does not exist")
     labels = set()
     for i, item in enumerate(site.get("navigation", [])):
@@ -74,7 +82,7 @@ def validate_site(site):
     for sec in ["packages_section", "gallery_section", "space"]:
         req_string("site.json", site.get(sec, {}), "heading", sec, 55)
     req_string("site.json", site.get("final_cta", {}), "heading", "final_cta", 55)
-    req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 24)
+    req_string("site.json", site.get("final_cta", {}).get("button", {}), "label", "final_cta.button", 32)
 
 def validate_packages(packages):
     ids = set()
@@ -136,13 +144,81 @@ def validate_testimonials(rows):
         if CSV_BOOL[raw_visible]: out.append(row)
     return sorted(out, key=lambda r: r["order_int"])
 
+
+class RenderedDocumentParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.ids = set()
+        self.links = []
+        self.assets = []
+        self.package_features = {}
+        self._current_package = None
+        self._in_feature = False
+        self._feature_parts = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if attrs.get("id"):
+            self.ids.add(attrs["id"])
+        if tag == "a" and attrs.get("href"):
+            self.links.append(attrs["href"])
+        if tag in {"img", "script"} and attrs.get("src"):
+            self.assets.append(attrs["src"])
+        if tag == "link" and attrs.get("href"):
+            self.assets.append(attrs["href"])
+        if tag == "article" and "package-card" in attrs.get("class", ""):
+            self._current_package = ""
+        if self._current_package is not None and tag == "li":
+            self._in_feature = True
+            self._feature_parts = []
+
+    def handle_endtag(self, tag):
+        if tag == "li" and self._in_feature and self._current_package is not None:
+            feature = "".join(self._feature_parts).strip()
+            if feature:
+                self.package_features.setdefault(self._current_package, []).append(feature)
+            self._in_feature = False
+        if tag == "article" and self._current_package is not None:
+            self._current_package = None
+
+    def handle_data(self, data):
+        if self._current_package is not None and not self._current_package and data.strip() in {"ONYX", "JADE"}:
+            self._current_package = data.strip()
+            self.package_features.setdefault(self._current_package, [])
+        if self._in_feature:
+            self._feature_parts.append(data)
+
+
+def validate_rendered(html_out, site, packages):
+    if EXAMPLE_DOMAIN in html_out:
+        err("dist/index.html", "metadata", "sample domain must not appear in generated public files")
+    placeholders = sorted(set(PLACEHOLDER_RE.findall(html_out)))
+    if placeholders:
+        err("dist/index.html", "template", "unresolved template placeholders remain: " + ", ".join(placeholders))
+    parser = RenderedDocumentParser()
+    parser.feed(html_out)
+    for item in site.get("navigation", []):
+        href = item.get("href", "")
+        if href.startswith("#") and href[1:] not in parser.ids:
+            err("dist/index.html", f"navigation {item.get('label', href)}", f"anchor {href} does not exist in rendered document")
+        elif href.startswith("/") and href not in {"/", "/index.html"}:
+            err("dist/index.html", f"navigation {item.get('label', href)}", f"links to unavailable page {href}")
+    for pkg in packages:
+        rendered = parser.package_features.get(pkg.get("name"), [])
+        missing = [feat for feat in pkg.get("features", []) if feat not in rendered]
+        if missing:
+            err("dist/index.html", f"package {pkg.get('name')}", "omitted configured features: " + "; ".join(missing))
+    for asset in parser.assets:
+        if asset.startswith("/") and not (DIST / asset.lstrip("/")).exists():
+            err("dist/index.html", asset, "referenced local asset is missing")
+
 def render_list(items): return "\n".join(f"<li>{esc(i)}</li>" for i in items)
 def render_nav(items): return "\n".join(f'<a href="{attr(i["href"])}">{esc(i["label"])}</a>' for i in items)
 
 def render_packages(packages):
     cards=[]
     for p in packages:
-        features = render_list(p["features"][:5])
+        features = render_list(p["features"])
         cards.append(f'''<article class="package-card reveal"><div><p class="package-subtitle">{esc(p["subtitle"])}</p><h3>{esc(p["name"])}</h3><p class="package-price">{esc(p["price"])} <span>{esc(p["duration"])}</span></p><p class="package-capacity">{esc(p["capacity"])}</p></div><ul class="feature-list">{features}</ul><a class="button button--ghost" href="{attr(p["action"]["href"])}">{esc(p["action"]["label"])}</a></article>''')
     return "\n".join(cards)
 
@@ -173,7 +249,7 @@ def main():
     h=site["hero"]
     replacements = {
         "{{meta_title}}": esc(site["meta"]["title"]), "{{meta_description}}": esc(site["meta"]["description"]),
-        "{{canonical_url}}": attr(site["meta"]["canonical_url"]), "{{og_image}}": attr(site["meta"]["og_image"]),
+        "{{canonical_url}}": attr(site["meta"]["canonical_url"]), "{{og_image}}": attr(PRODUCTION_HOST + site["meta"]["og_image"]),
         "{{theme_color_light}}": attr(site["meta"].get("theme_color_light", "#f6efe4")), "{{nav_links}}": render_nav(site["navigation"]),
         "{{availability_label}}": esc(site["header"]["availabilityCta"]["label"]), "{{availability_href}}": attr(site["header"]["availabilityCta"]["href"]),
         "{{hero_eyebrow}}": esc(h["eyebrow"]), "{{hero_title}}": esc(h["title"]), "{{hero_description}}": esc(h["description"]),
@@ -186,7 +262,7 @@ def main():
         "{{gallery_eyebrow}}": esc(site["gallery_section"]["eyebrow"]), "{{gallery_heading}}": esc(site["gallery_section"]["heading"]), "{{gallery_description}}": esc(site["gallery_section"]["description"]), "{{gallery_items}}": render_gallery(gallery),
         "{{space_eyebrow}}": esc(site["space"]["eyebrow"]), "{{space_heading}}": esc(site["space"]["heading"]), "{{space_description}}": esc(site["space"]["description"]),
         "{{testimonials_section}}": "" if not testimonials else "<section class=\"section\"><h2>Testimonials</h2></section>",
-        "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]), "{{final_button_href}}": attr(site["final_cta"]["button"]["href"]),
+        "{{final_heading}}": esc(site["final_cta"]["heading"]), "{{final_description}}": esc(site["final_cta"]["description"]), "{{final_button_label}}": esc(site["final_cta"]["button"]["label"]),
         "{{footer_tagline}}": esc(site["footer"]["tagline"]), "{{footer_note}}": esc(site["footer"]["note"])
     }
     html_out = template
@@ -194,6 +270,10 @@ def main():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir()
     shutil.copytree(STATIC, DIST, dirs_exist_ok=True)
+    validate_rendered(html_out, site, packages)
+    if ERRORS:
+        print("Build failed with rendered-output validation errors:", file=sys.stderr)
+        print("\n".join(f"- {e}" for e in ERRORS), file=sys.stderr); sys.exit(1)
     (DIST/"index.html").write_text(html_out, encoding="utf-8")
     print(f"Built dist/index.html with {len(packages)} packages, {len(gallery)} gallery items and {len(testimonials)} testimonials.")
     for w in WARNINGS: print(f"Warning: {w}")
