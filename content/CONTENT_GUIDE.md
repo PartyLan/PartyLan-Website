@@ -230,3 +230,7 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
 - The `Make it your own` section uses `addons_section.accordion_label` and `addons_section.description` from `content/homepage.json`. It is expanded by default on desktop and collapsed by default on mobile. Add-on rows still come only from `content/addons.csv`.
 - FAQ rows may include `link_label` and `link_href`. Both fields must be filled together or both left blank. The Terms FAQ uses `Read full Terms & Conditions` with `/terms/`, which renders as a button inside the expanded FAQ answer.
 - The sticky mobile `Check availability` control is behavioural chrome, not editable content. It hides when the booking section, footer or navigation menu is visible and page padding is handled in CSS.
+
+## Packages final decision section
+
+Edit `content/homepage.json` under `packages_page.final_decision` to control the final Packages-page decision section. The editable fields are `eyebrow`, `heading`, `description`, `reserve_label`, `reserve_href`, `ask_label`, `questions_label`, `ask_heading`, `ask_description`, `contact_label`, and `contact_href`. Keep reservation/contact hrefs on existing local destinations such as `/#booking` unless the booking route changes.
