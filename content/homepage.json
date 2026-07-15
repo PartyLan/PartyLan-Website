@@ -111,7 +111,8 @@
         "image_alt": "A Party.LAN host helping prepare gaming equipment.",
         "image_position": "center"
       }
-    ]
+    ],
+    "description": "Choose your hosted experience, share the venue details and let us handle setup, hosting and pack-down."
   },
   "gallery_section": {
     "eyebrow": "Shared moments",
@@ -196,6 +197,19 @@
       "description": "Tell us about the group, venue and the kind of experience you have in mind. We’ll help you choose the most suitable package.",
       "button_label": "Ask about packages",
       "href": "/#booking"
+    },
+    "final_decision": {
+      "eyebrow": "Next step",
+      "heading": "Ready to plan your party?",
+      "description": "Reserve now when you know what you need, or ask us anything before deciding.",
+      "reserve_label": "Reserve now",
+      "reserve_href": "/#booking",
+      "ask_label": "Ask a question",
+      "questions_label": "Common questions",
+      "ask_heading": "Ask us before deciding",
+      "ask_description": "Tell us about package choice, venue space, player numbers, add-ons, accessibility or setup and we can help you plan the right fit.",
+      "contact_label": "Contact Party.LAN",
+      "contact_href": "/#booking"
     }
   },
   "navigation_groups": [
