@@ -333,3 +333,6 @@ body{background:var(--bg)}.hero,.hero--home{background:transparent;overflow:visi
 @media(min-width:921px){.mobile-booking{display:none!important}.site-menu a.is-active::after{display:none}.addons-panel{padding-bottom:clamp(1.4rem,3vw,2rem)}}
 @media(max-width:360px){.nav-shell{padding-inline:.55rem;gap:.32rem}.brand__mark{width:78px!important}.header-cta{font-size:.74rem;padding-inline:.45rem}.theme-toggle,.menu-toggle{width:38px;height:38px;min-width:38px}}
 @media(prefers-reduced-motion:reduce){.site-menu__panel,.package-details,.addons-content,.faq-item__answer,.menu-toggle__bars span,.addons-toggle__icon{transition:none!important}}
+/* revision: remove duplicated visible header links */
+.desktop-links{display:none!important}.nav-shell{justify-content:flex-end}.brand{margin-right:auto}.header-cta{min-width:min(18rem,34vw);justify-content:center}
+@media(max-width:920px){.nav-shell{justify-content:normal}.header-cta{min-width:0}}
