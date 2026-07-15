@@ -24,7 +24,7 @@
   "header": {
     "availability_cta": {
       "label": "Check availability",
-      "href": "/#booking"
+      "href": "/contact/?intent=availability"
     },
     "logo_light": "/assets/images/Logo_Black_T.png",
     "logo_dark": "/assets/images/Logo_White_T.png"
@@ -137,9 +137,10 @@
   },
   "final_cta": {
     "heading": "Ready to plan your party?",
-    "description": "Online enquiries are opening soon. Package details are available above.",
+    "description": "Check availability, share your party plans or ask us anything before deciding.",
     "button": {
-      "label": "Enquiries opening soon"
+      "label": "Check availability",
+      "href": "/contact/?intent=availability"
     }
   },
   "footer": {
@@ -163,7 +164,7 @@
       },
       {
         "label": "Contact",
-        "href": "/#booking"
+        "href": "/contact/?intent=question"
       }
     ]
   },
@@ -196,7 +197,7 @@
       "heading": "Not sure which package fits?",
       "description": "Tell us about the group, venue and the kind of experience you have in mind. We’ll help you choose the most suitable package.",
       "button_label": "Ask about packages",
-      "href": "/#booking"
+      "href": "/contact/?intent=question"
     },
     "final_decision": {
       "eyebrow": "Next step",
@@ -248,7 +249,7 @@
       "links": [
         {
           "label": "Contact",
-          "href": "/#booking"
+          "href": "/contact/?intent=question"
         },
         {
           "label": "Terms of Service",

@@ -8,3 +8,16 @@ services:
       - type: rewrite
         source: /
         destination: /index.html
+  - type: web
+    name: partylan-contact-api
+    runtime: python
+    rootDir: contact_api
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: MAIL_FROM
+        value: hello@partylan.co.uk
+      - key: MAIL_FROM_NAME
+        value: Party.LAN Website
+      - key: MAIL_TO
+        value: hello@partylan.co.uk
