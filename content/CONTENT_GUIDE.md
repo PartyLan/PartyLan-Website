@@ -215,3 +215,18 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
 - FAQ records may include `link_label` and `link_href` together. The Terms & Conditions link is part of the FAQ answer itself, not a separate button below the accordion.
 - The wide visual container scales major image-led compositions for large CSS viewports; ordinary body copy remains constrained, so content editors do not need to shorten text for wide screens.
 - Hero, testimonial and showcase motion is decorative CSS transform/opacity animation only and is disabled for `prefers-reduced-motion`.
+
+## Navigation, package accordions and mobile utility controls
+
+- Desktop navigation keeps the short primary `navigation` list (`Home`, `Packages`, `FAQ`) in the header and also exposes the complete hamburger dropdown.
+- The hamburger dropdown is edited in `content/homepage.json` under `navigation_groups`. Keep three groups in this order:
+  1. `How it works`, `Shared Moments`, `FAQ`
+  2. `Packages`, `Make your own`
+  3. `Contact`, `Terms of Service`, `Privacy Policy`
+- Use the full local hrefs already in the file, especially homepage-prefixed anchors such as `/#faq` and the package anchor `/packages/#make-your-own`, so links work from subpages.
+- On mobile the header is a single utility row: logo, `Check availability`, theme icon and menu button. This layout is generated from the existing header and navigation content.
+- Package cards use `summary` for the compact collapsed copy and `details_button` for the accordion control. Keep these short so ONYX and JADE remain easy to scan.
+- Full package detail content lives in each package's `expanded` object and the `included` list in `content/packages.json`; this content is shown only after expanding the package accordion.
+- The `Make it your own` section uses `addons_section.accordion_label` and `addons_section.description` from `content/homepage.json`. It is expanded by default on desktop and collapsed by default on mobile. Add-on rows still come only from `content/addons.csv`.
+- FAQ rows may include `link_label` and `link_href`. Both fields must be filled together or both left blank. The Terms FAQ uses `Read full Terms & Conditions` with `/terms/`, which renders as a button inside the expanded FAQ answer.
+- The sticky mobile `Check availability` control is behavioural chrome, not editable content. It hides when the booking section, footer or navigation menu is visible and page padding is handled in CSS.
