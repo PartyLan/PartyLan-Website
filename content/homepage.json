@@ -74,7 +74,8 @@
   },
   "addons_section": {
     "heading": "Make it your own",
-    "description": "Add extra time, selected experiences or additional equipment to either package."
+    "description": "Add extra time, selected experiences or additional equipment to either package.",
+    "accordion_label": "Make it your own"
   },
   "testimonials_section": {
     "eyebrow": "Party stories",
@@ -196,5 +197,54 @@
       "button_label": "Ask about packages",
       "href": "/#booking"
     }
-  }
+  },
+  "navigation_groups": [
+    {
+      "heading": "Explore",
+      "links": [
+        {
+          "label": "How it works",
+          "href": "/#how-it-works"
+        },
+        {
+          "label": "Shared Moments",
+          "href": "/#gallery"
+        },
+        {
+          "label": "FAQ",
+          "href": "/#faq"
+        }
+      ]
+    },
+    {
+      "heading": "Packages",
+      "links": [
+        {
+          "label": "Packages",
+          "href": "/packages/"
+        },
+        {
+          "label": "Make your own",
+          "href": "/packages/#make-your-own"
+        }
+      ]
+    },
+    {
+      "heading": "Support",
+      "links": [
+        {
+          "label": "Contact",
+          "href": "/#booking"
+        },
+        {
+          "label": "Terms of Service",
+          "href": "/terms/"
+        },
+        {
+          "label": "Privacy Policy",
+          "href": "/privacy/"
+        }
+      ]
+    }
+  ]
 }
