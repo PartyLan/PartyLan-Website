@@ -16,7 +16,7 @@ if(header){var lastY=window.pageYOffset||0,ticking=false,threshold=10,topLimit=8
 if(mt&&menu){mt.addEventListener('click',function(e){e.stopPropagation();menu.classList.contains('is-open')?closeMenu(false):openMenu();}); menu.addEventListener('click',function(e){if(e.target.tagName==='A')closeMenu(false)}); document.addEventListener('click',function(e){if(menu.classList.contains('is-open')&&!e.target.closest('.site-header'))closeMenu(false)}); document.addEventListener('keydown',function(e){if(e.key==='Escape'&&menu.classList.contains('is-open'))closeMenu(true)});}
 document.querySelectorAll('.package-expand').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.package-card'), open=!c.classList.contains('is-expanded'); c.classList.toggle('is-expanded',open); b.setAttribute('aria-expanded',String(open));});});
 var addonsToggle=document.querySelector('.addons-toggle'), addonsPanel=document.querySelector('.addons-panel');
-function setAddons(open){if(!addonsToggle||!addonsPanel)return;addonsPanel.classList.toggle('is-open',open);addonsToggle.setAttribute('aria-expanded',String(open));}
+function setAddons(open){if(!addonsToggle||!addonsPanel)return;addonsPanel.classList.toggle('is-open',open);addonsToggle.setAttribute('aria-expanded',String(open));var label=addonsToggle.querySelector('.addons-toggle__label');if(label)label.textContent=open?'Hide add-ons':'Browse add-ons';}
 if(addonsToggle){
   function openAddonsFromHash(){
     if(location.hash==='#make-your-own'){
