@@ -48,6 +48,7 @@
   --panel-border: var(--border-soft, var(--border));
   --panel-shadow: var(--shadow-soft, var(--shadow));
   --panel-radius: 28px;
+  --legal-panel-background: color-mix(in srgb, var(--surface) 96%, transparent);
   --button-key-background: #8667a7;
   --button-key-text: var(--text-on-key);
   --button-key-border: color-mix(in srgb, #8667a7 72%, var(--border));
@@ -119,6 +120,7 @@ html[data-theme="dark"] {
   --button-rollout-active-border: color-mix(in srgb, var(--accent) 64%, var(--border));
   --button-hover-glow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent), 0 16px 38px rgba(0, 0, 0, .34);
   --reassurance-background: color-mix(in srgb, var(--surface) 94%, transparent);
+  --legal-panel-background: color-mix(in srgb, var(--surface) 98%, transparent);
   --header: rgba(18, 23, 35, 0.86);
   --hero-fade-left: linear-gradient(90deg, rgba(18, 23, 35, .99) 0%, rgba(18, 23, 35, .94) 25%, rgba(18, 23, 35, .68) 45%, rgba(18, 23, 35, .2) 68%, rgba(18, 23, 35, 0) 100%);
   --hero-fade-bottom: linear-gradient(180deg, rgba(18, 23, 35, 0) 42%, rgba(18, 23, 35, .6) 73%, var(--bg) 100%);
@@ -1189,14 +1191,18 @@ body { padding-bottom: 0 !important; }
 .showcase-slide__breathe img { inset: 0; width: 100%; height: 100%; max-width: none; }
 .showcase-indicators { max-width: 100%; margin-inline: auto; }
 .legal-page { padding-top: calc(var(--header-height) + clamp(2rem, 5vw, 4rem)); padding-bottom: clamp(3rem, 6vw, 5rem); }
-.legal-section { width: min(100%, 880px); margin-inline: auto; padding: 0; }
+.legal-section { width: 100%; max-width: none; margin-inline: auto; padding: 0; }
 .legal-page__top { display: grid; justify-items: start; width: 100%; margin-bottom: clamp(1.5rem, 3vw, 2.25rem); }
 .legal-page__back { width: fit-content; align-self: flex-start; }
 .legal-page__heading { width: 100%; margin-top: clamp(1.5rem, 3vw, 2.25rem); }
 .legal-page__heading h1 { margin: 0; }
 .legal-page__notice { max-width: var(--text-measure); margin: .75rem 0 0; color: var(--text-secondary); font-weight: 700; }
-.legal-accordion { width: 100%; overflow: hidden; border: 1px solid var(--panel-border); border-radius: var(--panel-radius); background: var(--panel-background); box-shadow: var(--panel-shadow); }
-.legal-accordion__item { background: transparent; border-bottom: 1px solid var(--panel-border); }
+.legal-accordion { width: 100%; max-width: none; overflow: hidden; border: 1px solid var(--panel-border); border-radius: var(--panel-radius); background: var(--legal-panel-background); box-shadow: var(--panel-shadow); transition: background-color var(--theme-transition), border-color var(--theme-transition), box-shadow var(--theme-transition); }
+.legal-accordion__item { border-bottom: 1px solid var(--panel-border); }
+.legal-accordion__item,
+.legal-accordion__item button,
+.legal-accordion__answer,
+.legal-accordion__answer-inner { background: transparent; box-shadow: none; }
 .legal-accordion__item:last-child { border-bottom: 0; }
 .legal-accordion__item h2 { margin: 0; }
 .legal-accordion__item button { width: 100%; min-height: 4.25rem; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: clamp(1rem, 2vw, 1.3rem) clamp(1rem, 3vw, 1.6rem); border: 0; background: transparent; color: var(--text-primary); text-align: left; font: inherit; font-weight: 820; cursor: pointer; }
@@ -1206,7 +1212,7 @@ body { padding-bottom: 0 !important; }
 .legal-accordion__answer-inner { min-height: 0; overflow: hidden; padding-inline: clamp(1rem, 3vw, 1.6rem); }
 .legal-accordion__item.is-open .legal-accordion__answer { grid-template-rows: 1fr; opacity: 1; }
 .legal-accordion__item.is-open .legal-accordion__answer-inner { padding-bottom: clamp(1rem, 2.5vw, 1.5rem); }
-.legal-accordion__answer p { max-width: var(--text-measure); margin: 0; color: var(--text-secondary); text-align: left; overflow-wrap: anywhere; }
+.legal-accordion__answer-inner p { max-width: var(--text-measure); margin: 0; color: var(--text-secondary); text-align: left; overflow-wrap: anywhere; }
 .packages-decision__header > .eyebrow,
 .packages-decision__header > h2,
 .packages-decision__header > p:not(.eyebrow) { margin-inline: auto; text-align: center; }
