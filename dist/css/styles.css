@@ -985,3 +985,167 @@ body { padding-bottom: 0 !important; }
 .packages-inline-contact { margin-top: 1.25rem; }
 .packages-inline-contact .contact-form-shell { margin: 0 auto; text-align: left; }
 @media (max-width: 720px) { .contact-form__grid { grid-template-columns: 1fr; } }
+
+/* PR: unified layout width and responsive flow */
+:root {
+  --layout-width: min(88vw, 121.875rem);
+  --layout-readable: min(100%, 72ch);
+  --container: var(--layout-width);
+  --container-normal: var(--layout-width);
+  --content-width: var(--layout-width);
+}
+.section,
+.nav-shell,
+.reassurance,
+.how-section > .section-intro,
+.how-section > .steps-grid,
+.testimonials,
+.showcase-section > .section-intro,
+.showcase-section > .gallery-tabs,
+.faq-section,
+.final-cta,
+.site-footer,
+.packages-hero__content,
+.packages-overlap,
+.contact-section,
+.legal-page {
+  max-width: var(--layout-width);
+}
+.reassurance,
+.packages-overlap,
+.contact-section,
+.final-cta,
+.site-footer { width: var(--layout-width); }
+.section,
+.contact-section,
+.final-cta { padding-left: 0; padding-right: 0; }
+.showcase-section { max-width: 100%; padding-left: 0; padding-right: 0; }
+.showcase-section > .showcase { width: var(--visual-width); max-width: var(--visual-width); }
+.final-cta > div,
+.packages-decision {
+  width: 100%;
+  max-width: 100%;
+  padding: clamp(1.4rem, 4vw, 2.6rem);
+  border-radius: var(--radius-section);
+}
+.packages-decision { margin-top: clamp(1.5rem, 4vw, 2.6rem); }
+.packages-decision > .eyebrow,
+.packages-decision > h2,
+.packages-decision > p:not(.eyebrow) { margin-left: auto; margin-right: auto; text-align: center; }
+.packages-decision > h2 { max-width: none; font-size: clamp(2.05rem, 3.9vw, 4rem); }
+.packages-decision__actions { justify-content: center; }
+.packages-inline-contact .contact-form-shell,
+.contact-form-shell { width: 100%; max-width: var(--layout-width); }
+.legal-page { width: var(--layout-width); }
+.legal-page > * { max-width: var(--layout-readable); margin-left: auto; margin-right: auto; }
+.legal-page h1 { max-width: var(--layout-readable); }
+.legal-page p, .legal-page li { overflow-wrap: anywhere; }
+.contact-page .section-heading { margin-left: 0; }
+.contact-page .section-heading p { max-width: var(--layout-readable); }
+
+@media (max-width: 1180px) and (min-width: 921px) {
+  .hero--home {
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1rem, 2.5vw, 1.8rem);
+    padding-top: calc(var(--header-height) + clamp(1rem, 2.4vw, 1.8rem));
+    overflow: visible;
+  }
+  .hero--home .hero__picture {
+    position: relative;
+    order: 0;
+    z-index: 0;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: min(96vw, 1120px);
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius-section);
+  }
+  .hero--home .hero__inner {
+    order: 1;
+    width: var(--layout-width);
+    min-height: 0;
+    height: auto;
+    padding: 0 0 clamp(3.5rem, 6vw, 5rem);
+    align-items: flex-start;
+  }
+  .hero--home .hero__content { max-width: min(100%, 48rem); }
+}
+
+@media (max-width: 920px) {
+  html, body, .site-shell { max-width: 100%; overflow-x: clip; }
+  body { min-width: 0; }
+  :root {
+    --layout-width: min(92vw, 72rem);
+    --container: var(--layout-width);
+    --container-normal: var(--layout-width);
+    --content-width: var(--layout-width);
+  }
+  .section,
+  .reassurance,
+  .how-section > .section-intro,
+  .how-section > .steps-grid,
+  .showcase-section > .section-intro,
+  .showcase-section > .gallery-tabs,
+  .showcase-section > .showcase,
+  .faq-section,
+  .final-cta,
+  .site-footer,
+  .packages-hero__content,
+  .packages-overlap,
+  .contact-section,
+  .legal-page {
+    width: var(--layout-width);
+    max-width: var(--layout-width);
+    min-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .hero__content,
+  .hero__content .eyebrow,
+  .hero__content h1,
+  .hero__content p,
+  .hero__content .button-row,
+  .section-intro,
+  .section-intro > .eyebrow,
+  .section-intro > h2,
+  .section-intro > p,
+  .section-heading,
+  .section-heading > .eyebrow,
+  .section-heading > h1,
+  .section-heading > p,
+  .packages-hero__content,
+  .packages-hero__content h1,
+  .packages-hero__content p,
+  .final-cta,
+  .final-cta > div,
+  .final-cta .button-row,
+  .contact-page .section-heading,
+  .faq-section > .section-intro,
+  .faq-section > .section-intro > .eyebrow,
+  .faq-section > .section-intro > h2,
+  .faq-section > .section-intro > p {
+    text-align: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .hero__content .button-row,
+  .final-cta .button-row { justify-content: center; }
+  .faq-item button,
+  .faq-item__answer p,
+  .package-faq-item button,
+  .package-faq-answer,
+  .feature-list,
+  .legal-page,
+  .legal-page *,
+  .contact-form-shell,
+  .contact-form-shell *,
+  .site-menu a { text-align: left !important; }
+  .packages-decision > h2 { font-size: clamp(2rem, 9vw, 3.25rem); }
+  .packages-decision__actions { align-items: stretch; }
+  .gallery-tabs { overflow-x: auto; max-width: 100%; }
+  .site-background__top, .site-background__middle, .site-background__bottom { left: 0; right: 0; }
+}
