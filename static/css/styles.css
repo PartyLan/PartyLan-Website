@@ -23,6 +23,12 @@
   --surface-soft: #f0e4d7;
   --text: #172238;
   --muted: #626a7c;
+  --text-primary: var(--text);
+  --text-secondary: var(--muted);
+  --text-on-key: #fffaf2;
+  --text-accent: var(--accent);
+  --text-success: #2f7a56;
+  --text-danger: #b42318;
   --border: rgba(62, 55, 82, 0.16);
   --accent: #8667a7;
   --accent-2: #cf8fa5;
@@ -42,7 +48,26 @@
   --panel-border: var(--border-soft, var(--border));
   --panel-shadow: var(--shadow-soft, var(--shadow));
   --panel-radius: 28px;
-  --button-primary: #8667a7;
+  --button-key-background: #8667a7;
+  --button-key-text: var(--text-on-key);
+  --button-key-border: color-mix(in srgb, #8667a7 72%, var(--border));
+  --button-key-shadow: 0 10px 24px color-mix(in srgb, #8667a7 20%, transparent);
+  --button-key-hover-background: color-mix(in srgb, #8667a7 88%, var(--jade));
+  --button-key-hover-border: color-mix(in srgb, #8667a7 82%, var(--border));
+  --button-secondary-background: color-mix(in srgb, var(--surface) 88%, transparent);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border);
+  --button-secondary-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 10%, transparent);
+  --button-secondary-hover-background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  --button-secondary-hover-border: color-mix(in srgb, var(--accent) 52%, var(--border));
+  --button-rollout-background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+  --button-rollout-text: var(--text-primary);
+  --button-rollout-border: color-mix(in srgb, var(--accent) 35%, var(--border));
+  --button-rollout-shadow: 0 10px 24px color-mix(in srgb, var(--accent) 12%, transparent);
+  --button-rollout-hover-background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+  --button-rollout-hover-border: color-mix(in srgb, var(--accent) 48%, var(--border));
+  --button-rollout-active-background: color-mix(in srgb, var(--accent) 18%, var(--surface));
+  --button-rollout-active-border: color-mix(in srgb, var(--accent) 58%, var(--border));
   --button-hover-glow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent), 0 14px 34px color-mix(in srgb, var(--accent) 24%, transparent);
   --button-hover-duration: .22s;
   --theme-transition: .28s ease;
@@ -63,7 +88,32 @@ html[data-theme="dark"] {
   --accent-contrast: #151827;
   --jade: #7eb79e;
   --shadow: 0 22px 50px rgba(0, 0, 0, 0.26);
-  --button-primary: #b596e6;
+  --text-primary: var(--text);
+  --text-secondary: var(--muted);
+  --text-on-key: #151827;
+  --text-accent: var(--accent);
+  --text-success: #7eb79e;
+  --text-danger: #ffb4aa;
+  --button-key-background: #b596e6;
+  --button-key-text: var(--text-on-key);
+  --button-key-border: color-mix(in srgb, #b596e6 72%, var(--border));
+  --button-key-shadow: 0 14px 30px color-mix(in srgb, #b596e6 24%, transparent);
+  --button-key-hover-background: color-mix(in srgb, #b596e6 86%, var(--jade));
+  --button-key-hover-border: color-mix(in srgb, #b596e6 82%, var(--border));
+  --button-secondary-background: color-mix(in srgb, var(--surface) 88%, transparent);
+  --button-secondary-text: var(--text-primary);
+  --button-secondary-border: var(--border);
+  --button-secondary-shadow: 0 10px 24px rgba(0, 0, 0, .22);
+  --button-secondary-hover-background: color-mix(in srgb, var(--accent) 14%, var(--surface));
+  --button-secondary-hover-border: color-mix(in srgb, var(--accent) 55%, var(--border));
+  --button-rollout-background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --button-rollout-text: var(--text-primary);
+  --button-rollout-border: color-mix(in srgb, var(--accent) 38%, var(--border));
+  --button-rollout-shadow: 0 10px 24px rgba(0, 0, 0, .24);
+  --button-rollout-hover-background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  --button-rollout-hover-border: color-mix(in srgb, var(--accent) 55%, var(--border));
+  --button-rollout-active-background: color-mix(in srgb, var(--accent) 24%, var(--surface));
+  --button-rollout-active-border: color-mix(in srgb, var(--accent) 64%, var(--border));
   --button-hover-glow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent), 0 16px 38px rgba(0, 0, 0, .34);
   --header: rgba(18, 23, 35, 0.86);
   --hero-fade-left: linear-gradient(90deg, rgba(18, 23, 35, .99) 0%, rgba(18, 23, 35, .94) 25%, rgba(18, 23, 35, .68) 45%, rgba(18, 23, 35, .2) 68%, rgba(18, 23, 35, 0) 100%);
@@ -99,8 +149,13 @@ p { max-width: 66ch; }
 
 /* Buttons and controls */
 .button, .theme-toggle, .menu-toggle { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; border: 1px solid var(--border); border-radius: 999px; padding: .68rem 1rem; text-decoration: none; font-weight: 720; transform-origin: center; transition: transform var(--button-hover-duration) ease-in-out, background-color var(--theme-transition), color var(--theme-transition), border-color var(--theme-transition), box-shadow var(--theme-transition); }
-.button { background: var(--button-primary); color: var(--accent-contrast); box-shadow: 0 10px 24px color-mix(in srgb, var(--button-primary) 20%, transparent); }
-.button--ghost, .theme-toggle, .menu-toggle { background: color-mix(in srgb, var(--surface) 88%, transparent); color: var(--text); }
+.button--key, .button:not(.button--secondary):not(.button--rollout) { background: var(--button-key-background); color: var(--button-key-text); border-color: var(--button-key-border); box-shadow: var(--button-key-shadow); }
+.button--key:hover, .button:not(.button--secondary):not(.button--rollout):hover { background: var(--button-key-hover-background); border-color: var(--button-key-hover-border); }
+.button--secondary, .button--ghost, .theme-toggle, .menu-toggle { background: var(--button-secondary-background); color: var(--button-secondary-text); border-color: var(--button-secondary-border); box-shadow: var(--button-secondary-shadow); }
+.button--secondary:hover, .button--ghost:hover, .theme-toggle:hover, .menu-toggle:hover { background: var(--button-secondary-hover-background); border-color: var(--button-secondary-hover-border); }
+.button--rollout { background: var(--button-rollout-background); color: var(--button-rollout-text); border-color: var(--button-rollout-border); box-shadow: var(--button-rollout-shadow); }
+.button--rollout:hover, .button--rollout:focus-visible { background: var(--button-rollout-hover-background); border-color: var(--button-rollout-hover-border); }
+.button--rollout[aria-expanded="true"], .button--rollout.is-active { background: var(--button-rollout-active-background); border-color: var(--button-rollout-active-border); }
 .button--small { min-height: 38px; padding: .55rem .85rem; font-size: .92rem; }
 .button:hover, .theme-toggle:hover, .menu-toggle:hover { position: relative; z-index: 2; transform: scale(1.1); border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); box-shadow: var(--button-hover-glow); }
 .button--disabled, .button--disabled:hover { cursor: not-allowed; opacity: .58; transform: none; box-shadow: none; filter: saturate(.65); }
@@ -528,7 +583,7 @@ body::before, body::after { display: none; }
 }
 .gallery-tabs [role="tab"][aria-selected="true"] {
   background: var(--accent-shared) !important;
-  color: #fffaf2 !important;
+  color: var(--text-on-key) !important;
   border-color: color-mix(in srgb, var(--accent-shared) 74%, var(--border)) !important;
   box-shadow: 0 10px 24px color-mix(in srgb, var(--accent-shared) 24%, transparent);
 }
@@ -948,7 +1003,7 @@ body { padding-bottom: 0 !important; }
 .packages-decision > h2 { margin-inline: auto; max-width: 14ch; font-size: clamp(2.1rem, 4.8vw, 4rem); line-height: var(--heading-line); }
 .packages-decision > p:not(.eyebrow) { max-width: 48rem; margin-inline: auto; color: var(--text-muted); }
 .packages-decision__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .75rem; margin-top: clamp(1.1rem, 3vw, 1.6rem); }
-.packages-decision__reserve { background: var(--button-primary) !important; color: #fffaf2 !important; border-color: color-mix(in srgb, var(--accent-shared) 72%, var(--border)) !important; }
+.packages-decision__reserve { background: var(--button-key-background) !important; color: var(--text-on-key) !important; border-color: color-mix(in srgb, var(--accent-shared) 72%, var(--border)) !important; }
 .packages-support-toggle--quiet { min-height: var(--control-height); padding: .66rem var(--control-padding-inline); border: 0; border-radius: var(--radius-button); background: transparent; color: var(--text-muted); font-weight: 780; cursor: pointer; }
 .packages-support-toggle--quiet:hover, .packages-support-toggle--quiet:focus-visible { color: var(--text); background: color-mix(in srgb, var(--accent-shared) 8%, transparent); }
 .packages-support-toggle[aria-expanded="true"] span { transform: rotate(180deg); }
@@ -968,7 +1023,7 @@ body { padding-bottom: 0 !important; }
 .package-faq-item.is-open .package-faq-answer { grid-template-rows: 1fr; opacity: 1; }
 .package-faq-item.is-open .package-faq-answer > div { padding-bottom: 1rem; }
 .package-faq-item.is-open button span { transform: rotate(45deg); }
-.faq-item__button-link { color: #fffaf2 !important; background: var(--accent-shared) !important; border-color: color-mix(in srgb, var(--accent-shared) 72%, var(--border)) !important; opacity: 1 !important; mix-blend-mode: normal !important; }
+.faq-item__button-link { color: var(--text-on-key) !important; background: var(--accent-shared) !important; border-color: color-mix(in srgb, var(--accent-shared) 72%, var(--border)) !important; opacity: 1 !important; mix-blend-mode: normal !important; }
 .faq-item__button-link:hover, .faq-item__button-link:focus-visible { color: #fff !important; }
 @media (max-width: 920px) {
   .package-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin: 0 0 .85rem; }
@@ -1004,7 +1059,7 @@ body { padding-bottom: 0 !important; }
 .packages-support-toggle:focus-visible {
   position: relative;
   z-index: 2;
-  transform: scale(1.1);
+  transform: scale(1.01);
   box-shadow: var(--button-hover-glow);
 }
 .faq-item button:hover,
@@ -1042,6 +1097,8 @@ body { padding-bottom: 0 !important; }
 .contact-form__actions { display: flex; flex-wrap: wrap; gap: .85rem; align-items: center; }
 .contact-submit { border-radius: 12px; }
 .quiet-button { width: fit-content; min-height: 40px; padding: .55rem .75rem; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface-soft) 56%, transparent); color: var(--text); font-weight: 720; }
+.direct-email { width: fit-content; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+.direct-email small { color: var(--text-secondary); font-size: .82rem; }
 .quiet-link { color: var(--muted); font-weight: 720; }
 .contact-status { min-height: 1.35rem; margin-bottom: .85rem; color: var(--muted); font-weight: 700; }
 .contact-status.is-loading { color: var(--muted); }

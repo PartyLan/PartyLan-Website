@@ -13,10 +13,14 @@ function openMenu(){menu.classList.add('is-open');mt.setAttribute('aria-expanded
 var header=document.querySelector('.site-header');
 if(header){var lastY=window.pageYOffset||0,ticking=false,threshold=10,topLimit=80,reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;function forceHeader(){header.classList.remove('is-hidden')}function canHide(){return !document.body.classList.contains('nav-open')&&!header.contains(document.activeElement)}function onScroll(){var y=window.pageYOffset||document.documentElement.scrollTop||0,delta=y-lastY;if(y<topLimit||!canHide()){forceHeader();lastY=y;ticking=false;return;}if(Math.abs(delta)>=threshold){if(delta>0){header.classList.add('is-hidden')}else{forceHeader()}lastY=y;}ticking=false;}window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});header.addEventListener('focusin',forceHeader);if(mt){mt.addEventListener('click',forceHeader)}document.addEventListener('keydown',function(e){if(e.key==='Tab')forceHeader});if(reducedMotion){header.style.transition='none';}}
 
+// navigation
 if(mt&&menu){mt.addEventListener('click',function(e){e.stopPropagation();menu.classList.contains('is-open')?closeMenu(false):openMenu();}); menu.addEventListener('click',function(e){if(e.target.tagName==='A')closeMenu(false)}); document.addEventListener('click',function(e){if(menu.classList.contains('is-open')&&!e.target.closest('.site-header'))closeMenu(false)}); document.addEventListener('keydown',function(e){if(e.key==='Escape'&&menu.classList.contains('is-open'))closeMenu(true)});}
-document.querySelectorAll('.package-expand').forEach(function(b){b.addEventListener('click',function(){var c=b.closest('.package-card'), open=!c.classList.contains('is-expanded'); c.classList.toggle('is-expanded',open); b.setAttribute('aria-expanded',String(open));});});
+// rollout label helper
+function syncRolloutLabel(button){var label=button&&button.querySelector('[data-rollout-label]');if(!button||!label)return;var open=button.getAttribute('aria-expanded')==='true';label.textContent=open?(button.dataset.labelOpen||label.textContent):(button.dataset.labelClosed||label.textContent);}
+document.querySelectorAll('[data-label-open][data-label-closed]').forEach(syncRolloutLabel);
+document.querySelectorAll('.package-expand').forEach(function(b){if(!b.dataset.labelClosed)b.dataset.labelClosed=b.textContent.trim(); if(!b.dataset.labelOpen)b.dataset.labelOpen='Hide package details'; var text=b.childNodes[0]; if(text&&text.nodeType===3){var span=document.createElement('span');span.setAttribute('data-rollout-label','');span.textContent=b.dataset.labelClosed;b.replaceChild(span,text);} syncRolloutLabel(b); b.addEventListener('click',function(){var c=b.closest('.package-card'), open=!c.classList.contains('is-expanded'); c.classList.toggle('is-expanded',open); b.setAttribute('aria-expanded',String(open));syncRolloutLabel(b);});});
 var addonsToggle=document.querySelector('.addons-toggle'), addonsPanel=document.querySelector('.addons-panel');
-function setAddons(open){if(!addonsToggle||!addonsPanel)return;addonsPanel.classList.toggle('is-open',open);addonsToggle.setAttribute('aria-expanded',String(open));var label=addonsToggle.querySelector('.addons-toggle__label');if(label)label.textContent=open?'Hide add-ons':'Browse add-ons';}
+function setAddons(open){if(!addonsToggle||!addonsPanel)return;addonsPanel.classList.toggle('is-open',open);addonsToggle.setAttribute('aria-expanded',String(open));syncRolloutLabel(addonsToggle);}
 if(addonsToggle){
   function openAddonsFromHash(){
     if(location.hash==='#make-your-own'){
@@ -51,27 +55,36 @@ document.querySelectorAll('.package-tabs').forEach(function(tablist){
   syncPackageMode();
   window.addEventListener('resize',syncPackageMode,{passive:true});
 });
+// package decision state
 document.querySelectorAll('.packages-decision').forEach(function(section){
-  var toggles=[].slice.call(section.querySelectorAll('[data-support-toggle]'));
-  var panels={ask:section.querySelector('#packages-ask-panel'),questions:section.querySelector('#packages-questions-panel')};
-  function setPanel(name){
-    toggles.forEach(function(t){var on=t.dataset.supportToggle===name && t.getAttribute('aria-expanded')!=='true';t.setAttribute('aria-expanded',String(on));if(panels[t.dataset.supportToggle])panels[t.dataset.supportToggle].classList.toggle('is-open',on);});
+  var inline=document.getElementById('packages-contact');
+  var controls=[].slice.call(section.querySelectorAll('[data-decision-mode]'));
+  var panels={booking:section.querySelector('#packages-booking-panel'),question:section.querySelector('#packages-ask-panel'),questions:section.querySelector('#packages-questions-panel')};
+  function currentPackage(){var selected=document.querySelector('.package-tab[aria-selected="true"]');return matchMedia('(max-width: 920px)').matches&&selected?selected.dataset.packageTab:'unsure';}
+  function setMode(mode){
+    var active=section.dataset.activeMode===mode?'none':mode;
+    section.dataset.activeMode=active;
+    controls.forEach(function(control){var on=control.dataset.decisionMode===active;control.setAttribute('aria-expanded',String(on));control.classList.toggle('is-active',on);syncRolloutLabel(control);});
+    Object.keys(panels).forEach(function(key){if(panels[key]){panels[key].hidden=key!==active;panels[key].classList.toggle('is-open',key===active);}});
+    if(inline){inline.hidden=!(active==='booking'||active==='question');}
+    if(inline&&(active==='booking'||active==='question')){var form=inline.querySelector('form'), nextIntent=active==='booking'?'booking':'party_question', nextPackage=active==='booking'?currentPackage():'unsure'; if(form&&form.setContactIntent)form.setContactIntent(nextIntent,nextPackage);}
   }
-  toggles.forEach(function(t){t.addEventListener('click',function(){setPanel(t.dataset.supportToggle)});});
+  controls.forEach(function(control){syncRolloutLabel(control);control.addEventListener('click',function(){setMode(control.dataset.decisionMode);});});
+  setMode('none');
 });
 document.querySelectorAll('.package-faq-item button').forEach(function(b){b.addEventListener('click',function(){var item=b.closest('.package-faq-item'),open=b.getAttribute('aria-expanded')!=='true';document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open');var xb=x.querySelector('button');if(xb)xb.setAttribute('aria-expanded','false')});item.classList.toggle('is-open',open);b.setAttribute('aria-expanded',String(open));});});
 
 function initContact(component){
   var form=component.querySelector('[data-contact-form]'), success=component.querySelector('[data-contact-success]'), status=component.querySelector('[data-contact-status]'); if(!form)return;
   form.noValidate=true;
-  var intents=['booking','question'], packages=['onyx','jade','unsure'];
+  var intents=['booking','party_question','collaboration','venue_partnership','media','other'], packages=['onyx','jade','unsure'];
   var intent=form.elements.intent, pkg=form.elements.package, subject=form.elements.subject, fields=[].slice.call(form.querySelectorAll('.field--event')), disclosure=form.querySelector('.contact-disclosure'), eventToggle=form.querySelector('[data-event-toggle]'), eventDetailsRevealed=false, onlineEnabled=component.dataset.onlineEnabled==='true';
-  function supportedIntent(value){return value==='availability'?'booking':(intents.indexOf(value)>=0?value:'question');}
+  function supportedIntent(value){if(value==='availability')return 'booking'; if(value==='question')return 'party_question'; return intents.indexOf(value)>=0?value:'party_question';}
   function supportedPackage(value){return packages.indexOf(value)>=0?value:'unsure';}
   var params=new URLSearchParams(location.search), resetIntent=supportedIntent(params.get('intent')||component.dataset.defaultIntent), resetPackage=supportedPackage(params.get('package')||component.dataset.defaultPackage);
-  function subjectForContext(){var base=intent.value==='booking'?'New Party.LAN booking enquiry':'New Party.LAN question'; if(intent.value==='booking'&&(pkg.value==='onyx'||pkg.value==='jade'))base+=' — '+pkg.value.toUpperCase(); return base;}
+  function subjectForContext(){var map={booking:'New Party.LAN booking enquiry',party_question:'New Party.LAN party question',collaboration:'New Party.LAN collaboration enquiry',venue_partnership:'New Party.LAN venue partnership enquiry',media:'New Party.LAN press or media enquiry',other:'New Party.LAN general enquiry'};var base=map[intent.value]||map.party_question; if(intent.value==='booking'&&(pkg.value==='onyx'||pkg.value==='jade'))base+=' — '+pkg.value.toUpperCase(); return base;}
   function setEventFieldsVisible(show){fields.forEach(function(field){field.hidden=!show; field.setAttribute('aria-hidden',show?'false':'true'); [].slice.call(field.querySelectorAll('input, select, textarea')).forEach(function(control){control.disabled=!show;});});}
-  function syncContactContext(){intent.value=supportedIntent(intent.value); var showEvents=intent.value==='booking'||eventDetailsRevealed; setEventFieldsVisible(showEvents); if(disclosure)disclosure.hidden=intent.value!=='question'||eventDetailsRevealed; if(eventToggle)eventToggle.setAttribute('aria-expanded',String(showEvents&&intent.value==='question')); if(subject)subject.value=subjectForContext();}
+  function syncContactContext(){intent.value=supportedIntent(intent.value); var showEvents=intent.value==='booking'||eventDetailsRevealed; setEventFieldsVisible(showEvents); if(disclosure)disclosure.hidden=intent.value!=='party_question'||eventDetailsRevealed; if(eventToggle){eventToggle.setAttribute('aria-expanded',String(showEvents&&intent.value==='party_question'));syncRolloutLabel(eventToggle);} if(subject)subject.value=subjectForContext();}
   function appendEmailFallback(message){status.textContent=''; if(message)status.appendChild(document.createTextNode(message+' ')); var link=document.createElement('a'); link.href='mailto:hello@partylan.co.uk'; link.textContent='Email Party.LAN directly.'; status.appendChild(link);}
   intent.value=resetIntent; pkg.value=resetPackage;
   eventDetailsRevealed=intent.value==='booking'; syncContactContext();
@@ -85,7 +98,7 @@ function initContact(component){
     if(!data.name||data.name.trim().length<2||data.name.length>80)bad.push(['name','Enter your name.']);
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email||''))bad.push(['email','Enter a valid email address.']);
     var msg=(data.message||'').trim(); if(msg && (msg.length<10||msg.length>2000))bad.push(['message','Use 10 to 2000 characters, or leave it blank when booking details explain enough.']);
-    if(currentIntent==='question'&&!msg)bad.push(['message','Enter a message.']);
+    if(currentIntent!=='booking'&&!msg)bad.push(['message','Enter a message.']);
     if(currentIntent==='booking'){
       if(data.phone && (data.phone.length<7||data.phone.length>30))bad.push(['phone','Enter a valid phone number, or leave it blank.']);
       if(data.location && data.location.length<2)bad.push(['location','Enter a town or postcode, or leave it blank.']);
@@ -111,14 +124,6 @@ function initContact(component){
   form.setContactIntent=function(nextIntent,nextPackage){resetIntent=supportedIntent(nextIntent); resetPackage=supportedPackage(nextPackage); intent.value=resetIntent; pkg.value=resetPackage; eventDetailsRevealed=intent.value==='booking'; syncContactContext();};
 }
 document.querySelectorAll('[data-contact-component]').forEach(initContact);
-document.querySelectorAll('.packages-decision').forEach(function(section){
-  var inline=document.getElementById('packages-contact'); if(!inline)return;
-  function currentPackage(){var selected=document.querySelector('.package-tab[aria-selected="true"]'); return matchMedia('(max-width: 920px)').matches && selected ? selected.dataset.packageTab : 'unsure';}
-  function open(intent){inline.hidden=false; var form=inline.querySelector('form'); if(form){var nextPackage=intent==='booking'?currentPackage():'unsure'; if(form.setContactIntent)form.setContactIntent(intent,nextPackage); else {form.elements.intent.value=intent; form.elements.package.value=nextPackage; form.elements.intent.dispatchEvent(new Event('change'));}} document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open'); var b=x.querySelector('button'); if(b)b.setAttribute('aria-expanded','false')}); inline.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
-  var reserve=section.querySelector('.packages-decision__reserve'); if(reserve)reserve.addEventListener('click',function(e){e.preventDefault(); open('booking')});
-  section.querySelectorAll('[data-support-toggle="ask"]').forEach(function(b){b.addEventListener('click',function(){open('question')});});
-});
-
 var atmosphere=document.querySelector('.site-background__middle');
 if(atmosphere){
   var reduceBg=matchMedia('(prefers-reduced-motion: reduce)').matches;
