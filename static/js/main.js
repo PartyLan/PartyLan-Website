@@ -66,6 +66,8 @@ function initPackagesDecision(section){
   var contact=section.querySelector('[data-decision-contact]');
   var closeTimer=null;
   var closeTransitionHandler=null;
+  var scrollCorrectionTimer=null;
+  var scrollTransitionHandler=null;
 
   function currentPackage(){
     var selected=document.querySelector('.package-tab[aria-selected="true"]');
@@ -97,17 +99,42 @@ function initPackagesDecision(section){
     });
   }
 
-  function scrollDecisionExpansionIntoView(){
+  function getDecisionScrollTarget(mode){
+    if(mode==='booking'||mode==='question')return section.querySelector('[data-decision-contact] .contact-form-shell');
+    if(mode==='questions')return section.querySelector('.package-faq-list');
+    return expansion;
+  }
+
+  function scrollDecisionContentIntoView(mode, correctionOnly){
     requestAnimationFrame(function(){requestAnimationFrame(function(){
+      if(currentMode!==mode)return;
+      var target=getDecisionScrollTarget(mode);
+      if(!target)return;
       var header=document.querySelector('.site-header');
       var headerRect=header?header.getBoundingClientRect():null;
       var headerHeight=headerRect&&headerRect.bottom>0?Math.min(headerRect.height,headerRect.bottom):0;
-      var rect=expansion.getBoundingClientRect();
-      var availableHeight=window.innerHeight-headerHeight;
-      var expansionTop=window.scrollY+rect.top;
-      var offset=rect.height>availableHeight?24:Math.max(20,(availableHeight-rect.height)/2);
-      window.scrollTo({top:Math.max(0,expansionTop-headerHeight-offset),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+      var rect=target.getBoundingClientRect();
+      var usableHeight=window.innerHeight-headerHeight;
+      var usableCentre=headerHeight+(usableHeight/2);
+      var difference=(rect.top+(rect.height/2))-usableCentre;
+      if(correctionOnly&&Math.abs(difference)<=14)return;
+      var targetScroll;
+      if(mode==='questions'&&rect.height>usableHeight){targetScroll=window.scrollY+rect.top-headerHeight-24;}
+      else{targetScroll=window.scrollY+rect.top+(rect.height/2)-usableCentre;}
+      window.scrollTo({top:Math.max(0,targetScroll),behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
     });});
+  }
+
+  function cancelScrollCorrection(){
+    if(scrollCorrectionTimer!==null){window.clearTimeout(scrollCorrectionTimer);scrollCorrectionTimer=null;}
+    if(scrollTransitionHandler){expansion.removeEventListener('transitionend',scrollTransitionHandler);scrollTransitionHandler=null;}
+  }
+
+  function scheduleScrollCorrection(mode){
+    function correct(){cancelScrollCorrection();scrollDecisionContentIntoView(mode,true);}
+    scrollTransitionHandler=function(event){if(event.target===expansion&&event.propertyName==='grid-template-rows')correct();};
+    expansion.addEventListener('transitionend',scrollTransitionHandler);
+    scrollCorrectionTimer=window.setTimeout(correct,340);
   }
 
   function cancelCloseCleanup(){
@@ -127,6 +154,7 @@ function initPackagesDecision(section){
     var nextMode=currentMode===requestedMode?'none':requestedMode;
     var wasClosed=currentMode==='none';
     cancelCloseCleanup();
+    cancelScrollCorrection();
     currentMode=nextMode;
     section.dataset.activeMode=nextMode;
     syncControls(nextMode);
@@ -142,10 +170,11 @@ function initPackagesDecision(section){
     setContactContext(nextMode);
     expansion.hidden=false;
     if(wasClosed){
-      requestAnimationFrame(function(){expansion.classList.add('is-open');scrollDecisionExpansionIntoView();});
+      requestAnimationFrame(function(){expansion.classList.add('is-open');scrollDecisionContentIntoView(nextMode,false);scheduleScrollCorrection(nextMode);});
     }else{
       expansion.classList.add('is-open');
-      scrollDecisionExpansionIntoView();
+      scrollDecisionContentIntoView(nextMode,false);
+      scheduleScrollCorrection(nextMode);
     }
   }
 
