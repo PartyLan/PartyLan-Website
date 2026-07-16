@@ -1422,7 +1422,8 @@ body { padding-bottom: 0 !important; }
   --home-hero-fade-centre-x: 50%;
   --home-hero-fade-centre-y: 28%;
   --home-hero-fade-radius-x: 52%;
-  --home-hero-fade-radius-y: 82%;
+  /* End the ellipse before the media box so its bottom can never clip flat. */
+  --home-hero-fade-radius-y: 70%;
   --home-hero-fade-solid: 30%;
   --home-hero-fade-soft: 58%;
 
