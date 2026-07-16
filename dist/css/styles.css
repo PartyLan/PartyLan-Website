@@ -551,7 +551,7 @@ body::before, body::after { display: none; }
 .faq-item button:focus-visible, .legal-accordion__item button:focus-visible, .button:focus-visible, .theme-toggle:focus-visible, .menu-toggle:focus-visible, [role=tab]:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 3px; }
 .final-cta > div { background: radial-gradient(circle at 18% 0, color-mix(in srgb, var(--accent-shared) 18%, transparent), transparent 45%), radial-gradient(circle at 84% 28%, color-mix(in srgb, var(--accent-jade) 13%, transparent), transparent 42%), var(--surface); }
 .site-footer { max-width: var(--container); border-top: 1px solid var(--border-soft); color: var(--text-muted); background: transparent; }
-@media (max-width: 920px) { .site-background__middle { will-change: auto; } .header-cta { display: none; } .site-menu { border-radius: var(--radius-section); background: var(--surface); } } }
+@media (max-width: 920px) { .site-background__middle { will-change: auto; } .header-cta { display: none; } .site-menu { border-radius: var(--radius-section); background: var(--surface); } }
 @media (prefers-reduced-motion: reduce) { .site-background__middle { transform: none !important; will-change: auto; } .hero__media-pan, .hero__media-breathe, .showcase-slide__pan, .showcase-slide__breathe { animation: none !important; transform: none !important; will-change: auto; } }
 
 /* final animation/button conflict guards */
@@ -979,112 +979,6 @@ body { padding-bottom: 0 !important; }
 }
 @media (max-width: 430px) { .showcase { aspect-ratio: 1 / 1; } }
 
-/* PR 21 follow-up: faster single-layer media motion and seam-free mobile hero. */
-.hero--home .hero__picture {
-  overflow: hidden;
-  isolation: isolate;
-}
-.hero--home .hero__picture::before,
-.hero--home .hero__picture::after {
-  inset: -2px;
-}
-.hero--home .hero__media-pan {
-  inset: -6%;
-  animation: hero-focus-cycle 12s infinite;
-  transform-origin: 50% 44%;
-  backface-visibility: hidden;
-  will-change: transform;
-}
-.hero--home .hero__media-breathe {
-  inset: 0;
-  animation: none !important;
-  transform: none;
-  will-change: auto;
-}
-@keyframes hero-focus-cycle {
-  0% {
-    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  42% {
-    transform: translate3d(0, 0, 0) scale3d(1.24, 1.24, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  52% {
-    transform: translate3d(-1.4%, -.45%, 0) scale3d(1.24, 1.24, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
-  }
-}
-.showcase-slide.is-active .showcase-slide__pan {
-  animation: showcase-focus-cycle 12s infinite;
-  transform-origin: 50% 48%;
-}
-@keyframes showcase-focus-cycle {
-  0% {
-    transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  42% {
-    transform: translate3d(0, 0, 0) scale3d(1.22, 1.22, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  52% {
-    transform: translate3d(-1.35%, -.4%, 0) scale3d(1.22, 1.22, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1);
-  }
-}
-@media (max-width: 920px) {
-  .hero--home .hero__picture {
-    top: -2px !important;
-    right: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    border-radius: 0 0 clamp(3rem, 12vw, 5rem) 0 !important;
-    -webkit-mask-image: none !important;
-    mask-image: none !important;
-  }
-  .showcase-slide.is-active .showcase-slide__pan {
-    animation-name: showcase-focus-cycle-mobile;
-    animation-duration: 12s;
-  }
-}
-@keyframes showcase-focus-cycle-mobile {
-  0% {
-    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  42% {
-    transform: translate3d(0, 0, 0) scale3d(1.26, 1.26, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  52% {
-    transform: translate3d(-1.25%, -.35%, 0) scale3d(1.26, 1.26, 1);
-    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
-  }
-  100% {
-    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero--home .hero__media-pan,
-  .showcase-slide.is-active .showcase-slide__pan {
-    animation: none !important;
-    transform: scale(1.12) !important;
-    will-change: auto;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .showcase-slide,
-  .showcase-slide__pan,
-  .showcase-slide__breathe { transition: none !important; animation: none !important; transform: none !important; will-change: auto !important; }
-}
-
 /* Packages decision */
 .package-tabs { display: none; }
 .packages-decision {
@@ -1340,3 +1234,121 @@ body { padding-bottom: 0 !important; }
   .faq-item button, .faq-item__answer p, .feature-list, .legal-page, .legal-page *, .contact-form-shell, .contact-form-shell *, .site-menu a { text-align: left; }
 }
 @media (max-width: 430px) { .showcase { aspect-ratio: 1 / 1; } }
+
+/*
+ * STATIC MEDIA AND MOBILE PERFORMANCE OVERRIDES
+ * ---------------------------------------------------------------
+ * Keep this block at the end of the file. This stylesheet contains
+ * historical component revisions above, so these final declarations are
+ * the source of truth for image motion and the low-power mobile treatment.
+ *
+ * Images may cross-fade when a gallery slide or colour theme changes, but
+ * no image or image wrapper is allowed to pan, zoom, or "breathe".
+ */
+.hero__media-motion,
+.hero__media-pan,
+.hero__media-breathe,
+.showcase-slide__pan,
+.showcase-slide__breathe,
+.showcase-slide__breathe img,
+.testimonial-slide img {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+.hero__media-motion,
+.hero__media-pan,
+.hero__media-breathe,
+.showcase-slide__pan,
+.showcase-slide__breathe {
+  inset: 0 !important;
+}
+.hero__image,
+.showcase-slide__breathe img,
+.testimonial-slide img {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto !important;
+}
+.showcase-slide,
+.testimonial-slide {
+  transform: none !important;
+  transition-property: opacity !important;
+}
+
+@media (max-width: 920px) {
+  /*
+   * Bleed the hero image two pixels beyond both viewport edges. The former
+   * horizontal fade ended exactly at x=0 and could expose a sharp one-pixel
+   * line after browser rounding. Mobile now uses only a bottom fade.
+   */
+  .hero--home .hero__picture {
+    top: -2px !important;
+    right: -2px !important;
+    left: -2px !important;
+    width: auto !important;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 0 0 clamp(3rem, 12vw, 5rem) 0 !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+  }
+  .hero--home .hero__picture::before { display: none !important; }
+  .hero--home .hero__picture::after {
+    inset: -2px !important;
+    background: linear-gradient(180deg, transparent 72%, var(--bg) 100%) !important;
+  }
+
+  /*
+   * Phone rendering path: remove effects that cause repeated large-area
+   * compositing while scrolling. Borders and solid/translucent fills retain
+   * the visual hierarchy without fixed parallax, blur, or oversized shadows.
+   */
+  .site-background__middle { display: none !important; }
+  .site-background__top,
+  .site-background__bottom { left: 0; right: 0; }
+  .site-header,
+  .site-menu__panel,
+  .reassurance ul,
+  .hero--home .hero__content,
+  .showcase-slide figcaption,
+  .showcase-indicators,
+  .testimonial-slide__content::before,
+  .testimonial-dots {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  .hero--home .hero__picture,
+  .showcase,
+  .testimonial-stage,
+  .package-card,
+  .step-card,
+  .addons-panel,
+  .packages-decision,
+  .package-enquiry,
+  .contact-form-shell,
+  .final-cta > div {
+    box-shadow: none !important;
+  }
+  .showcase-slide,
+  .testimonial-slide { transition-duration: .2s !important; }
+
+  /* Reveal-on-scroll transforms add work during the busiest mobile action. */
+  .js .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+@media (hover: none) {
+  /* Touch screens do not need hover-only transforms or their extra layers. */
+  .button:hover,
+  .quiet-button:hover,
+  .theme-toggle:hover,
+  .menu-toggle:hover,
+  .how-section .step-card:hover .step-card__media {
+    transform: none !important;
+    box-shadow: none !important;
+  }
+}

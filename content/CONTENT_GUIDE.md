@@ -201,9 +201,9 @@ Each reassurance item may include an optional `icon` path and `icon_alt`. Leave 
 
 FAQ rows may include optional `link_label` and `link_href` columns. Use both columns together or leave both empty. The Terms & Conditions link is now part of the Terms FAQ item rather than a separate button beneath the accordion.
 
-## Motion and reduced motion
+## Static images and reduced motion
 
-Hero and Shared Experience images use slow CSS pan/breathing animations. These are decorative and use transform/opacity only. Reduced-motion users keep all content and manual controls, but decorative pan/breathing and autoplay are disabled or paused.
+Hero, gallery and testimonial photos are intentionally static. Do not add pan, zoom or breathing transforms to them. Gallery slides may cross-fade when the selected image changes. Reduced-motion users keep all content and manual controls, and automatic gallery advancement remains disabled or paused.
 
 
 ## Latest layout and interaction notes
@@ -214,7 +214,7 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
 - Reassurance items reserve an icon-ready slot. Leave `icon` empty for the CSS placeholder, or set it to an existing `/assets/images/<filename>` asset when a future approved graphic is available.
 - FAQ records may include `link_label` and `link_href` together. The Terms & Conditions link is part of the FAQ answer itself, not a separate button below the accordion.
 - The wide visual container scales major image-led compositions for large CSS viewports; ordinary body copy remains constrained, so content editors do not need to shorten text for wide screens.
-- Hero, testimonial and showcase motion is decorative CSS transform/opacity animation only and is disabled for `prefers-reduced-motion`.
+- Hero, testimonial and showcase photos remain static in every motion preference. Only the active slide/theme image may cross-fade.
 
 ## Navigation, package accordions and mobile utility controls
 
