@@ -145,8 +145,8 @@ def validate_rows(rel, required, kind, pkg_ids=None):
     return sorted(out,key=lambda r:r['_order'])
 def validate_legal(rel):
     d=read_json(Path('legal')/(rel+'.json')); file=f'content/legal/{rel}.json'
-    req_text(file,d,'title','page'); req_text(file,d,'draft_warning','page')
-    for optional_key in ['last_updated','summary']:
+    req_text(file,d,'title','page')
+    for optional_key in ['last_updated','draft_warning','summary']:
         if optional_key in d: req_text(file,d,optional_key,'page')
     sections=d.get('sections')
     if not isinstance(sections,list) or not sections:
@@ -391,8 +391,9 @@ def legal_page(home,d,slug):
         items.append(f'<div class="legal-accordion__item"><h2><button type="button" aria-expanded="false" aria-controls="{section_id}" id="{button_id}"><span class="legal-accordion__label">{esc(section["title"])}</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></h2><div class="legal-accordion__answer" id="{section_id}" role="region" aria-labelledby="{button_id}"><div class="legal-accordion__answer-inner"><div class="legal-content">{content}</div></div></div></div>')
     accordion=''.join(items)
     updated=f'<p class="legal-page__updated">Last updated: {esc(d["last_updated"])}</p>' if d.get('last_updated') else ''
+    notice=f'<p class="legal-page__notice">{esc(d["draft_warning"])}</p>' if d.get('draft_warning') else ''
     summary=f'<p class="legal-page__summary">{esc(d["summary"])}</p>' if d.get('summary') else ''
-    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1>{updated}<p class="legal-page__notice">{esc(d["draft_warning"])}</p>{summary}</header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1>{updated}{notice}{summary}</header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 def main():
     for rel in REQUIRED_FILES:
         if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
