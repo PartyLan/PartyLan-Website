@@ -7,7 +7,7 @@ ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'stati
 ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
 REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','packages_faq.csv','legal/terms.json','legal/privacy.json']
 PACKAGE_FACTS={'onyx':{'name':'ONYX','label':'Premium Experience','price':'£150','duration':'2 hours','capacity':'Up to 6 players','included':['PlayStation and Nintendo gaming','Racing simulator','VR hardware','Displays','Party host/operator','Free digital invitation']},'jade':{'name':'JADE','label':'Big Party','price':'£150','duration':'2 hours','capacity':'Up to 10 players','included':['Multiplayer gaming across multiple stations','Displays','Party host/operator','Free digital invitation']}}
-LEGAL_SECTIONS={'terms':['introduction','booking','payment','cancellation','venue_access','room_and_power_requirements','supervision','equipment_care','damage','travel','contact'],'privacy':['introduction','information_collected','purpose_of_processing','service_providers','retention','customer_rights','contact']}
+LEGAL_BLOCK_TYPES={'paragraph','list','definitions','fields'}
 # Validation helpers
 def err(f,k,r): ERRORS.append(f'{f} {k}: {r}')
 def esc(v): return html.escape(str(v), quote=True)
@@ -143,10 +143,58 @@ def validate_rows(rel, required, kind, pkg_ids=None):
             if href and href not in {'/terms/','/privacy/','/#booking','/packages/','/#faq'}: err(file,ctx,'unsupported local FAQ link route')
         if visible: out.append(r)
     return sorted(out,key=lambda r:r['_order'])
-def validate_legal(rel, key):
+def validate_legal(rel):
     d=read_json(Path('legal')/(rel+'.json')); file=f'content/legal/{rel}.json'
     req_text(file,d,'title','page'); req_text(file,d,'draft_warning','page')
-    for s in LEGAL_SECTIONS[key]: req_text(file,d.get('sections',{}),s,'sections')
+    sections=d.get('sections')
+    if not isinstance(sections,list) or not sections:
+        err(file,'sections','must be a non-empty list')
+        return d
+    section_ids=set()
+    for section_index,section in enumerate(sections):
+        ctx=f'sections[{section_index}]'
+        if not isinstance(section,dict):
+            err(file,ctx,'must be an object')
+            continue
+        section_id=req_text(file,section,'id',ctx)
+        req_text(file,section,'title',ctx)
+        if section_id in section_ids: err(file,ctx+'.id',f'duplicate section ID "{section_id}"')
+        section_ids.add(section_id)
+        blocks=section.get('blocks')
+        if not isinstance(blocks,list) or not blocks:
+            err(file,ctx+'.blocks','must be a non-empty list')
+            continue
+        for block_index,block in enumerate(blocks):
+            block_ctx=f'{ctx}.blocks[{block_index}]'
+            if not isinstance(block,dict):
+                err(file,block_ctx,'must be an object')
+                continue
+            block_type=block.get('type')
+            if block_type not in LEGAL_BLOCK_TYPES:
+                err(file,block_ctx+'.type',f'expected one of {sorted(LEGAL_BLOCK_TYPES)}')
+                continue
+            if block_type=='paragraph':
+                req_text(file,block,'text',block_ctx)
+            elif block_type=='list':
+                if block.get('style') not in {'bulleted','numbered'}: err(file,block_ctx+'.style','must be bulleted or numbered')
+                items=block.get('items')
+                if not isinstance(items,list) or not items: err(file,block_ctx+'.items','must be a non-empty list')
+                else:
+                    for item_index,item in enumerate(items):
+                        if not isinstance(item,str) or not item.strip(): err(file,f'{block_ctx}.items[{item_index}]','must be non-empty text')
+            elif block_type=='definitions':
+                items=block.get('items')
+                if not isinstance(items,list) or not items: err(file,block_ctx+'.items','must be a non-empty list')
+                else:
+                    for item_index,item in enumerate(items):
+                        item_ctx=f'{block_ctx}.items[{item_index}]'
+                        req_text(file,item,'term',item_ctx); req_text(file,item,'text',item_ctx)
+            elif block_type=='fields':
+                items=block.get('items')
+                if not isinstance(items,list) or not items: err(file,block_ctx+'.items','must be a non-empty list')
+                else:
+                    for item_index,item in enumerate(items):
+                        if not isinstance(item,str) or not item.strip(): err(file,f'{block_ctx}.items[{item_index}]','must be non-empty text')
     return d
 # Build output helpers
 def copy_assets():
@@ -285,13 +333,31 @@ def contact_page(home, web3forms_access_key):
     return head(home,'Contact Party.LAN','Start a booking enquiry or ask Party.LAN a question.')+f"""<body id=\"top\"><div class=\"site-background\" aria-hidden=\"true\"><div class=\"site-background__top\"></div><div class=\"site-background__middle\"></div><div class=\"site-background__bottom\"></div></div><a class=\"skip-link\" href=\"#main\">Skip to content</a>{header(home,'/')}<main id=\"main\" class=\"site-shell contact-page\"><section class=\"section contact-section\" aria-labelledby=\"contact-title\"><div class=\"section-heading reveal\"><p class=\"eyebrow\">CONTACT</p><h1 id=\"contact-title\">How can we help?</h1><p>Start a booking enquiry or ask us anything before deciding.</p></div>{contact_form('contact-page-form', access_key=web3forms_access_key, allow_event_disclosure=False)}</section></main>{footer(home,'/')}<script src=\"/js/main.js\" defer></script></body></html>"""
 
 # Legal rendering
+def legal_blocks(blocks):
+    rendered=[]
+    for block in blocks:
+        block_type=block['type']
+        if block_type=='paragraph':
+            rendered.append(f'<p>{esc(block["text"])}</p>')
+        elif block_type=='list':
+            tag='ol' if block['style']=='numbered' else 'ul'
+            items=''.join(f'<li>{esc(item)}</li>' for item in block['items'])
+            rendered.append(f'<{tag} class="legal-content__list legal-content__list--{esc(block["style"])}">{items}</{tag}>')
+        elif block_type=='definitions':
+            items=''.join(f'<div><dt>{esc(item["term"])}</dt><dd>{esc(item["text"])}</dd></div>' for item in block['items'])
+            rendered.append(f'<dl class="legal-definitions">{items}</dl>')
+        elif block_type=='fields':
+            items=''.join(f'<div><dt>{esc(item)}</dt><dd aria-hidden="true"></dd></div>' for item in block['items'])
+            rendered.append(f'<dl class="legal-fields">{items}</dl>')
+    return ''.join(rendered)
 def legal_page(home,d,slug):
     items=[]
-    for key,text in d['sections'].items():
-        safe_key=''.join(ch if ch.isalnum() else '-' for ch in key.lower()).strip('-')
-        section_id=f'legal-{slug}-{safe_key}'
-        button_id=f'legal-button-{slug}-{safe_key}'
-        items.append(f'<div class="legal-accordion__item"><h2><button type="button" aria-expanded="false" aria-controls="{section_id}" id="{button_id}"><span class="legal-accordion__label">{esc(key.replace("_"," ").title())}</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></h2><div class="legal-accordion__answer" id="{section_id}" role="region" aria-labelledby="{button_id}"><div class="legal-accordion__answer-inner"><p>{esc(text)}</p></div></div></div>')
+    for section in d['sections']:
+        safe_id=''.join(ch if ch.isalnum() else '-' for ch in section['id'].lower()).strip('-')
+        section_id=f'legal-{slug}-{safe_id}'
+        button_id=f'legal-button-{slug}-{safe_id}'
+        content=legal_blocks(section['blocks'])
+        items.append(f'<div class="legal-accordion__item"><h2><button type="button" aria-expanded="false" aria-controls="{section_id}" id="{button_id}"><span class="legal-accordion__label">{esc(section["title"])}</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></h2><div class="legal-accordion__answer" id="{section_id}" role="region" aria-labelledby="{button_id}"><div class="legal-accordion__answer-inner"><div class="legal-content">{content}</div></div></div></div>')
     accordion=''.join(items)
     return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1><p class="legal-page__notice">{esc(d["draft_warning"])}</p></header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 def main():
@@ -305,7 +371,7 @@ def main():
     package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
     live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
-    terms=validate_legal('terms','terms'); privacy=validate_legal('privacy','privacy')
+    terms=validate_legal('terms'); privacy=validate_legal('privacy')
     web3forms_access_key=esc(os.environ.get('WEB3FORMS_ACCESS_KEY','').strip())
     if ERRORS:
         print('Build failed with content validation errors:',file=sys.stderr); print('\n'.join('- '+e for e in ERRORS),file=sys.stderr); sys.exit(1)
