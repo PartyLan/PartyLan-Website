@@ -283,9 +283,15 @@ def contact_page(home, web3forms_access_key):
     return head(home,'Contact Party.LAN','Start a booking enquiry or ask Party.LAN a question.')+f"""<body id=\"top\"><div class=\"site-background\" aria-hidden=\"true\"><div class=\"site-background__top\"></div><div class=\"site-background__middle\"></div><div class=\"site-background__bottom\"></div></div><a class=\"skip-link\" href=\"#main\">Skip to content</a>{header(home,'/')}<main id=\"main\" class=\"site-shell contact-page\"><section class=\"section contact-section\" aria-labelledby=\"contact-title\"><div class=\"section-heading reveal\"><p class=\"eyebrow\">CONTACT</p><h1 id=\"contact-title\">How can we help?</h1><p>Start a booking enquiry or ask us anything before deciding.</p></div>{contact_form('contact-page-form', access_key=web3forms_access_key, allow_event_disclosure=False)}</section></main>{footer(home,'/')}<script src=\"/js/main.js\" defer></script></body></html>"""
 
 # Legal rendering
-def legal_page(home,d):
-    sections=''.join(f'<section><h2>{esc(k.replace("_"," ").title())}</h2><p>{esc(v)}</p></section>' for k,v in d['sections'].items())
-    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell"><article class="legal-page"><header class="legal-page__header"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><h1>{esc(d["title"])}</h1><p class="draft-warning">{esc(d["draft_warning"])}</p></header><div class="legal-page__sections">{sections}</div></article></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+def legal_page(home,d,slug):
+    items=[]
+    for key,text in d['sections'].items():
+        safe_key=''.join(ch if ch.isalnum() else '-' for ch in key.lower()).strip('-')
+        section_id=f'legal-{slug}-{safe_key}'
+        button_id=f'legal-button-{slug}-{safe_key}'
+        items.append(f'<div class="legal-accordion__item"><h2><button type="button" aria-expanded="false" aria-controls="{section_id}" id="{button_id}"><span class="legal-accordion__label">{esc(key.replace("_"," ").title())}</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></h2><div class="legal-accordion__answer" id="{section_id}" role="region" aria-labelledby="{button_id}"><div class="legal-accordion__answer-inner"><p>{esc(text)}</p></div></div></div>')
+    accordion=''.join(items)
+    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1><p class="legal-page__notice">{esc(d["draft_warning"])}</p></header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 def main():
     for rel in REQUIRED_FILES:
         if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
@@ -305,8 +311,8 @@ def main():
     (DIST/'index.html').write_text(home_page(home,gallery,faq_rows,live,web3forms_access_key),encoding='utf-8')
     (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo,web3forms_access_key),encoding='utf-8')
     (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons,package_faq_rows,web3forms_access_key),encoding='utf-8')
-    (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms),encoding='utf-8')
-    (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy),encoding='utf-8')
+    (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms,'terms'),encoding='utf-8')
+    (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy,'privacy'),encoding='utf-8')
     (DIST/'contact').mkdir(); (DIST/'contact'/'index.html').write_text(contact_page(home,web3forms_access_key),encoding='utf-8')
     print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials, {len(faq_rows)} landing FAQs and {len(package_faq_rows)} package FAQs.')
 if __name__=='__main__': main()

@@ -190,6 +190,24 @@ function initPackagesDecision(section){
 }
 document.querySelectorAll('.package-faq-item button').forEach(function(b){b.addEventListener('click',function(){var item=b.closest('.package-faq-item'),open=b.getAttribute('aria-expanded')!=='true';document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open');var xb=x.querySelector('button');if(xb)xb.setAttribute('aria-expanded','false')});item.classList.toggle('is-open',open);b.setAttribute('aria-expanded',String(open));});});
 
+function initLegalAccordion(list){
+  var items=[].slice.call(list.querySelectorAll('.legal-accordion__item'));
+  items.forEach(function(item){
+    var button=item.querySelector('button');
+    if(!button)return;
+    button.addEventListener('click',function(){
+      var shouldOpen=button.getAttribute('aria-expanded')!=='true';
+      items.forEach(function(otherItem){
+        var otherButton=otherItem.querySelector('button');
+        var active=otherItem===item&&shouldOpen;
+        otherItem.classList.toggle('is-open',active);
+        if(otherButton)otherButton.setAttribute('aria-expanded',String(active));
+      });
+    });
+  });
+}
+document.querySelectorAll('[data-legal-accordion]').forEach(initLegalAccordion);
+
 function initContact(component){
   var form=component.querySelector('[data-contact-form]'), success=component.querySelector('[data-contact-success]'), status=component.querySelector('[data-contact-status]'); if(!form)return;
   form.noValidate=true;
