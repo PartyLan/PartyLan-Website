@@ -255,17 +255,21 @@ For the desktop homepage hero, these are the main controls:
 
 ```css
 --home-hero-media-top: 0px;       /* aligns the photograph with the hero top */
---home-hero-media-width: clamp(960px, 82vw, 1680px);
---home-hero-fade-centre-x: 62%;   /* move the radial fade left or right */
---home-hero-fade-centre-y: 42%;   /* move the radial fade up or down */
---home-hero-fade-solid: 42%;      /* fully visible inner area */
---home-hero-fade-soft: 72%;       /* partly transparent transition */
+--home-hero-media-side-gap: clamp(1.5rem, 4vw, 5rem);
+--home-hero-media-bottom-bleed: clamp(8rem, 12vw, 14rem);
+--home-hero-fade-centre-x: 50%;   /* keep the fade centred while resizing */
+--home-hero-fade-centre-y: 28%;   /* move the radial fade up or down */
+--home-hero-fade-solid: 30%;      /* fully visible inner area */
+--home-hero-fade-soft: 58%;       /* partly transparent transition */
 ```
 
-Increase `--home-hero-media-width` to bleed the photograph farther beneath
-the heading. Lower `--home-hero-fade-centre-x` to shift the strongest part of
-the image toward the text. Increase `--home-hero-fade-solid` for more fully
-visible image, or decrease it for a softer fade.
+The media is centred in the hero and keeps the same gap on both sides, so it
+does not drift out of the viewport as the window is resized. Reduce
+`--home-hero-media-side-gap` for a wider image. Increase
+`--home-hero-media-bottom-bleed` to carry the fade farther beneath the
+reassurance panel. Lower `--home-hero-fade-centre-x` to shift the strongest
+part of the image toward the text. Increase `--home-hero-fade-solid` for more
+fully visible image, or decrease it for a softer fade.
 
 The packages hero uses three controls:
 
