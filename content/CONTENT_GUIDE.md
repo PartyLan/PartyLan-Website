@@ -87,7 +87,40 @@ Edit `content/faq.csv`. Keep questions short and answers clear. Hide an FAQ with
 
 ### Edit legal draft text
 
-Edit `content/legal/terms.json` or `content/legal/privacy.json`. Keep the draft warning unless the legal text has been professionally reviewed. Do not present placeholders as final advice.
+Edit `content/legal/terms.json` or `content/legal/privacy.json`. A `draft_warning` may be added while content is under review, but it is optional for final documents.
+
+Each legal page contains an ordered `sections` list. Every section needs a unique `id`, the visible accordion `title`, and one or more structured `blocks`. This keeps legal copy editable without placing HTML inside JSON. A page may also include `last_updated` and `summary` text beneath its title.
+
+Supported block types are:
+
+- `paragraph` with a `text` value.
+- `list` with `style` set to `bulleted` or `numbered` and an `items` list.
+- `definitions` with `items` containing a `term` and its `text`. Add an optional `href` beginning with `https://` or `mailto:` when the value should be a link.
+- `fields` with a list of labels for printable declaration lines.
+- `table` with an accessible `label`, keyed `columns`, and matching `rows`. Tables scroll horizontally on narrow screens.
+
+Example:
+
+```json
+{
+  "id": "equipment-care",
+  "title": "6. Equipment Care",
+  "blocks": [
+    {
+      "type": "paragraph",
+      "text": "Charges may apply for:"
+    },
+    {
+      "type": "list",
+      "style": "bulleted",
+      "items": [
+        "Deliberate damage.",
+        "Missing equipment or accessories."
+      ]
+    }
+  ]
+}
+```
 
 ## Build and preview
 

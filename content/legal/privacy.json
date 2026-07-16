@@ -1,1 +1,455 @@
-{"title":"Privacy Policy","draft_warning":"Draft placeholder: this privacy page is not final legal advice and should be reviewed before use.","sections":{"introduction":"This draft explains the type of information Party.LAN may need to handle enquiries and hosted party planning.","information_collected":"Information may include contact details, event details, venue notes, room photos or rough dimensions shared by the customer.","purpose_of_processing":"Information is used to respond to enquiries, plan suitable setups and communicate about Party.LAN services.","service_providers":"Trusted service providers may be used where needed for website hosting, communication or operational support.","retention":"Retention periods are draft placeholders and will be confirmed in the final privacy policy.","customer_rights":"Customer rights information should be reviewed and completed before this page is treated as final.","contact":"Use the contact route on the homepage for privacy questions."}}
+{
+  "title": "Privacy Policy",
+  "last_updated": "17 July 2026",
+  "summary": "This Privacy Policy explains how Party.LAN collects, uses, stores and protects personal information when people visit our website, contact us, make a booking, attend an event, or agree to photography or marketing.",
+  "sections": [
+    {
+      "id": "who-we-are",
+      "title": "1. Who we are",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Party.LAN is a trading name operated by Piotr Dziubek and Mega Rahmasari. The person operating Party.LAN is the data controller responsible for the personal information described in this policy."
+        },
+        {
+          "type": "definitions",
+          "items": [
+            {
+              "term": "Website",
+              "text": "partylan.co.uk",
+              "href": "https://partylan.co.uk"
+            },
+            {
+              "term": "Privacy contact",
+              "text": "hello@partylan.co.uk",
+              "href": "mailto:hello@partylan.co.uk"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "who-this-policy-covers",
+      "title": "2. Who this policy covers",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "This policy applies to prospective and confirmed customers, website visitors, people who contact us, event attendees whose information we receive, and people appearing in photographs or videos used by Party.LAN."
+        },
+        {
+          "type": "paragraph",
+          "text": "Third-party gaming platforms, social networks and payment services have their own privacy policies. This policy does not control how those organisations use information provided directly to them."
+        }
+      ]
+    },
+    {
+      "id": "personal-information-we-may-collect",
+      "title": "3. Personal information we may collect",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Depending on how you interact with us, we may collect:"
+        },
+        {
+          "type": "list",
+          "style": "bulleted",
+          "items": [
+            "Contact information, such as your name, email address, telephone number and preferred contact method.",
+            "Enquiry and booking information, such as the requested date, package, number and age range of participants, event times and messages exchanged with us.",
+            "Venue and delivery information, including the event address, access instructions, parking or loading details, room dimensions, power and internet information, and photographs supplied to help us plan a safe setup.",
+            "Payment and administration information, such as the amount paid, deposit status, invoices, refunds and transaction references. We do not intend to store complete payment-card details ourselves.",
+            "Safety or accessibility information that you choose to provide and that is reasonably necessary to plan the service. If this includes health information, we will ask for explicit consent where required and restrict access to it.",
+            "Marketing preferences, including when and how you opted in or opted out.",
+            "Photographs, video or audio from an event, but only where the required separate permission has been obtained.",
+            "Basic technical information generated when you use the website, such as IP address, browser or device type, access time, requested pages and security or server logs. The website does not currently use analytics or advertising trackers."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "how-we-collect-information",
+      "title": "4. How we collect information",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We collect personal information:"
+        },
+        {
+          "type": "list",
+          "style": "bulleted",
+          "items": [
+            "Directly from you through the website contact or booking form, email, telephone or other communications.",
+            "During booking preparation and at the event.",
+            "From the person arranging an event where they provide relevant information about another attendee.",
+            "Automatically through essential website hosting, security and server-log functions."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "If you provide another person’s information, please make sure you have a proper reason and authority to do so, and tell them about this policy where appropriate."
+        }
+      ]
+    },
+    {
+      "id": "how-and-why-we-use-personal-information",
+      "title": "5. How and why we use personal information",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "UK data protection law requires us to identify a lawful basis for each purpose. The main purposes and bases we expect to use are:"
+        },
+        {
+          "type": "table",
+          "label": "Purposes for using personal information and their lawful bases",
+          "columns": [
+            {
+              "key": "purpose",
+              "label": "Purpose"
+            },
+            {
+              "key": "information",
+              "label": "Information"
+            },
+            {
+              "key": "lawful_basis",
+              "label": "Lawful basis"
+            }
+          ],
+          "rows": [
+            {
+              "purpose": "Responding to questions, checking availability and preparing a quotation",
+              "information": "Contact and enquiry details",
+              "lawful_basis": "Steps requested before entering a contract"
+            },
+            {
+              "purpose": "Confirming, planning and delivering a booking",
+              "information": "Contact, event, venue and booking details",
+              "lawful_basis": "Contract"
+            },
+            {
+              "purpose": "Taking payments, issuing invoices and keeping tax records",
+              "information": "Payment and administration records",
+              "lawful_basis": "Contract and legal obligation"
+            },
+            {
+              "purpose": "Planning safe access, setup and operation",
+              "information": "Venue, access, safety and relevant accessibility details",
+              "lawful_basis": "Contract; legitimate interests in providing a safe and reliable service"
+            },
+            {
+              "purpose": "Handling complaints, damage, insurance matters or legal claims",
+              "information": "Booking, communications, incident and event records",
+              "lawful_basis": "Legitimate interests in protecting our rights; legal obligation where applicable"
+            },
+            {
+              "purpose": "Protecting the website and detecting misuse",
+              "information": "Technical and security logs",
+              "lawful_basis": "Legitimate interests in security and service operation"
+            },
+            {
+              "purpose": "Sending offers and news",
+              "information": "Contact details and marketing preferences",
+              "lawful_basis": "Consent; or legitimate interests where the PECR customer soft opt-in lawfully applies"
+            },
+            {
+              "purpose": "Publishing event photographs or video for promotion",
+              "information": "Images, video, audio and consent records",
+              "lawful_basis": "Consent"
+            },
+            {
+              "purpose": "Complying with lawful requests",
+              "information": "Relevant records",
+              "lawful_basis": "Legal obligation"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "We do not use personal information for automated decision-making or profiling that produces legal or similarly significant effects."
+        }
+      ]
+    },
+    {
+      "id": "marketing-messages",
+      "title": "6. Marketing messages",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Giving us an email address for an enquiry or booking does not by itself mean that you must receive marketing."
+        },
+        {
+          "type": "paragraph",
+          "text": "We may send marketing emails only where you have actively chosen to receive them, or where the limited customer ‘soft opt-in’ under the Privacy and Electronic Communications Regulations applies. If we use the soft opt-in, the marketing will concern our own similar services, and you will have been offered a clear opt-out when your details were collected."
+        },
+        {
+          "type": "paragraph",
+          "text": "Every marketing message will provide a simple way to unsubscribe. You may also opt out at any time by emailing hello@partylan.co.uk. Opting out does not affect booking or service messages that are necessary to deal with an enquiry or contract."
+        },
+        {
+          "type": "paragraph",
+          "text": "After an opt-out, we may retain the minimum information needed on a suppression list so that we can respect your choice."
+        }
+      ]
+    },
+    {
+      "id": "event-and-venue-photography",
+      "title": "7. Event and venue photography",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Venue or room photographs supplied to assess space, access or equipment layout will be used for event planning and safety. We will not use them for promotion unless separate marketing permission has been obtained."
+        },
+        {
+          "type": "paragraph",
+          "text": "Photographs or videos showing identifiable people will only be used for Party.LAN promotion where the required separate consent has been obtained. Photography consent is optional and must not be made a condition of booking."
+        },
+        {
+          "type": "paragraph",
+          "text": "The customer arranging an event cannot automatically consent on behalf of every guest. We will seek permission from each identifiable adult and, for a child, from a parent or guardian who has parental responsibility. We will also take account of the child’s wishes where appropriate. Where permission is not clear, we will avoid identifiable images of that person."
+        },
+        {
+          "type": "paragraph",
+          "text": "Consent may be withdrawn by contacting hello@partylan.co.uk. We will stop new uses and remove the material from channels we control where reasonably possible. We cannot guarantee the deletion of copies already downloaded, shared or independently republished by other people or platforms."
+        }
+      ]
+    },
+    {
+      "id": "childrens-information",
+      "title": "8. Children’s information",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Bookings must be made by an adult. We do not intend to collect children’s contact details directly. We may receive a participant’s age or age range so that suitable games and arrangements can be discussed, but we will collect only what is necessary."
+        },
+        {
+          "type": "paragraph",
+          "text": "Children’s photographs and any other identifiable information receive additional protection. Marketing will not be sent directly to children, and promotional photography will follow the consent approach described above."
+        }
+      ]
+    },
+    {
+      "id": "who-we-share-information-with",
+      "title": "9. Who we share information with",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We may share personal information only where necessary with:"
+        },
+        {
+          "type": "list",
+          "style": "bulleted",
+          "items": [
+            "Website hosting, contact-form, email, cloud-storage and IT service providers acting on our instructions.",
+            "Accountants, insurers, professional advisers and contractors who need the information to support the booking or business.",
+            "Payment providers, if online or card payments are introduced.",
+            "Social-media or marketing platforms when promotional material is published with the required consent.",
+            "Courts, regulators, law-enforcement bodies or other authorities where disclosure is required or permitted by law."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "We do not sell or rent personal information to other organisations."
+        }
+      ]
+    },
+    {
+      "id": "international-transfers",
+      "title": "10. International transfers",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Some technology providers may process information outside the United Kingdom. Where this happens, we will use a transfer mechanism recognised by UK data protection law, such as a UK adequacy regulation, the UK International Data Transfer Agreement, or the UK Addendum to approved contractual clauses, together with additional safeguards where required."
+        }
+      ]
+    },
+    {
+      "id": "how-long-we-keep-information",
+      "title": "11. How long we keep information",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We keep personal information only for as long as it is reasonably needed for the purpose for which it was collected, including legal, accounting, insurance and dispute requirements. Our intended working periods are:"
+        },
+        {
+          "type": "table",
+          "label": "Intended retention periods for personal information",
+          "columns": [
+            {
+              "key": "record",
+              "label": "Record"
+            },
+            {
+              "key": "retention",
+              "label": "Intended retention period"
+            }
+          ],
+          "rows": [
+            {
+              "record": "Enquiries that do not become bookings",
+              "retention": "Up to 12 months after the last meaningful contact"
+            },
+            {
+              "record": "Booking agreements, event records and important correspondence",
+              "retention": "Normally 6 years after the event, to reflect tax, insurance and contractual-claim requirements"
+            },
+            {
+              "record": "Invoices, payment and tax records",
+              "retention": "Normally 6 years after the relevant accounting period, or longer if the law requires"
+            },
+            {
+              "record": "Venue-planning photographs and setup details",
+              "retention": "Until the event is completed, then normally up to 12 months unless needed for a complaint, claim or repeat booking"
+            },
+            {
+              "record": "Promotional event photographs and video",
+              "retention": "Up to 3 years after the event, reviewed periodically, and deleted sooner where valid consent is withdrawn"
+            },
+            {
+              "record": "Marketing contact details",
+              "retention": "Until consent is withdrawn or after 24 months without meaningful engagement, subject to periodic review"
+            },
+            {
+              "record": "Opt-out or suppression records",
+              "retention": "The minimum details for as long as reasonably necessary to prevent unwanted marketing"
+            },
+            {
+              "record": "Website and security logs",
+              "retention": "Only for the period reasonably required for operation, troubleshooting and security, using the hosting provider’s retention controls"
+            }
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "We may keep information longer where a dispute, safeguarding concern, fraud investigation, legal hold or other legal requirement makes that necessary."
+        }
+      ]
+    },
+    {
+      "id": "how-we-protect-information",
+      "title": "12. How we protect information",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We use reasonable technical and organisational measures designed to protect personal information, including access controls, password protection, secure service providers, limited access based on need, and appropriate deletion practices."
+        },
+        {
+          "type": "paragraph",
+          "text": "No method of internet transmission or storage is completely secure. If a personal-data breach creates a risk to people, we will assess it and notify the Information Commissioner’s Office and affected individuals where the law requires."
+        }
+      ]
+    },
+    {
+      "id": "cookies-and-website-technologies",
+      "title": "13. Cookies and website technologies",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "The Party.LAN website does not currently use analytics cookies, advertising pixels or behavioural tracking. It may use strictly necessary technologies required for security, contact-form operation, network delivery or remembering a privacy choice. Basic server logs may also be generated by the hosting service."
+        },
+        {
+          "type": "paragraph",
+          "text": "If non-essential analytics or advertising technologies are introduced, we will update this policy and provide an appropriate consent control before those technologies are used, unless a specific legal exemption applies."
+        }
+      ]
+    },
+    {
+      "id": "your-data-protection-rights",
+      "title": "14. Your data-protection rights",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Depending on the purpose and lawful basis, you may have the right to:"
+        },
+        {
+          "type": "list",
+          "style": "bulleted",
+          "items": [
+            "Ask for access to the personal information we hold about you.",
+            "Ask us to correct inaccurate or incomplete information.",
+            "Ask us to erase information in certain circumstances.",
+            "Ask us to restrict how information is used in certain circumstances.",
+            "Object to processing based on legitimate interests.",
+            "Object at any time to the use of your information for direct marketing.",
+            "Receive certain information in a portable format.",
+            "Withdraw consent at any time where we rely on consent, without affecting processing already carried out lawfully."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "These rights are not absolute and exemptions may apply. To exercise a right, email hello@partylan.co.uk. We may need to confirm your identity before acting. We will normally respond within one month."
+        }
+      ]
+    },
+    {
+      "id": "complaints",
+      "title": "15. Complaints",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Please contact us first at hello@partylan.co.uk so that we can try to resolve your concern."
+        },
+        {
+          "type": "paragraph",
+          "text": "You also have the right to complain to the Information Commissioner’s Office (ICO), the UK data-protection regulator:"
+        },
+        {
+          "type": "definitions",
+          "items": [
+            {
+              "term": "Website",
+              "text": "Make a complaint to the ICO",
+              "href": "https://ico.org.uk/make-a-complaint/"
+            },
+            {
+              "term": "Telephone",
+              "text": "0303 123 1113"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "changes-to-this-policy",
+      "title": "16. Changes to this policy",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "We may update this policy when our services, technology providers or legal obligations change. The latest version will be published on our website with a revised ‘Last updated’ date. Where a change materially affects an existing consent or marketing choice, we will seek a new choice where required."
+        }
+      ]
+    },
+    {
+      "id": "contact-us",
+      "title": "17. Contact us",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "For privacy questions, requests or complaints, contact:"
+        },
+        {
+          "type": "definitions",
+          "items": [
+            {
+              "term": "Business",
+              "text": "Party.LAN"
+            },
+            {
+              "term": "Operated by",
+              "text": "[LEGAL OWNER NAME]"
+            },
+            {
+              "term": "Email",
+              "text": "hello@partylan.co.uk",
+              "href": "mailto:hello@partylan.co.uk"
+            },
+            {
+              "term": "Website",
+              "text": "partylan.co.uk",
+              "href": "https://partylan.co.uk"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
