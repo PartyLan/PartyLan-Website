@@ -5,9 +5,10 @@ import csv, html, json, os, shutil, sys
 from pathlib import Path
 ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'static'; DIST=ROOT/'dist'; IMAGES=CONTENT/'images'
 ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
-REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','legal/terms.json','legal/privacy.json']
+REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','packages_faq.csv','legal/terms.json','legal/privacy.json']
 PACKAGE_FACTS={'onyx':{'name':'ONYX','label':'Premium Experience','price':'£150','duration':'2 hours','capacity':'Up to 6 players','included':['PlayStation and Nintendo gaming','Racing simulator','VR hardware','Displays','Party host/operator','Free digital invitation']},'jade':{'name':'JADE','label':'Big Party','price':'£150','duration':'2 hours','capacity':'Up to 10 players','included':['Multiplayer gaming across multiple stations','Displays','Party host/operator','Free digital invitation']}}
 LEGAL_SECTIONS={'terms':['introduction','booking','payment','cancellation','venue_access','room_and_power_requirements','supervision','equipment_care','damage','travel','contact'],'privacy':['introduction','information_collected','purpose_of_processing','service_providers','retention','customer_rights','contact']}
+# Validation helpers
 def err(f,k,r): ERRORS.append(f'{f} {k}: {r}')
 def esc(v): return html.escape(str(v), quote=True)
 def req_text(file,obj,key,ctx):
@@ -147,6 +148,7 @@ def validate_legal(rel, key):
     req_text(file,d,'title','page'); req_text(file,d,'draft_warning','page')
     for s in LEGAL_SECTIONS[key]: req_text(file,d.get('sections',{}),s,'sections')
     return d
+# Build output helpers
 def copy_assets():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir(); shutil.copytree(STATIC,DIST,dirs_exist_ok=True)
@@ -154,6 +156,7 @@ def copy_assets():
     for p in IMAGES.rglob('*'):
         if p.is_file() and p.suffix.lower() in IMG_EXT:
             d=dest/p.relative_to(IMAGES); d.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,d)
+# Shared page chrome
 def rel_href(href,prefix): return (prefix+href if href.startswith('#') else href)
 def mega_nav(home):
     cols=[]
@@ -170,10 +173,11 @@ def footer(home,prefix=''):
     return f'<footer class="site-footer"><p>{esc(home["footer"]["tagline"])}</p><nav aria-label="Footer navigation">{links}</nav></footer>'
 def header(home,prefix=''):
     c=home['header']['availability_cta']
-    return f"""<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Light mode active. Switch to dark mode" title="Light mode active. Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☀</span></button><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open navigation menu"><span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span><span></span></span></button><div class="site-menu" id="site-menu" aria-label="Complete navigation"><div class="site-menu__panel">{mega_nav(home)}</div></div></nav></header>"""
+    return f"""<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><a class="button button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a><button class="theme-toggle" type="button" aria-pressed="false" aria-label="Light mode active. Switch to dark mode" title="Light mode active. Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☀</span></button><div class="menu-anchor"><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open navigation menu"><span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span><span></span></span></button><div class="site-menu" id="site-menu" aria-label="Complete navigation"><div class="site-menu__panel">{mega_nav(home)}</div></div></div></nav></header>"""
 def head(home,title=None,desc=None):
     m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css"></head>'''
 
+# Contact form rendering
 def contact_form(form_id='contact-form', default_intent='question', default_package='unsure', inline=False, access_key=''):
     event_hidden=' hidden' if default_intent=='question' and not inline else ''
     online='true' if access_key else 'false'
@@ -217,6 +221,7 @@ def render_reassurance(items):
             icon='✦'
         out.append(f'<li><span class="reassurance__icon" aria-hidden="true">{icon}</span><span>{esc(i["text"])}</span></li>')
     return ''.join(out)
+# Landing-page rendering
 def home_page(home,gallery,faq_rows,testimonials,web3forms_access_key):
     h=home['hero']; reass=render_reassurance(home['reassurance']); cta=home['final_cta']
     return head(home)+'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main" class="site-shell"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-pan"><div class="hero__media-breathe"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt=""><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt=""></div></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--ghost" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2><p>{esc(home['how_it_works'].get('description','Choose your hosted experience, share the venue details and let us handle setup, hosting and pack-down.'))}</p></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button" href="{esc(cta['button'].get('href','/contact/?intent=booking'))}">{esc(cta['button']['label'])}</a></div></section></main>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
@@ -229,13 +234,15 @@ def package_cards(pkgs):
         notes_html=f'<ul class="package-notes">{add_notes}</ul>' if add_notes else ''
         out.append(f"""<article class="package-card package-card--{p['id']} reveal" id="package-panel-{p['id']}" role="tabpanel" aria-labelledby="package-tab-{p['id']}" data-package-panel="{p['id']}"><div class="package-card__summary"><p class="package-subtitle">{esc(p['label'])}</p><h2>{esc(p['name'])}</h2><div class="package-facts"><strong>{esc(p['price'])}</strong><span>{esc(p['duration'])}</span><span>{esc(p['capacity'])}</span></div><p class="package-summary">{esc(p['summary'])}</p></div><button class="package-expand" type="button" aria-expanded="false" aria-controls="{detail_id}">{esc(p['details_button'])}<span aria-hidden="true">⌄</span></button><div class="package-details" id="{detail_id}" role="region"><div class="package-details__inner"><p>{esc(p['expanded']['overview'])}</p><h3>Included</h3><ul class="feature-list">{feats}</ul><dl><dt>Suited to</dt><dd>{esc(p['expanded']['suited_to'])}</dd><dt>Age/group guidance</dt><dd>{esc(p['expanded']['age_guidance'])}</dd><dt>Room guidance</dt><dd>{esc(p['expanded']['room_guidance'])}</dd></dl>{notes_html}<p>{esc(p['enquiry_note'])}</p></div></div></article>""")
     return ''.join(out)
+# Packages FAQ rendering
 def compact_package_faq(rows):
     picked=[]
     for r in rows:
         if len(picked)>=5: break
         picked.append(r)
     return ''.join(f'<div class="package-faq-item"><h3><button type="button" aria-expanded="false" aria-controls="package-faq-{esc(r["id"])}" id="package-faq-btn-{esc(r["id"])}">{esc(r["question"])}<span aria-hidden="true">+</span></button></h3><div class="package-faq-answer" id="package-faq-{esc(r["id"])}" role="region" aria-labelledby="package-faq-btn-{esc(r["id"])}"><div><p>{esc(r["answer"])}</p></div></div></div>' for r in picked)
-def package_page(home, pkgs, addons, faq_rows, web3forms_access_key):
+# Packages rendering
+def package_page(home, pkgs, addons, package_faq_rows, web3forms_access_key):
     pp=home['packages_page']; ph=pp['hero']
     light=ph.get('image') or ph.get('fallback_image'); dark=ph.get('image') or ph.get('fallback_image_dark', light)
     both=[a for a in addons if a['available_for']=='both']; specific=[a for a in addons if a['available_for']!='both']
@@ -245,16 +252,17 @@ def package_page(home, pkgs, addons, faq_rows, web3forms_access_key):
     addon_label=home['addons_section'].get('accordion_label',home['addons_section']['heading'])
     tabs=''.join(f'<button id="package-tab-{p["id"]}" role="tab" type="button" aria-selected="{str(i==0).lower()}" aria-controls="package-panel-{p["id"]}" data-package-tab="{p["id"]}" class="package-tab package-tab--{p["id"]}"><span>{esc(p["name"])}</span><small>{esc(p["capacity"].replace(" players",""))}</small></button>' for i,p in enumerate(pkgs))
     fd=pp.get('final_decision',{})
-    support_faq=compact_package_faq(faq_rows)
+    support_faq=compact_package_faq(package_faq_rows)
     final=f'<section class="packages-decision" aria-labelledby="packages-decision-title"><p class="eyebrow">{esc(fd.get("eyebrow","Next step"))}</p><h2 id="packages-decision-title">{esc(fd.get("heading","Ready to plan your party?"))}</h2><p>{esc(fd.get("description","Reserve now when you know what you need, or ask us anything before deciding."))}</p><div class="packages-decision__actions"><a class="button packages-decision__reserve" href="{esc(fd.get("reserve_href","/#booking"))}">{esc(fd.get("reserve_label","Reserve now"))}</a><button class="button button--ghost packages-support-toggle" type="button" aria-expanded="false" aria-controls="packages-ask-panel" data-support-toggle="ask">{esc(fd.get("ask_label","Ask a question"))}</button><button class="packages-support-toggle packages-support-toggle--quiet" type="button" aria-expanded="false" aria-controls="packages-questions-panel" data-support-toggle="questions">{esc(fd.get("questions_label","Common questions"))}<span aria-hidden="true">⌄</span></button></div><div class="packages-support"><div class="packages-support__panel" id="packages-ask-panel" role="region"><div><h3>{esc(fd.get("ask_heading","Ask us before deciding"))}</h3><p>{esc(fd.get("ask_description","Tell us about package choice, venue space, player numbers, add-ons, accessibility or setup and we can help."))}</p><ul><li>Package choice</li><li>Venue or available space</li><li>Player numbers</li><li>Add-ons</li><li>Accessibility or setup</li><li>Another question</li></ul><a class="button button--ghost" href="{esc(fd.get("contact_href","/#booking"))}">{esc(fd.get("contact_label","Contact Party.LAN"))}</a></div></div><div class="packages-support__panel" id="packages-questions-panel" role="region"><div class="package-faq-list">{support_faq}</div></div></div><div class="packages-inline-contact" id="packages-contact" hidden>{contact_form('packages-contact-form','question','unsure',True,web3forms_access_key)}</div></section>'
     return head(home,pp['meta_title'],pp['hero']['description'])+f"""<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,'/packages')}<main id="main" class="site-shell"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt=""><img class="hero__image hero__image--dark" src="{dark}" alt=""></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-tabs" role="tablist" aria-label="Choose package">{tabs}</div><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages" id="make-your-own"><button class="addons-toggle" type="button" aria-expanded="true" aria-controls="addons-content"><span class="addons-toggle__copy"><span class="eyebrow">Add-ons</span><strong>{esc(addon_label)}</strong><small>{esc(home['addons_section']['description'])}</small></span><span class="addons-toggle__control"><span class="addons-toggle__label">Browse add-ons</span><span class="addons-toggle__icon" aria-hidden="true">⌄</span></span></button><div class="addons-content" id="addons-content" role="region"><div class="addons-content__inner">{add}</div></div></section>{final}</section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>"""
 
 def contact_page(home, web3forms_access_key):
     return head(home,'Contact Party.LAN','Start a booking enquiry or ask Party.LAN a question.')+f"""<body id=\"top\"><div class=\"site-background\" aria-hidden=\"true\"><div class=\"site-background__top\"></div><div class=\"site-background__middle\"></div><div class=\"site-background__bottom\"></div></div><a class=\"skip-link\" href=\"#main\">Skip to content</a>{header(home,'/')}<main id=\"main\" class=\"site-shell contact-page\"><section class=\"section contact-section\" aria-labelledby=\"contact-title\"><div class=\"section-heading reveal\"><p class=\"eyebrow\">CONTACT</p><h1 id=\"contact-title\">How can we help?</h1><p>Start a booking enquiry or ask us anything before deciding.</p></div>{contact_form('contact-page-form', access_key=web3forms_access_key)}</section></main>{footer(home,'/')}<script src=\"/js/main.js\" defer></script></body></html>"""
 
+# Legal rendering
 def legal_page(home,d):
     sections=''.join(f'<section><h2>{esc(k.replace("_"," ").title())}</h2><p>{esc(v)}</p></section>' for k,v in d['sections'].items())
-    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><p><a href="/">← Homepage</a></p><h1>{esc(d["title"])}</h1><p class="draft-warning">{esc(d["draft_warning"])}</p>{sections}</main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell"><article class="legal-page"><header class="legal-page__header"><a class="legal-page__back" href="/">← Homepage</a><h1>{esc(d["title"])}</h1><p class="draft-warning">{esc(d["draft_warning"])}</p></header><div class="legal-page__sections">{sections}</div></article></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 def main():
     for rel in REQUIRED_FILES:
         if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
@@ -263,6 +271,7 @@ def main():
     addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
     gallery=validate_rows('gallery.csv',['category','image','alt','caption'],'gallery')
     faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
+    package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
     live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     terms=validate_legal('terms','terms'); privacy=validate_legal('privacy','privacy')
@@ -272,9 +281,9 @@ def main():
     copy_assets()
     (DIST/'index.html').write_text(home_page(home,gallery,faq_rows,live,web3forms_access_key),encoding='utf-8')
     (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo,web3forms_access_key),encoding='utf-8')
-    (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons,faq_rows,web3forms_access_key),encoding='utf-8')
+    (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons,package_faq_rows,web3forms_access_key),encoding='utf-8')
     (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms),encoding='utf-8')
     (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy),encoding='utf-8')
     (DIST/'contact').mkdir(); (DIST/'contact'/'index.html').write_text(contact_page(home,web3forms_access_key),encoding='utf-8')
-    print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials and {len(faq_rows)} FAQs.')
+    print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials, {len(faq_rows)} landing FAQs and {len(package_faq_rows)} package FAQs.')
 if __name__=='__main__': main()

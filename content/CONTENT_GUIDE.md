@@ -234,3 +234,7 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
 ## Packages final decision section
 
 Edit `content/homepage.json` under `packages_page.final_decision` to control the final Packages-page decision section. The editable fields are `eyebrow`, `heading`, `description`, `reserve_label`, `reserve_href`, `ask_label`, `questions_label`, `ask_heading`, `ask_description`, `contact_label`, and `contact_href`. Keep reservation/contact hrefs on existing local destinations such as `/#booking` unless the booking route changes.
+
+## Packages page common questions
+
+Edit `content/packages_faq.csv` to manage only the Packages-page “Common questions” panel. It uses the schema `id,question,answer,visible,display_order` and is intentionally separate from `content/faq.csv`, which controls only the landing-page FAQ. The build validates this file directly and does not fall back to the landing FAQ source.
