@@ -6,15 +6,19 @@ A small static homepage prototype for Party.LAN, a hosted gaming-party service. 
 
 ```text
 build.py                 # standard-library static build and validation
-content/site.json        # editable general homepage content
+content/homepage.json    # editable general homepage and subpage content
 content/packages.json    # editable package content
 content/gallery.csv      # editable gallery entries
 content/testimonials.csv # future real testimonials only
 render.yaml              # Render static-site Blueprint
-templates/index.html     # semantic homepage template
+docs/                    # manual code and visual editing guide
 static/                  # CSS, JavaScript and local assets
 dist/                    # generated static site
 ```
+
+The current HTML pages are rendered by `build.py`; `templates/index.html` is an older prototype and is not part of the active build.
+
+For layout, CSS, image-crop, mobile testing and pull-request instructions, see [the manual editing guide](docs/MANUAL_EDITING_GUIDE.md). For copy-only updates, see [the content guide](content/CONTENT_GUIDE.md).
 
 ## Content and presentation
 
