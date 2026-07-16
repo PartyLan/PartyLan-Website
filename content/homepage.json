@@ -136,11 +136,11 @@
     "description": "Clear answers before you start planning."
   },
   "final_cta": {
-    "heading": "Ready to plan your party?",
-    "description": "Share your party plans or ask us anything before deciding.",
+    "heading": "Explore packages",
+    "description": "Compare ONYX and JADE to find the hosted setup that fits your party.",
     "button": {
-      "label": "Booking enquiry",
-      "href": "/contact/?intent=booking"
+      "label": "View packages",
+      "href": "/packages/"
     }
   },
   "footer": {
