@@ -130,8 +130,10 @@ function initPackagesDecision(section){
     }
   }
 
-  controls.forEach(function(control){
-    control.addEventListener('click',function(){setDecisionMode(control.dataset.decisionMode);});
+  section.addEventListener('click',function(event){
+    var control=event.target.closest('[data-decision-mode]');
+    if(!control||!section.contains(control))return;
+    setDecisionMode(control.dataset.decisionMode);
   });
   syncControls('none');
   renderDecisionContent('none');

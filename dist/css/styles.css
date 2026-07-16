@@ -1015,6 +1015,7 @@ body { padding-bottom: 0 !important; }
   line-height: 1;
   transform-origin: center;
   transition: transform .2s ease;
+  pointer-events: none;
 }
 [aria-expanded="true"] > [data-rollout-icon],
 [aria-expanded="true"] .addons-toggle__control > [data-rollout-icon] { transform: rotate(180deg); }
@@ -1169,7 +1170,6 @@ body { padding-bottom: 0 !important; }
 .final-cta > div,
 .package-grid--overlap,
 .addons-panel--packages,
-.packages-decision,
 .contact-form-shell {
   width: 100%;
   max-width: none;
