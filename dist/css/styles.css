@@ -1209,7 +1209,19 @@ body { padding-bottom: 0 !important; }
 .legal-accordion__answer-inner { min-height: 0; overflow: hidden; padding-inline: clamp(1rem, 3vw, 1.6rem); }
 .legal-accordion__item.is-open .legal-accordion__answer { grid-template-rows: 1fr; opacity: 1; }
 .legal-accordion__item.is-open .legal-accordion__answer-inner { padding-bottom: clamp(1rem, 2.5vw, 1.5rem); }
-.legal-accordion__answer-inner p { max-width: var(--text-measure); margin: 0; color: var(--text-secondary); text-align: left; overflow-wrap: anywhere; }
+.legal-content { display: grid; gap: .9rem; max-width: var(--text-measure); color: var(--text-secondary); text-align: left; overflow-wrap: anywhere; }
+.legal-content p { margin: 0; }
+.legal-content__list { display: grid; gap: .55rem; margin: 0; padding-left: 1.5rem; }
+.legal-content__list li { padding-left: .2rem; }
+.legal-content__list li::marker { color: var(--accent); font-weight: 800; }
+.legal-definitions { display: grid; gap: .75rem; margin: 0; }
+.legal-definitions > div { display: grid; grid-template-columns: minmax(7rem, .3fr) minmax(0, 1fr); gap: .35rem 1rem; }
+.legal-definitions dt { color: var(--text-primary); font-weight: 800; }
+.legal-definitions dd { margin: 0; }
+.legal-fields { display: grid; gap: 1rem; margin: 0; }
+.legal-fields > div { display: grid; grid-template-columns: minmax(8rem, auto) minmax(8rem, 1fr); align-items: end; gap: .75rem; }
+.legal-fields dt { color: var(--text-primary); font-weight: 750; }
+.legal-fields dd { min-height: 1.5rem; margin: 0; border-bottom: 1px solid var(--panel-border); }
 .packages-decision__header > .eyebrow,
 .packages-decision__header > h2,
 .packages-decision__header > p:not(.eyebrow) { margin-inline: auto; text-align: center; }
@@ -1234,6 +1246,10 @@ body { padding-bottom: 0 !important; }
   .faq-item button, .faq-item__answer p, .feature-list, .legal-page, .legal-page *, .contact-form-shell, .contact-form-shell *, .site-menu a { text-align: left; }
 }
 @media (max-width: 430px) { .showcase { aspect-ratio: 1 / 1; } }
+@media (max-width: 560px) {
+  .legal-definitions > div { grid-template-columns: 1fr; }
+  .legal-fields > div { grid-template-columns: 1fr; gap: .35rem; }
+}
 
 /*
  * STATIC MEDIA AND MOBILE PERFORMANCE OVERRIDES
