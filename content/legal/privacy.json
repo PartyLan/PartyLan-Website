@@ -1,1 +1,86 @@
-{"title":"Privacy Policy","draft_warning":"Draft placeholder: this privacy page is not final legal advice and should be reviewed before use.","sections":{"introduction":"This draft explains the type of information Party.LAN may need to handle enquiries and hosted party planning.","information_collected":"Information may include contact details, event details, venue notes, room photos or rough dimensions shared by the customer.","purpose_of_processing":"Information is used to respond to enquiries, plan suitable setups and communicate about Party.LAN services.","service_providers":"Trusted service providers may be used where needed for website hosting, communication or operational support.","retention":"Retention periods are draft placeholders and will be confirmed in the final privacy policy.","customer_rights":"Customer rights information should be reviewed and completed before this page is treated as final.","contact":"Use the contact route on the homepage for privacy questions."}}
+{
+  "title": "Privacy Policy",
+  "draft_warning": "Draft: this privacy policy has not yet been legally reviewed and may change before bookings are accepted.",
+  "sections": [
+    {
+      "id": "introduction",
+      "title": "Introduction",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "This draft explains the type of information Party.LAN may need to handle enquiries and hosted party planning."
+        }
+      ]
+    },
+    {
+      "id": "information-collected",
+      "title": "Information Collected",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Information may include:"
+        },
+        {
+          "type": "list",
+          "style": "bulleted",
+          "items": [
+            "Contact details.",
+            "Event details.",
+            "Venue notes.",
+            "Room photos or rough dimensions shared by the Customer."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "purpose-of-processing",
+      "title": "Purpose of Processing",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Information is used to respond to enquiries, plan suitable setups and communicate about Party.LAN services."
+        }
+      ]
+    },
+    {
+      "id": "service-providers",
+      "title": "Service Providers",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Trusted service providers may be used where needed for website hosting, communication or operational support."
+        }
+      ]
+    },
+    {
+      "id": "retention",
+      "title": "Retention",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Retention periods are draft placeholders and will be confirmed in the final Privacy Policy."
+        }
+      ]
+    },
+    {
+      "id": "customer-rights",
+      "title": "Customer Rights",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Customer rights information should be reviewed and completed before this page is treated as final."
+        }
+      ]
+    },
+    {
+      "id": "contact",
+      "title": "Contact",
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Use the contact route on the homepage for privacy questions."
+        }
+      ]
+    }
+  ]
+}
