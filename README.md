@@ -93,3 +93,17 @@ A future owner-approved synchronisation process could export curated Google Shee
 ## Launch placeholders
 
 Final contact destination, service-area wording, real photography, customer testimonials and any trust or safety claims still need owner-approved content before they are presented publicly.
+
+## Contact form setup
+
+The contact form submits directly from the static site to Web3Forms. No Flask server, SMTP server, separate Render web service or server-side mail handler is required.
+
+1. Create a Web3Forms access key for the Party.LAN enquiry email address.
+2. Add `WEB3FORMS_ACCESS_KEY` to the Render Static Site environment.
+3. Set the variable value to the Web3Forms access key.
+4. Run `python build.py` locally or let Render run the build during deployment.
+5. Test a real submission from the generated site.
+6. Confirm that the enquiry arrives at the intended email address.
+7. Do not place SMTP passwords, email passwords or unrelated private credentials in the repository.
+
+`build.py` reads `WEB3FORMS_ACCESS_KEY` from the build environment and writes it into the generated browser-facing HTML as required by Web3Forms. If the variable is missing, online submission is disabled and the visible email fallback remains available. The Web3Forms access key is not an SMTP password and must not be replaced with any email-account password.

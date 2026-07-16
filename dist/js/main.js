@@ -61,6 +61,64 @@ document.querySelectorAll('.packages-decision').forEach(function(section){
 });
 document.querySelectorAll('.package-faq-item button').forEach(function(b){b.addEventListener('click',function(){var item=b.closest('.package-faq-item'),open=b.getAttribute('aria-expanded')!=='true';document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open');var xb=x.querySelector('button');if(xb)xb.setAttribute('aria-expanded','false')});item.classList.toggle('is-open',open);b.setAttribute('aria-expanded',String(open));});});
 
+function initContact(component){
+  var form=component.querySelector('[data-contact-form]'), success=component.querySelector('[data-contact-success]'), status=component.querySelector('[data-contact-status]'); if(!form)return;
+  form.noValidate=true;
+  var intents=['booking','question'], packages=['onyx','jade','unsure'];
+  var intent=form.elements.intent, pkg=form.elements.package, subject=form.elements.subject, fields=[].slice.call(form.querySelectorAll('.field--event')), disclosure=form.querySelector('.contact-disclosure'), eventToggle=form.querySelector('[data-event-toggle]'), eventDetailsRevealed=false, onlineEnabled=component.dataset.onlineEnabled==='true';
+  function supportedIntent(value){return value==='availability'?'booking':(intents.indexOf(value)>=0?value:'question');}
+  function supportedPackage(value){return packages.indexOf(value)>=0?value:'unsure';}
+  var params=new URLSearchParams(location.search), resetIntent=supportedIntent(params.get('intent')||component.dataset.defaultIntent), resetPackage=supportedPackage(params.get('package')||component.dataset.defaultPackage);
+  function subjectForContext(){var base=intent.value==='booking'?'New Party.LAN booking enquiry':'New Party.LAN question'; if(intent.value==='booking'&&(pkg.value==='onyx'||pkg.value==='jade'))base+=' — '+pkg.value.toUpperCase(); return base;}
+  function setEventFieldsVisible(show){fields.forEach(function(field){field.hidden=!show; field.setAttribute('aria-hidden',show?'false':'true'); [].slice.call(field.querySelectorAll('input, select, textarea')).forEach(function(control){control.disabled=!show;});});}
+  function syncContactContext(){intent.value=supportedIntent(intent.value); var showEvents=intent.value==='booking'||eventDetailsRevealed; setEventFieldsVisible(showEvents); if(disclosure)disclosure.hidden=intent.value!=='question'||eventDetailsRevealed; if(eventToggle)eventToggle.setAttribute('aria-expanded',String(showEvents&&intent.value==='question')); if(subject)subject.value=subjectForContext();}
+  function appendEmailFallback(message){status.textContent=''; if(message)status.appendChild(document.createTextNode(message+' ')); var link=document.createElement('a'); link.href='mailto:hello@partylan.co.uk'; link.textContent='Email Party.LAN directly.'; status.appendChild(link);}
+  intent.value=resetIntent; pkg.value=resetPackage;
+  eventDetailsRevealed=intent.value==='booking'; syncContactContext();
+  if(!onlineEnabled){status.className='contact-status is-error'; appendEmailFallback('Online enquiry submissions are not configured.');}
+  intent.addEventListener('change',function(){eventDetailsRevealed=false; syncContactContext();});
+  if(pkg)pkg.addEventListener('change',syncContactContext);
+  if(eventToggle)eventToggle.addEventListener('click',function(){eventDetailsRevealed=true; syncContactContext();});
+  function err(name,msg){var el=form.elements[name], box=form.querySelector('[data-error-for="'+name+'"]'); if(el)el.setAttribute('aria-invalid',msg?'true':'false'); if(box)box.textContent=msg||''; return !!msg;}
+  function validate(){syncContactContext(); var bad=[], data=Object.fromEntries(new FormData(form).entries()), currentIntent=supportedIntent(intent.value); ['intent','package','name','email','phone','location','players','message','privacy','preferred_date','alternative_date'].forEach(function(n){err(n,'')});
+    if(intents.indexOf(currentIntent)<0)bad.push(['intent','Choose a supported enquiry type.']);
+    if(!data.name||data.name.trim().length<2||data.name.length>80)bad.push(['name','Enter your name.']);
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email||''))bad.push(['email','Enter a valid email address.']);
+    var msg=(data.message||'').trim(); if(msg && (msg.length<10||msg.length>2000))bad.push(['message','Use 10 to 2000 characters, or leave it blank when booking details explain enough.']);
+    if(currentIntent==='question'&&!msg)bad.push(['message','Enter a message.']);
+    if(currentIntent==='booking'){
+      if(data.phone && (data.phone.length<7||data.phone.length>30))bad.push(['phone','Enter a valid phone number, or leave it blank.']);
+      if(data.location && data.location.length<2)bad.push(['location','Enter a town or postcode, or leave it blank.']);
+      if(packages.indexOf(data.package)<0)bad.push(['package','Choose a supported package option.']);
+      if(data.players && (+data.players<1||+data.players>40))bad.push(['players','Enter a player count between 1 and 40.']);
+      ['preferred_date','alternative_date'].forEach(function(n){if(data[n] && !/^\d{4}-\d{2}-\d{2}$/.test(data[n]))bad.push([n,'Enter a valid date.']);});
+      if(!msg&&!data.preferred_date)bad.push(['preferred_date','Add a preferred date or explain what you need in the message.']);
+      if(!msg&&!data.location)bad.push(['location','Add a town/postcode or explain what you need in the message.']);
+    }
+    if(!form.elements.privacy.checked)bad.push(['privacy','Please acknowledge the privacy notice.']);
+    bad.forEach(function(x){err(x[0],x[1])}); if(bad[0]&&form.elements[bad[0][0]])form.elements[bad[0][0]].focus({preventScroll:false}); return !bad.length;
+  }
+  function submitWeb3Form(targetForm){
+    syncContactContext();
+    return fetch(targetForm.action,{method:'POST',body:new FormData(targetForm),headers:{'Accept':'application/json'}}).then(function(response){return response.json().then(function(payload){if(response.ok===true&&payload&&payload.success===true)return payload; throw {status:response.status,json:payload};});});
+  }
+  function resetToInitialContext(){intent.value=resetIntent; pkg.value=resetPackage; eventDetailsRevealed=intent.value==='booking'; syncContactContext();}
+  form.addEventListener('submit',function(e){e.preventDefault(); if(!onlineEnabled){status.className='contact-status is-error'; appendEmailFallback('Online enquiry submissions are not configured.'); status.focus&&status.focus(); return;} status.className='contact-status is-loading'; status.textContent=''; if(!validate())return; var btn=form.querySelector('[type=submit]'); if(btn.disabled)return; var originalLabel=btn.textContent; btn.disabled=true; form.setAttribute('aria-busy','true'); btn.textContent='Sending enquiry…'; status.textContent='Sending enquiry…';
+    submitWeb3Form(form).then(function(){form.reset(); resetToInitialContext(); status.className='contact-status'; status.textContent=''; form.hidden=true; success.hidden=false; success.focus&&success.focus();}).catch(function(ex){console.error('Web3Forms contact submission failed',ex); status.className='contact-status is-error'; appendEmailFallback('We couldn’t send your enquiry. Please try again, or'); status.focus&&status.focus();}).finally(function(){btn.disabled=false; form.removeAttribute('aria-busy'); btn.textContent=originalLabel||btn.dataset.submitLabel||'Send enquiry';});
+  });
+  var again=component.querySelector('[data-send-another]'); if(again)again.addEventListener('click',function(){success.hidden=true; form.hidden=false; status.className=onlineEnabled?'contact-status':'contact-status is-error'; status.textContent=''; if(!onlineEnabled)appendEmailFallback('Online enquiry submissions are not configured.'); form.querySelectorAll('[aria-invalid="true"]').forEach(function(el){el.setAttribute('aria-invalid','false')}); form.querySelectorAll('[data-error-for]').forEach(function(el){el.textContent=''}); resetToInitialContext(); form.focus();});
+  form.syncContactContext=syncContactContext;
+  form.setContactIntent=function(nextIntent,nextPackage){resetIntent=supportedIntent(nextIntent); resetPackage=supportedPackage(nextPackage); intent.value=resetIntent; pkg.value=resetPackage; eventDetailsRevealed=intent.value==='booking'; syncContactContext();};
+}
+document.querySelectorAll('[data-contact-component]').forEach(initContact);
+document.querySelectorAll('.packages-decision').forEach(function(section){
+  var inline=document.getElementById('packages-contact'); if(!inline)return;
+  function currentPackage(){var selected=document.querySelector('.package-tab[aria-selected="true"]'); return matchMedia('(max-width: 920px)').matches && selected ? selected.dataset.packageTab : 'unsure';}
+  function open(intent){inline.hidden=false; var form=inline.querySelector('form'); if(form){var nextPackage=intent==='booking'?currentPackage():'unsure'; if(form.setContactIntent)form.setContactIntent(intent,nextPackage); else {form.elements.intent.value=intent; form.elements.package.value=nextPackage; form.elements.intent.dispatchEvent(new Event('change'));}} document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open'); var b=x.querySelector('button'); if(b)b.setAttribute('aria-expanded','false')}); inline.scrollIntoView({block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});}
+  var reserve=section.querySelector('.packages-decision__reserve'); if(reserve)reserve.addEventListener('click',function(e){e.preventDefault(); open('booking')});
+  section.querySelectorAll('[data-support-toggle="ask"]').forEach(function(b){b.addEventListener('click',function(){open('question')});});
+});
+
 var atmosphere=document.querySelector('.site-background__middle');
 if(atmosphere){
   var reduceBg=matchMedia('(prefers-reduced-motion: reduce)').matches;

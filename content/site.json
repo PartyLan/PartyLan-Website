@@ -25,19 +25,19 @@
       "href": "#faq"
     },
     {
-      "label": "Check availability",
+      "label": "Booking enquiry",
       "href": "#booking"
     }
   ],
   "header": {
     "availabilityCta": {
-      "label": "Check availability",
+      "label": "Booking enquiry",
       "href": "#booking"
     }
   },
   "hero": {
     "eyebrow": "Hosted gaming parties",
-    "title": "Bring everyone together. We’ll handle the rest.",
+    "title": "Bring everyone together. We\u2019ll handle the rest.",
     "description": "PlayStation, Nintendo, racing and VR experiences brought directly to your venue, with setup and a dedicated host included.",
     "primaryCta": {
       "label": "View packages",
@@ -101,7 +101,7 @@
   "space": {
     "eyebrow": "Room planning",
     "heading": "More adaptable than it looks.",
-    "description": "Send us a photograph or approximate room dimensions and we’ll help confirm the most suitable layout before the event."
+    "description": "Send us a photograph or approximate room dimensions and we\u2019ll help confirm the most suitable layout before the event."
   },
   "faq_section": {
     "eyebrow": "Frequently asked questions",
@@ -126,7 +126,7 @@
       {
         "id": "room",
         "question": "How much room will I need?",
-        "answer": "The best layout depends on the venue and package. Send us a photograph or approximate room dimensions and we’ll help confirm a suitable arrangement."
+        "answer": "The best layout depends on the venue and package. Send us a photograph or approximate room dimensions and we\u2019ll help confirm a suitable arrangement."
       },
       {
         "id": "games",
