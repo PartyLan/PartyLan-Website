@@ -990,8 +990,8 @@ body { padding-bottom: 0 !important; }
 }
 .hero--home .hero__media-pan {
   inset: -6%;
-  animation: hero-pan-quick 10s linear infinite alternate;
-  transform-origin: center center;
+  animation: hero-focus-cycle 12s infinite;
+  transform-origin: 50% 44%;
   backface-visibility: hidden;
   will-change: transform;
 }
@@ -1001,16 +1001,43 @@ body { padding-bottom: 0 !important; }
   transform: none;
   will-change: auto;
 }
-@keyframes hero-pan-quick {
-  from { transform: translate3d(-1.8%, .45%, 0) scale(1.12); }
-  to { transform: translate3d(1.8%, -.45%, 0) scale(1.19); }
+@keyframes hero-focus-cycle {
+  0% {
+    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  42% {
+    transform: translate3d(0, 0, 0) scale3d(1.24, 1.24, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  52% {
+    transform: translate3d(-1.4%, -.45%, 0) scale3d(1.24, 1.24, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
+  }
 }
 .showcase-slide.is-active .showcase-slide__pan {
-  animation: showcase-pan-quick 8s linear infinite alternate;
+  animation: showcase-focus-cycle 12s infinite;
+  transform-origin: 50% 48%;
 }
-@keyframes showcase-pan-quick {
-  from { transform: translate3d(-2%, .45%, 0) scale(1.12); }
-  to { transform: translate3d(2%, -.45%, 0) scale(1.18); }
+@keyframes showcase-focus-cycle {
+  0% {
+    transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  42% {
+    transform: translate3d(0, 0, 0) scale3d(1.22, 1.22, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  52% {
+    transform: translate3d(-1.35%, -.4%, 0) scale3d(1.22, 1.22, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale3d(1.1, 1.1, 1);
+  }
 }
 @media (max-width: 920px) {
   .hero--home .hero__picture {
@@ -1023,13 +1050,26 @@ body { padding-bottom: 0 !important; }
     mask-image: none !important;
   }
   .showcase-slide.is-active .showcase-slide__pan {
-    animation-name: showcase-pan-quick-mobile;
-    animation-duration: 7s;
+    animation-name: showcase-focus-cycle-mobile;
+    animation-duration: 12s;
   }
 }
-@keyframes showcase-pan-quick-mobile {
-  from { transform: translate3d(-1.5%, .35%, 0) scale(1.16); }
-  to { transform: translate3d(1.5%, -.35%, 0) scale(1.22); }
+@keyframes showcase-focus-cycle-mobile {
+  0% {
+    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  42% {
+    transform: translate3d(0, 0, 0) scale3d(1.26, 1.26, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  52% {
+    transform: translate3d(-1.25%, -.35%, 0) scale3d(1.26, 1.26, 1);
+    animation-timing-function: cubic-bezier(.4, 0, .2, 1);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale3d(1.14, 1.14, 1);
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   .hero--home .hero__media-pan,
