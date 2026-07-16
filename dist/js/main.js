@@ -39,7 +39,102 @@ if(addonsToggle){
   window.addEventListener('hashchange',openAddonsFromHash);
 }
 document.querySelectorAll('.faq-item button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.faq-item button').forEach(function(x){if(x!==b){x.setAttribute('aria-expanded','false');x.closest('.faq-item').classList.remove('is-open')}});var open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));b.closest('.faq-item').classList.toggle('is-open',open);});});
-function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){var all=[].slice.call(root.querySelectorAll(slideSelector)), dotBox=root.querySelector(dotBoxSelector), slides=all, idx=0, timer, reduced=matchMedia('(prefers-reduced-motion: reduce)').matches, sx=0, sy=0, dragging=false, paused=reduced, toggle=root.querySelector('.showcase-toggle'), feedback=root.querySelector('.showcase-feedback'); function updateToggle(){root.classList.toggle('is-paused',paused);if(toggle){var noun=root.classList.contains('testimonial-stage')?'testimonials':'gallery';toggle.setAttribute('aria-pressed',String(paused));toggle.setAttribute('aria-label',paused?'Play '+noun:'Pause '+noun);toggle.querySelector('span').textContent=paused?'▶':'Ⅱ';}} function pulse(icon){if(feedback){feedback.textContent=icon;feedback.classList.add('is-visible');setTimeout(function(){feedback.classList.remove('is-visible')},520);}} function renderDots(){if(!dotBox)return; dotBox.innerHTML=''; slides.forEach(function(_,i){var b=document.createElement('button');b.type='button';b.className='slider-dot';b.setAttribute('aria-label',labelFn(i));b.innerHTML='<span></span>';b.addEventListener('click',function(){paused=true;go(i,true);updateToggle();});dotBox.appendChild(b);});} function go(n,manual){if(!slides.length)return;idx=(n+slides.length)%slides.length;all.forEach(function(s){s.classList.remove('is-active');s.setAttribute('aria-hidden','true')});slides[idx].classList.add('is-active');slides[idx].setAttribute('aria-hidden','false');[].slice.call(dotBox?dotBox.children:[]).forEach(function(d,i){d.setAttribute('aria-current',String(i===idx))}); if(manual)stop();} function stop(){clearInterval(timer);timer=null;} function start(){stop(); if(!paused&&!reduced&&slides.length>1)timer=setInterval(function(){go(idx+1,false)},interval||8500);} function togglePaused(){paused=!paused;updateToggle();pulse(paused?'Ⅱ':'▶');start();} root.addEventListener('mouseenter',function(){stop();});root.addEventListener('focusin',function(){stop();});root.addEventListener('mouseleave',start);root.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});root.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40){paused=true;go(idx+(dx<0?1:-1),true);updateToggle();}},{passive:true});root.addEventListener('pointerdown',function(e){if(e.target.closest('button'))return;dragging=true;sx=e.clientX;sy=e.clientY;root.setPointerCapture&&root.setPointerCapture(e.pointerId)});root.addEventListener('pointerup',function(e){if(!dragging)return;dragging=false;var dx=e.clientX-sx,dy=e.clientY-sy;if(Math.abs(dx)>50){paused=true;go(idx+(dx<0?1:-1),true);updateToggle();}else if(Math.abs(dx)<8&&Math.abs(dy)<8&&root.classList.contains('showcase')){togglePaused();}}); if(toggle){toggle.addEventListener('click',togglePaused);} updateToggle();return{setSlides:function(next){slides=next;idx=0;renderDots();go(0,false);start();}};}
+function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){
+  var all=[].slice.call(root.querySelectorAll(slideSelector));
+  var dotBox=root.querySelector(dotBoxSelector),slides=all,idx=0,timer;
+  var reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var sx=0,sy=0,dragging=false,paused=reduced,activationToken=0;
+  var toggle=root.querySelector('.showcase-toggle');
+  var feedback=root.querySelector('.showcase-feedback');
+
+  function updateToggle(){
+    root.classList.toggle('is-paused',paused);
+    if(toggle){
+      var noun=root.classList.contains('testimonial-stage')?'testimonials':'gallery';
+      toggle.setAttribute('aria-pressed',String(paused));
+      toggle.setAttribute('aria-label',paused?'Play '+noun:'Pause '+noun);
+      toggle.querySelector('span').textContent=paused?'▶':'Ⅱ';
+    }
+  }
+  function pulse(icon){
+    if(feedback){
+      feedback.textContent=icon;
+      feedback.classList.add('is-visible');
+      setTimeout(function(){feedback.classList.remove('is-visible')},520);
+    }
+  }
+  function renderDots(){
+    if(!dotBox)return;
+    dotBox.innerHTML='';
+    slides.forEach(function(_,i){
+      var b=document.createElement('button');
+      b.type='button';
+      b.className='slider-dot';
+      b.setAttribute('aria-label',labelFn(i));
+      b.innerHTML='<span></span>';
+      b.addEventListener('click',function(){paused=true;go(i,true);updateToggle();});
+      dotBox.appendChild(b);
+    });
+  }
+
+  /*
+   * Keep the currently visible slide in place until the requested image has
+   * loaded and decoded. Switching classes first can briefly expose an empty
+   * image box, then make the decoded pixels appear to jump into position.
+   */
+  function prepareSlide(slide){
+    var image=slide&&slide.querySelector('img');
+    if(!image)return Promise.resolve();
+    image.loading='eager';
+    if(image.complete){
+      if(!image.naturalWidth)return Promise.resolve();
+      return image.decode?image.decode().catch(function(){}):Promise.resolve();
+    }
+    return new Promise(function(resolve){
+      function ready(){image.removeEventListener('load',ready);image.removeEventListener('error',ready);resolve();}
+      image.addEventListener('load',ready,{once:true});
+      image.addEventListener('error',ready,{once:true});
+    }).then(function(){return image.decode?image.decode().catch(function(){}):undefined;});
+  }
+  function activate(target,token){
+    if(token!==activationToken||!slides[target])return;
+    idx=target;
+    all.forEach(function(s){s.classList.remove('is-active');s.setAttribute('aria-hidden','true')});
+    slides[idx].classList.add('is-active');
+    slides[idx].setAttribute('aria-hidden','false');
+    [].slice.call(dotBox?dotBox.children:[]).forEach(function(d,i){d.setAttribute('aria-current',String(i===idx))});
+  }
+  function go(n,manual){
+    if(!slides.length)return;
+    var target=(n+slides.length)%slides.length;
+    var token=++activationToken;
+    if(manual)stop();
+    prepareSlide(slides[target]).then(function(){activate(target,token)});
+  }
+  function stop(){clearInterval(timer);timer=null;}
+  function start(){stop();if(!paused&&!reduced&&slides.length>1)timer=setInterval(function(){go(idx+1,false)},interval||8500);}
+  function togglePaused(){paused=!paused;updateToggle();pulse(paused?'Ⅱ':'▶');start();}
+
+  root.addEventListener('mouseenter',function(){stop();});
+  root.addEventListener('focusin',function(){stop();});
+  root.addEventListener('mouseleave',start);
+  root.addEventListener('touchstart',function(e){sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+  root.addEventListener('touchend',function(e){var dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40){paused=true;go(idx+(dx<0?1:-1),true);updateToggle();}},{passive:true});
+  root.addEventListener('pointerdown',function(e){if(e.target.closest('button'))return;dragging=true;sx=e.clientX;sy=e.clientY;root.setPointerCapture&&root.setPointerCapture(e.pointerId)});
+  root.addEventListener('pointerup',function(e){
+    if(!dragging)return;
+    dragging=false;
+    var dx=e.clientX-sx,dy=e.clientY-sy;
+    if(Math.abs(dx)>50){paused=true;go(idx+(dx<0?1:-1),true);updateToggle();}
+    else if(Math.abs(dx)<8&&Math.abs(dy)<8&&root.classList.contains('showcase'))togglePaused();
+  });
+  if(toggle)toggle.addEventListener('click',togglePaused);
+
+  /* Start fetching every carousel image while the first slide is visible. */
+  all.forEach(prepareSlide);
+  updateToggle();
+  return{setSlides:function(next){slides=next;idx=0;renderDots();go(0,false);start();}};
+}
 document.querySelectorAll('.testimonial-stage').forEach(function(stage){var slider=makeSlider(stage,'.testimonial-slide','.testimonial-dots',function(i){return 'Show testimonial '+(i+1);},8000);slider.setSlides([].slice.call(stage.querySelectorAll('.testimonial-slide')));});
 // Gallery images remain completely static; only the active slide cross-fades.
 // This final argument is the automatic slide-change interval in milliseconds.

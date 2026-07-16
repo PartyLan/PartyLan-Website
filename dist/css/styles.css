@@ -1352,3 +1352,41 @@ body { padding-bottom: 0 !important; }
     box-shadow: none !important;
   }
 }
+
+/*
+ * HEADER LOGO VISIBLE-ARTWORK CROP
+ * ---------------------------------------------------------------
+ * Both logo PNGs are 2048px square transparent canvases, but their matching
+ * visible artwork occupies 1601×794px at source offset 226,600. These values
+ * crop the transparent canvas in CSS, so the artwork itself—not the square
+ * file box—is centred in the header. Change only --brand-logo-width to make
+ * the visible logo larger or smaller while preserving its alignment.
+ */
+:root { --brand-logo-width: 104px; }
+.brand__mark {
+  width: var(--brand-logo-width) !important;
+  height: auto !important;
+  aspect-ratio: 1601 / 794;
+  overflow: hidden;
+  transform-origin: left center;
+}
+.brand__logo {
+  inset: auto !important;
+  left: -14.116%;
+  top: -75.567%;
+  width: 127.920% !important;
+  height: 257.935% !important;
+  max-width: none;
+  object-fit: fill;
+  object-position: center;
+  transform: none;
+}
+@media (max-width: 920px) {
+  :root { --brand-logo-width: clamp(78px, 24vw, 96px); }
+}
+
+/* Full-width accordion controls keep their glow but never outgrow the card. */
+.package-expand:hover,
+.package-expand:focus-visible {
+  transform: none !important;
+}

@@ -264,17 +264,21 @@ Reuse existing classes such as `.button`, `.button--key`, `.button--secondary`, 
 
 ### Change the logo alignment
 
-Logo alignment is controlled by `.brand__mark` and `.brand__logo`. The logo pivot and crop are intentionally anchored to the centre-left:
+Logo alignment is controlled by `.brand__mark` and `.brand__logo`. The source
+PNGs are 2048×2048 transparent canvases, while their visible artwork is much
+wider than it is tall. The final CSS block crops that transparent canvas using
+the measured artwork bounds.
+
+To change the visible logo size without disturbing its alignment, edit only:
 
 ```css
-.brand__mark,
-.brand__logo {
-  transform-origin: left center;
-  object-position: left center;
+:root {
+  --brand-logo-width: 104px;
 }
 ```
 
-Keep the source PNG files unchanged unless the artwork itself is being replaced.
+There is a separate responsive value under `@media (max-width: 920px)`. Keep
+the crop percentages unchanged unless the underlying PNG artwork is replaced.
 
 ## Editing content
 
