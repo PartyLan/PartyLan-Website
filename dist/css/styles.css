@@ -1390,3 +1390,17 @@ body { padding-bottom: 0 !important; }
 .package-expand:focus-visible {
   transform: none !important;
 }
+
+/*
+ * Match the existing Make it your own hover scale while its rollout is open.
+ * Closing it does not force a shrink under the pointer: :hover keeps the same
+ * scale until the pointer leaves. Touch and reduced-motion layouts stay flat.
+ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .addons-toggle[aria-expanded="true"] {
+    position: relative;
+    z-index: 2;
+    transform: scale(1.1);
+    box-shadow: var(--button-hover-glow);
+  }
+}
