@@ -89,14 +89,15 @@ Edit `content/faq.csv`. Keep questions short and answers clear. Hide an FAQ with
 
 Edit `content/legal/terms.json` or `content/legal/privacy.json`. Keep the draft warning unless the legal text has been professionally reviewed. Do not present placeholders as final advice.
 
-Each legal page contains an ordered `sections` list. Every section needs a unique `id`, the visible accordion `title`, and one or more structured `blocks`. This keeps legal copy editable without placing HTML inside JSON.
+Each legal page contains an ordered `sections` list. Every section needs a unique `id`, the visible accordion `title`, and one or more structured `blocks`. This keeps legal copy editable without placing HTML inside JSON. A page may also include `last_updated` and `summary` text beneath its title.
 
 Supported block types are:
 
 - `paragraph` with a `text` value.
 - `list` with `style` set to `bulleted` or `numbered` and an `items` list.
-- `definitions` with `items` containing a `term` and its `text`.
+- `definitions` with `items` containing a `term` and its `text`. Add an optional `href` beginning with `https://` or `mailto:` when the value should be a link.
 - `fields` with a list of labels for printable declaration lines.
+- `table` with an accessible `label`, keyed `columns`, and matching `rows`. Tables scroll horizontally on narrow screens.
 
 Example:
 
