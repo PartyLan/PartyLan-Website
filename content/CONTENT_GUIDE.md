@@ -87,7 +87,7 @@ Edit `content/faq.csv`. Keep questions short and answers clear. Hide an FAQ with
 
 ### Edit legal draft text
 
-Edit `content/legal/terms.json` or `content/legal/privacy.json`. Keep the draft warning unless the legal text has been professionally reviewed. Do not present placeholders as final advice.
+Edit `content/legal/terms.json` or `content/legal/privacy.json`. A `draft_warning` may be added while content is under review, but it is optional for final documents.
 
 Each legal page contains an ordered `sections` list. Every section needs a unique `id`, the visible accordion `title`, and one or more structured `blocks`. This keeps legal copy editable without placing HTML inside JSON. A page may also include `last_updated` and `summary` text beneath its title.
 
