@@ -23,15 +23,15 @@
   ],
   "header": {
     "availability_cta": {
-      "label": "Check availability",
-      "href": "/contact/?intent=availability"
+      "label": "Booking enquiry",
+      "href": "/contact/?intent=booking"
     },
     "logo_light": "/assets/images/Logo_Black_T.png",
     "logo_dark": "/assets/images/Logo_White_T.png"
   },
   "hero": {
     "eyebrow": "Hosted gaming parties",
-    "title": "Bring everyone together. We’ll handle the rest.",
+    "title": "Bring everyone together. We\u2019ll handle the rest.",
     "description": "PlayStation, Nintendo, racing and VR experiences brought directly to your venue, with setup and a dedicated host included.",
     "primary_cta": {
       "label": "View packages",
@@ -126,8 +126,8 @@
   "room_planning": {
     "eyebrow": "Room planning",
     "heading": "More adaptable than it looks.",
-    "description": "Send us a room photo and we’ll help plan the layout. Party.LAN helps assess the room, access and power so you do not need technical knowledge — a photograph or rough dimensions are enough.",
-    "link_label": "Check availability",
+    "description": "Send us a room photo and we\u2019ll help plan the layout. Party.LAN helps assess the room, access and power so you do not need technical knowledge \u2014 a photograph or rough dimensions are enough.",
+    "link_label": "Booking enquiry",
     "link_href": "#booking"
   },
   "faq_section": {
@@ -137,10 +137,10 @@
   },
   "final_cta": {
     "heading": "Ready to plan your party?",
-    "description": "Check availability, share your party plans or ask us anything before deciding.",
+    "description": "Share your party plans or ask us anything before deciding.",
     "button": {
-      "label": "Check availability",
-      "href": "/contact/?intent=availability"
+      "label": "Booking enquiry",
+      "href": "/contact/?intent=booking"
     }
   },
   "footer": {
@@ -191,11 +191,11 @@
     "cta": {
       "heading": "Ready to reserve a date?",
       "description": "Online enquiries are opening soon. Use the package details here to plan the right hosted experience.",
-      "button_label": "Check availability"
+      "button_label": "Booking enquiry"
     },
     "shared_enquiry": {
       "heading": "Not sure which package fits?",
-      "description": "Tell us about the group, venue and the kind of experience you have in mind. We’ll help you choose the most suitable package.",
+      "description": "Tell us about the group, venue and the kind of experience you have in mind. We\u2019ll help you choose the most suitable package.",
       "button_label": "Ask about packages",
       "href": "/contact/?intent=question"
     },

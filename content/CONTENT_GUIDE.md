@@ -155,7 +155,7 @@ The small circular control on the image pauses or plays automatic advancement. C
 
 ## Subpage Home navigation
 
-The homepage header intentionally shows only Packages, FAQ and Check availability. Subpages automatically add a visible Home link before those items, so editors do not need to duplicate navigation content.
+The homepage header intentionally shows only Packages, FAQ and Booking enquiry. Subpages automatically add a visible Home link before those items, so editors do not need to duplicate navigation content.
 
 ## Wider fluid layout
 
@@ -163,7 +163,7 @@ The site uses wider fluid containers for visual sections on large CSS viewports.
 
 ## Header and theme button
 
-The visible header navigation is Home, Packages and FAQ, with Check availability as the separate action button. The Party.LAN logo still links home, but it is not the only Home route. The theme control is icon-only: moon means it will switch to dark mode, and sun means it will switch to light mode. Screen readers use the button's accessible label.
+The visible header navigation is Home, Packages and FAQ, with Booking enquiry as the separate action button. The Party.LAN logo still links home, but it is not the only Home route. The theme control is icon-only: moon means it will switch to dark mode, and sun means it will switch to light mode. Screen readers use the button's accessible label.
 
 ## Hero secondary CTA
 
@@ -208,7 +208,7 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
 
 ## Latest layout and interaction notes
 
-- Header navigation is intentionally limited to **Home**, **Packages** and **FAQ**, with **Check availability** as the separate header CTA. Do not add permanent How it works or Gallery links.
+- Header navigation is intentionally limited to **Home**, **Packages** and **FAQ**, with **Booking enquiry** as the separate header CTA. Do not add permanent How it works or Gallery links.
 - The Packages page uses a shared enquiry block in `packages_page.shared_enquiry` for “Not sure which package fits?” and the `Ask about packages` CTA. Individual package cards should not carry separate ONYX/JADE enquiry buttons.
 - How it works image fields currently use existing repository images as temporary placeholders. Replace each `image` value with a future `/assets/images/<filename>` path only after adding the source file to `content/images/`; keep `image_alt` meaningful and adjust `image_position` only to `center`, `top`, `bottom`, `left` or `right`.
 - Reassurance items reserve an icon-ready slot. Leave `icon` empty for the CSS placeholder, or set it to an existing `/assets/images/<filename>` asset when a future approved graphic is available.
@@ -224,12 +224,12 @@ Hero and Shared Experience images use slow CSS pan/breathing animations. These a
   2. `Packages`, `Make your own`
   3. `Contact`, `Terms of Service`, `Privacy Policy`
 - Use the full local hrefs already in the file, especially homepage-prefixed anchors such as `/#faq` and the package anchor `/packages/#make-your-own`, so links work from subpages.
-- On mobile the header is a single utility row: logo, `Check availability`, theme icon and menu button. This layout is generated from the existing header and navigation content.
+- On mobile the header is a single utility row: logo, `Booking enquiry`, theme icon and menu button. This layout is generated from the existing header and navigation content.
 - Package cards use `summary` for the compact collapsed copy and `details_button` for the accordion control. Keep these short so ONYX and JADE remain easy to scan.
 - Full package detail content lives in each package's `expanded` object and the `included` list in `content/packages.json`; this content is shown only after expanding the package accordion.
 - The `Make it your own` section uses `addons_section.accordion_label` and `addons_section.description` from `content/homepage.json`. It is expanded by default on desktop and collapsed by default on mobile. Add-on rows still come only from `content/addons.csv`.
 - FAQ rows may include `link_label` and `link_href`. Both fields must be filled together or both left blank. The Terms FAQ uses `Read full Terms & Conditions` with `/terms/`, which renders as a button inside the expanded FAQ answer.
-- The sticky mobile `Check availability` control is behavioural chrome, not editable content. It hides when the booking section, footer or navigation menu is visible and page padding is handled in CSS.
+- The sticky mobile `Booking enquiry` control is behavioural chrome, not editable content. It hides when the booking section, footer or navigation menu is visible and page padding is handled in CSS.
 
 ## Packages final decision section
 

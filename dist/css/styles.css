@@ -962,6 +962,7 @@ body { padding-bottom: 0 !important; }
 .contact-form-shell { max-width: 880px; padding: clamp(1.2rem, 3vw, 1.7rem); border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); box-shadow: var(--shadow); }
 .contact-form__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .field { display: grid; gap: .35rem; }
+.field--event[hidden], .contact-disclosure[hidden] { display: none !important; }
 .field--full, .contact-form__actions { grid-column: 1 / -1; }
 .field label { font-weight: 720; }
 .field input, .field select, .field textarea { width: 100%; min-height: 46px; padding: .72rem .82rem; border: 1px solid var(--border); border-radius: 12px; background: color-mix(in srgb, var(--surface) 88%, var(--bg)); color: var(--text); font: inherit; }
