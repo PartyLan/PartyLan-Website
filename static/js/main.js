@@ -18,7 +18,7 @@ if(mt&&menu){mt.addEventListener('click',function(e){e.stopPropagation();menu.cl
 // rollout label helper
 function syncRolloutLabel(button){var label=button&&button.querySelector('[data-rollout-label]');if(!button||!label)return;var open=button.getAttribute('aria-expanded')==='true';label.textContent=open?(button.dataset.labelOpen||label.textContent):(button.dataset.labelClosed||label.textContent);}
 document.querySelectorAll('[data-label-open][data-label-closed]').forEach(syncRolloutLabel);
-document.querySelectorAll('.package-expand').forEach(function(b){if(!b.dataset.labelClosed)b.dataset.labelClosed=b.textContent.trim(); if(!b.dataset.labelOpen)b.dataset.labelOpen='Hide package details'; var text=b.childNodes[0]; if(text&&text.nodeType===3){var span=document.createElement('span');span.setAttribute('data-rollout-label','');span.textContent=b.dataset.labelClosed;b.replaceChild(span,text);} syncRolloutLabel(b); b.addEventListener('click',function(){var c=b.closest('.package-card'), open=!c.classList.contains('is-expanded'); c.classList.toggle('is-expanded',open); b.setAttribute('aria-expanded',String(open));syncRolloutLabel(b);});});
+document.querySelectorAll('.package-expand').forEach(function(b){syncRolloutLabel(b);b.addEventListener('click',function(){var c=b.closest('.package-card'),open=!c.classList.contains('is-expanded');c.classList.toggle('is-expanded',open);b.setAttribute('aria-expanded',String(open));syncRolloutLabel(b);});});
 var addonsToggle=document.querySelector('.addons-toggle'), addonsPanel=document.querySelector('.addons-panel');
 function setAddons(open){if(!addonsToggle||!addonsPanel)return;addonsPanel.classList.toggle('is-open',open);addonsToggle.setAttribute('aria-expanded',String(open));syncRolloutLabel(addonsToggle);}
 if(addonsToggle){
@@ -64,6 +64,8 @@ function initPackagesDecision(section){
   var expansion=section.querySelector('[data-decision-expansion]');
   var copies=[].slice.call(section.querySelectorAll('[data-decision-copy]'));
   var contact=section.querySelector('[data-decision-contact]');
+  var closeTimer=null;
+  var closeTransitionHandler=null;
 
   function currentPackage(){
     var selected=document.querySelector('.package-tab[aria-selected="true"]');
@@ -108,19 +110,36 @@ function initPackagesDecision(section){
     });});
   }
 
+  function cancelCloseCleanup(){
+    if(closeTimer!==null){window.clearTimeout(closeTimer);closeTimer=null;}
+    if(closeTransitionHandler){expansion.removeEventListener('transitionend',closeTransitionHandler);closeTransitionHandler=null;}
+  }
+
+  function finishClose(){
+    if(currentMode!=='none')return;
+    cancelCloseCleanup();
+    renderDecisionContent('none');
+    setContactContext('none');
+    expansion.hidden=true;
+  }
+
   function setDecisionMode(requestedMode){
     var nextMode=currentMode===requestedMode?'none':requestedMode;
     var wasClosed=currentMode==='none';
+    cancelCloseCleanup();
     currentMode=nextMode;
     section.dataset.activeMode=nextMode;
     syncControls(nextMode);
-    renderDecisionContent(nextMode);
-    setContactContext(nextMode);
     if(nextMode==='none'){
       expansion.classList.remove('is-open');
-      window.setTimeout(function(){if(currentMode==='none')expansion.hidden=true;},280);
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches){finishClose();return;}
+      closeTransitionHandler=function(event){if(event.target===expansion&&event.propertyName==='grid-template-rows')finishClose();};
+      expansion.addEventListener('transitionend',closeTransitionHandler);
+      closeTimer=window.setTimeout(finishClose,340);
       return;
     }
+    renderDecisionContent(nextMode);
+    setContactContext(nextMode);
     expansion.hidden=false;
     if(wasClosed){
       requestAnimationFrame(function(){expansion.classList.add('is-open');scrollDecisionExpansionIntoView();});
@@ -137,6 +156,7 @@ function initPackagesDecision(section){
   });
   syncControls('none');
   renderDecisionContent('none');
+  setContactContext('none');
   expansion.hidden=true;
 }
 document.querySelectorAll('.package-faq-item button').forEach(function(b){b.addEventListener('click',function(){var item=b.closest('.package-faq-item'),open=b.getAttribute('aria-expanded')!=='true';document.querySelectorAll('.package-faq-item').forEach(function(x){x.classList.remove('is-open');var xb=x.querySelector('button');if(xb)xb.setAttribute('aria-expanded','false')});item.classList.toggle('is-open',open);b.setAttribute('aria-expanded',String(open));});});
