@@ -1404,3 +1404,118 @@ body { padding-bottom: 0 !important; }
     box-shadow: var(--button-hover-glow);
   }
 }
+
+/*
+ * HERO IMAGE OPACITY FADES
+ * ---------------------------------------------------------------
+ * These variables are the manual adjustment points for both large hero
+ * treatments. The fades use alpha masks: the photographs become transparent
+ * at their edges, so no background-coloured rectangle can form a hard seam.
+ *
+ * Homepage: move the radial centre or change its solid/soft stops.
+ * Packages: change the fade stops, or the 10% extension below the hero.
+ */
+:root {
+  --home-hero-media-top: 0px;
+  --home-hero-media-side-gap: clamp(1.5rem, 4vw, 5rem);
+  --home-hero-media-bottom-bleed: clamp(8rem, 12vw, 14rem);
+  --home-hero-fade-centre-x: 50%;
+  --home-hero-fade-centre-y: 28%;
+  --home-hero-fade-radius-x: 47%;
+  /* End the ellipse before the media box so its bottom can never clip flat. */
+  --home-hero-fade-radius-y: 65%;
+  --home-hero-fade-solid: 30%;
+  --home-hero-fade-soft: 58%;
+
+  --packages-hero-fade-extension: 10%;
+  --packages-hero-fade-start: 62%;
+  --packages-hero-fade-soft: 82%;
+}
+
+@media (min-width: 1181px) {
+  .hero--home .hero__picture {
+    top: var(--home-hero-media-top);
+    right: auto;
+    left: 50%;
+    width: min(
+      calc(100% - (2 * var(--home-hero-media-side-gap))),
+      var(--layout-max)
+    );
+    height: calc(100% + var(--home-hero-media-bottom-bleed));
+    aspect-ratio: auto;
+    transform: translateX(-50%);
+    border-radius: 0;
+    box-shadow: none;
+    -webkit-mask-image: radial-gradient(
+      ellipse var(--home-hero-fade-radius-x) var(--home-hero-fade-radius-y)
+        at var(--home-hero-fade-centre-x) var(--home-hero-fade-centre-y),
+      #000 0%,
+      #000 var(--home-hero-fade-solid),
+      rgba(0, 0, 0, .72) var(--home-hero-fade-soft),
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse var(--home-hero-fade-radius-x) var(--home-hero-fade-radius-y)
+        at var(--home-hero-fade-centre-x) var(--home-hero-fade-centre-y),
+      #000 0%,
+      #000 var(--home-hero-fade-solid),
+      rgba(0, 0, 0, .72) var(--home-hero-fade-soft),
+      transparent 100%
+    );
+    -webkit-mask-composite: source-over;
+    mask-composite: add;
+  }
+
+  /* Keep the copy layer fully transparent so it cannot reveal a box edge. */
+  .hero--home .hero__content {
+    background: transparent;
+  }
+
+  /* Stronger light-theme ink remains readable directly over the photograph. */
+  html:not([data-theme]) .hero--home .hero__content h1,
+  html[data-theme="light"] .hero--home .hero__content h1 {
+    color: #091a34;
+  }
+  html:not([data-theme]) .hero--home .hero__content p:not(.eyebrow),
+  html[data-theme="light"] .hero--home .hero__content p:not(.eyebrow) {
+    color: #3d485f;
+  }
+  html:not([data-theme]) .hero--home .hero__content .eyebrow,
+  html[data-theme="light"] .hero--home .hero__content .eyebrow {
+    color: #48546b;
+  }
+
+  .hero--home .hero__image { object-position: 50% 42%; }
+
+  /* The radial alpha mask replaces both rectangular colour overlays. */
+  .hero--home .hero__picture::before,
+  .hero--home .hero__picture::after {
+    display: none !important;
+  }
+}
+
+.packages-hero__media {
+  inset: 0 0 auto;
+  height: calc(100% + var(--packages-hero-fade-extension));
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 var(--packages-hero-fade-start),
+    rgba(0, 0, 0, .62) var(--packages-hero-fade-soft),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 var(--packages-hero-fade-start),
+    rgba(0, 0, 0, .62) var(--packages-hero-fade-soft),
+    transparent 100%
+  );
+}
+
+.packages-hero__media::after {
+  /* Readability shading also ends transparent; it never paints in --bg. */
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, .18) 0%, rgba(0, 0, 0, .46) 68%, transparent 100%),
+    radial-gradient(circle at 50% 30%, transparent 0%, rgba(0, 0, 0, .42) 68%, transparent 100%);
+}
