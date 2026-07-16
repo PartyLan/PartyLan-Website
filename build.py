@@ -7,7 +7,7 @@ ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'stati
 ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
 REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','packages_faq.csv','legal/terms.json','legal/privacy.json']
 PACKAGE_FACTS={'onyx':{'name':'ONYX','label':'Premium Experience','price':'£150','duration':'2 hours','capacity':'Up to 6 players','included':['PlayStation and Nintendo gaming','Racing simulator','VR hardware','Displays','Party host/operator','Free digital invitation']},'jade':{'name':'JADE','label':'Big Party','price':'£150','duration':'2 hours','capacity':'Up to 10 players','included':['Multiplayer gaming across multiple stations','Displays','Party host/operator','Free digital invitation']}}
-LEGAL_BLOCK_TYPES={'paragraph','list','definitions','fields'}
+LEGAL_BLOCK_TYPES={'paragraph','list','definitions','fields','table'}
 # Validation helpers
 def err(f,k,r): ERRORS.append(f'{f} {k}: {r}')
 def esc(v): return html.escape(str(v), quote=True)
@@ -146,6 +146,8 @@ def validate_rows(rel, required, kind, pkg_ids=None):
 def validate_legal(rel):
     d=read_json(Path('legal')/(rel+'.json')); file=f'content/legal/{rel}.json'
     req_text(file,d,'title','page'); req_text(file,d,'draft_warning','page')
+    for optional_key in ['last_updated','summary']:
+        if optional_key in d: req_text(file,d,optional_key,'page')
     sections=d.get('sections')
     if not isinstance(sections,list) or not sections:
         err(file,'sections','must be a non-empty list')
@@ -189,12 +191,33 @@ def validate_legal(rel):
                     for item_index,item in enumerate(items):
                         item_ctx=f'{block_ctx}.items[{item_index}]'
                         req_text(file,item,'term',item_ctx); req_text(file,item,'text',item_ctx)
+                        href=item.get('href') if isinstance(item,dict) else None
+                        if href is not None:
+                            req_text(file,item,'href',item_ctx)
+                            if not href.startswith(('https://','mailto:')): err(file,item_ctx+'.href','must begin with https:// or mailto:')
             elif block_type=='fields':
                 items=block.get('items')
                 if not isinstance(items,list) or not items: err(file,block_ctx+'.items','must be a non-empty list')
                 else:
                     for item_index,item in enumerate(items):
                         if not isinstance(item,str) or not item.strip(): err(file,f'{block_ctx}.items[{item_index}]','must be non-empty text')
+            elif block_type=='table':
+                req_text(file,block,'label',block_ctx)
+                columns=block.get('columns'); rows=block.get('rows')
+                if not isinstance(columns,list) or not columns: err(file,block_ctx+'.columns','must be a non-empty list')
+                else:
+                    column_keys=set()
+                    for column_index,column in enumerate(columns):
+                        column_ctx=f'{block_ctx}.columns[{column_index}]'
+                        key=req_text(file,column,'key',column_ctx); req_text(file,column,'label',column_ctx)
+                        if key in column_keys: err(file,column_ctx+'.key',f'duplicate column key "{key}"')
+                        column_keys.add(key)
+                    if not isinstance(rows,list) or not rows: err(file,block_ctx+'.rows','must be a non-empty list')
+                    else:
+                        for row_index,row in enumerate(rows):
+                            row_ctx=f'{block_ctx}.rows[{row_index}]'
+                            if not isinstance(row,dict): err(file,row_ctx,'must be an object'); continue
+                            for key in column_keys: req_text(file,row,key,row_ctx)
     return d
 # Build output helpers
 def copy_assets():
@@ -344,11 +367,19 @@ def legal_blocks(blocks):
             items=''.join(f'<li>{esc(item)}</li>' for item in block['items'])
             rendered.append(f'<{tag} class="legal-content__list legal-content__list--{esc(block["style"])}">{items}</{tag}>')
         elif block_type=='definitions':
-            items=''.join(f'<div><dt>{esc(item["term"])}</dt><dd>{esc(item["text"])}</dd></div>' for item in block['items'])
+            def definition_value(item):
+                value=esc(item['text'])
+                return f'<a href="{esc(item["href"])}">{value}</a>' if item.get('href') else value
+            items=''.join(f'<div><dt>{esc(item["term"])}</dt><span class="legal-definitions__separator" aria-hidden="true">–</span><dd>{definition_value(item)}</dd></div>' for item in block['items'])
             rendered.append(f'<dl class="legal-definitions">{items}</dl>')
         elif block_type=='fields':
             items=''.join(f'<div><dt>{esc(item)}</dt><dd aria-hidden="true"></dd></div>' for item in block['items'])
             rendered.append(f'<dl class="legal-fields">{items}</dl>')
+        elif block_type=='table':
+            columns=block['columns']
+            heading=''.join(f'<th scope="col">{esc(column["label"])}</th>' for column in columns)
+            rows=''.join('<tr>'+''.join(f'<td>{esc(row[column["key"]])}</td>' for column in columns)+'</tr>' for row in block['rows'])
+            rendered.append(f'<div class="legal-table-scroll" role="region" aria-label="{esc(block["label"])}" tabindex="0"><table class="legal-table"><thead><tr>{heading}</tr></thead><tbody>{rows}</tbody></table></div>')
     return ''.join(rendered)
 def legal_page(home,d,slug):
     items=[]
@@ -359,7 +390,9 @@ def legal_page(home,d,slug):
         content=legal_blocks(section['blocks'])
         items.append(f'<div class="legal-accordion__item"><h2><button type="button" aria-expanded="false" aria-controls="{section_id}" id="{button_id}"><span class="legal-accordion__label">{esc(section["title"])}</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></h2><div class="legal-accordion__answer" id="{section_id}" role="region" aria-labelledby="{button_id}"><div class="legal-accordion__answer-inner"><div class="legal-content">{content}</div></div></div></div>')
     accordion=''.join(items)
-    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1><p class="legal-page__notice">{esc(d["draft_warning"])}</p></header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+    updated=f'<p class="legal-page__updated">Last updated: {esc(d["last_updated"])}</p>' if d.get('last_updated') else ''
+    summary=f'<p class="legal-page__summary">{esc(d["summary"])}</p>' if d.get('summary') else ''
+    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1>{updated}<p class="legal-page__notice">{esc(d["draft_warning"])}</p>{summary}</header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 def main():
     for rel in REQUIRED_FILES:
         if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
