@@ -244,6 +244,43 @@ The final mobile hero rule intentionally bleeds two pixels beyond the viewport:
 
 Do not change these back to `left: 0; width: 100%` unless the left and right edges have been checked on a real phone. The two-pixel bleed prevents browser rounding from exposing a sharp seam. Mobile also disables `::before` and uses only `::after` for the bottom fade.
 
+### Adjust the homepage and packages hero fades
+
+The authoritative fade controls are grouped at the end of
+`static/css/styles.css` under `HERO IMAGE OPACITY FADES`. Both effects use CSS
+alpha masks, so the image itself becomes transparent instead of being covered
+with a rectangle in the page background colour.
+
+For the desktop homepage hero, these are the main controls:
+
+```css
+--home-hero-media-top: 0px;       /* aligns the photograph with the hero top */
+--home-hero-media-width: clamp(960px, 82vw, 1680px);
+--home-hero-fade-centre-x: 62%;   /* move the radial fade left or right */
+--home-hero-fade-centre-y: 42%;   /* move the radial fade up or down */
+--home-hero-fade-solid: 42%;      /* fully visible inner area */
+--home-hero-fade-soft: 72%;       /* partly transparent transition */
+```
+
+Increase `--home-hero-media-width` to bleed the photograph farther beneath
+the heading. Lower `--home-hero-fade-centre-x` to shift the strongest part of
+the image toward the text. Increase `--home-hero-fade-solid` for more fully
+visible image, or decrease it for a softer fade.
+
+The packages hero uses three controls:
+
+```css
+--packages-hero-fade-extension: 10%;
+--packages-hero-fade-start: 62%;
+--packages-hero-fade-soft: 82%;
+```
+
+`--packages-hero-fade-extension` is how far the photograph and its fade extend
+below the hero. The default is the requested extra 10%. The other two values
+control where transparency starts and how quickly it becomes softer. Keep the
+final mask stop at `transparent 100%`; replacing that with `var(--bg)` brings
+back the hard horizontal seam, especially when switching themes.
+
 ### Change the gallery crop
 
 Apply an `object-position` to an individual gallery row through code only if all items share the same crop. If different items need different focal points, add a dedicated content field and render it in `build.py`; do not pile `nth-child()` rules into CSS.
