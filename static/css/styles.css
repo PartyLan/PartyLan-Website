@@ -1421,9 +1421,9 @@ body { padding-bottom: 0 !important; }
   --home-hero-media-bottom-bleed: clamp(8rem, 12vw, 14rem);
   --home-hero-fade-centre-x: 50%;
   --home-hero-fade-centre-y: 28%;
-  --home-hero-fade-radius-x: 52%;
+  --home-hero-fade-radius-x: 47%;
   /* End the ellipse before the media box so its bottom can never clip flat. */
-  --home-hero-fade-radius-y: 70%;
+  --home-hero-fade-radius-y: 65%;
   --home-hero-fade-solid: 30%;
   --home-hero-fade-soft: 58%;
 
@@ -1466,14 +1466,23 @@ body { padding-bottom: 0 !important; }
     mask-composite: add;
   }
 
-  /* The image mask supplies text contrast without a rectangular text panel. */
+  /* Keep the copy layer fully transparent so it cannot reveal a box edge. */
   .hero--home .hero__content {
-    background: radial-gradient(
-      ellipse 86% 92% at 22% 50%,
-      color-mix(in srgb, var(--bg) 82%, transparent) 0%,
-      color-mix(in srgb, var(--bg) 48%, transparent) 58%,
-      transparent 100%
-    );
+    background: transparent;
+  }
+
+  /* Stronger light-theme ink remains readable directly over the photograph. */
+  html:not([data-theme]) .hero--home .hero__content h1,
+  html[data-theme="light"] .hero--home .hero__content h1 {
+    color: #091a34;
+  }
+  html:not([data-theme]) .hero--home .hero__content p:not(.eyebrow),
+  html[data-theme="light"] .hero--home .hero__content p:not(.eyebrow) {
+    color: #3d485f;
+  }
+  html:not([data-theme]) .hero--home .hero__content .eyebrow,
+  html[data-theme="light"] .hero--home .hero__content .eyebrow {
+    color: #48546b;
   }
 
   .hero--home .hero__image { object-position: 50% 42%; }
