@@ -699,38 +699,107 @@ body { padding-bottom: 0 !important; }
 .showcase-section { max-width: var(--container); padding-inline: 0; }
 .showcase-section > .gallery-tabs,
 .showcase-section > .showcase { width: 100%; max-width: none; min-width: 0; margin-left: auto; margin-right: auto; }
+/* =========================================================
+   FAQ — MAIN ADJUSTMENTS
+
+   Change only these variables when adjusting the layout.
+   ========================================================= */
+
 .faq-section {
-  max-width: var(--container);
+  /* Overall FAQ section width */
+  --faq-max-width: 1000px;
+  
+
+  /* Width relationship between title and questions */
+  --faq-title-column-width: 0.72fr;
+  --faq-list-column-width: 1fr;
+  --faq-list-min-width: 320px;
+
+  /* Space between the title and questions */
+  --faq-column-gap: clamp(1.7rem, 4vw, 2.5rem);
+  --faq-row-gap: var(--section-intro-gap);
+
+  /* Width of the title text */
+  --faq-title-max-width: 30rem;
+
+  /* Spacing inside each question */
+  --faq-item-column-gap: 1rem;
+  --faq-item-padding: 1rem 0;
+
   display: grid;
-  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-  column-gap: clamp(3rem, 5vw, 4.5rem);
-  row-gap: var(--section-intro-gap);
+
+  grid-template-columns:
+    minmax(0, var(--faq-title-column-width))
+    minmax(
+      var(--faq-list-min-width),
+      var(--faq-list-column-width)
+    );
+
+  column-gap: var(--faq-column-gap);
+  row-gap: var(--faq-row-gap);
+
+  max-width: var(--faq-max-width);
+  margin-inline: auto;
   align-items: start;
 }
+
+
+/* =========================================================
+   FAQ TITLE
+   ========================================================= */
+
 .faq-section > .section-intro {
   width: auto;
   max-width: none;
   margin: 0 !important;
 }
+
 .faq-section > .section-intro > .eyebrow,
 .faq-section > .section-intro > h2,
 .faq-section > .section-intro > p {
   width: 100%;
-  max-width: 30rem;
+  max-width: var(--faq-title-max-width);
 }
-.faq-section > .section-intro > h2 { font-size: clamp(2.15rem, 3.6vw, 3.9rem); }
-.faq-section__heading { position: static; top: auto; }
-.faq-list { width: 100%; min-width: 0; }
+
+.faq-section > .section-intro > h2 {
+  font-size: clamp(2.15rem, 3.6vw, 3.9rem);
+}
+
+.faq-section__heading {
+  position: static;
+  top: auto;
+}
+
+
+/* =========================================================
+   FAQ LIST
+   ========================================================= */
+
+.faq-list {
+  width: 100%;
+  min-width: 0;
+}
+
 .faq-item button {
-  column-gap: 1rem;
-  padding: 1rem 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+
+  column-gap: var(--faq-item-column-gap);
+  padding: var(--faq-item-padding);
+
   text-align: left;
 }
+
+
+/* =========================================================
+   DROPDOWN ICON
+   ========================================================= */
+
 .faq-item .rollout-control__icon-shell,
-.faq-item [data-rollout-icon] { justify-self: end; }
+.faq-item [data-rollout-icon] {
+  justify-self: end;
+}
 
 .showcase {
   position: relative;
@@ -1392,18 +1461,18 @@ body { padding-bottom: 0 !important; }
   width: var(--brand-logo-width) !important;
   height: auto !important;
   aspect-ratio: 1601 / 794;
-  overflow: hidden;
+  overflow: visible;
   transform-origin: left center;
 }
 .brand__logo {
-  inset: auto !important;
+  inset: manual !important;
   left: -14.116%;
-  top: -75.567%;
-  width: 127.920% !important;
-  height: 257.935% !important;
+  top: -10%;
+  width: 135% !important;
+  height: 125% !important;
   max-width: none;
   object-fit: fill;
-  object-position: center;
+  object-position: bottom;
   transform: none;
 }
 @media (max-width: 920px) {
@@ -1543,4 +1612,23 @@ body { padding-bottom: 0 !important; }
   background:
     linear-gradient(180deg, rgba(0, 0, 0, .18) 0%, rgba(0, 0, 0, .46) 68%, transparent 100%),
     radial-gradient(circle at 50% 30%, transparent 0%, rgba(0, 0, 0, .42) 68%, transparent 100%);
+}
+.faq-section {
+  width: min(100%, var(--faq-max-width)) !important;
+  max-width: var(--faq-max-width) !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  justify-self: center;
+  box-sizing: border-box;
+}
+.final-cta {
+  --final-cta-panel-width: 50%;
+}
+
+.final-cta > div {
+  width: var(--final-cta-panel-width);
+  max-width: none;
+  margin-inline: auto;
 }
