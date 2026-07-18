@@ -15,10 +15,50 @@ from pathlib import Path
 # during deployment, so changing the functions below changes the generated site.
 # The older templates/index.html file is not used by this build.
 
+# BEGINNER'S MENTAL MODEL: HOW THE WEBSITE FITS TOGETHER
+# -----------------------------------------------------
+# A visitor's browser receives three things:
+# - HTML: the page structure and words (headings, sections, links and forms).
+# - CSS: how that structure looks at different screen sizes and in each theme.
+# - JavaScript: what happens after a click, swipe, form submission or scroll.
+#
+# Visitors do NOT run this Python file. Python runs once when the site is built.
+# Think of build.py as a small factory: it takes the editable content and source
+# assets, checks them, assembles the HTML, and places the finished website in
+# dist/. Render then serves the files in dist/ directly to visitors.
+#
+# FOLDER MAP
+# content/   = editable words, prices, FAQs, legal text and original photographs
+# static/    = source CSS, browser JavaScript and fallback artwork
+# build.py   = validation rules and the HTML assembly process
+# dist/      = generated website that Render publishes; never edit it directly
+# templates/ = an old prototype kept for reference; the current build ignores it
+#
+# CONTENT FILE TYPES
+# JSON stores nested named values and lists, such as homepage sections or legal
+# blocks. CSV stores table-like rows, such as one FAQ or gallery item per line.
+# Neither format supports safe comments, so explanations for their expected
+# fields live in this validator and the existing content/CONTENT_GUIDE.md file.
+#
+# PYTHON READING GUIDE
+# name=value       stores a value under a name.
+# def name(...):   starts a reusable function.
+# return value     sends a completed value back to the caller.
+# if / elif / else chooses which instructions run.
+# for item in list repeats instructions for every item.
+# [...]            is a list; {...} is a dictionary of named values.
+# obj.get('name')  safely looks up a dictionary value that might be missing.
+# f'...{value}...' inserts a value into text; these are called f-strings.
+# A semicolon in this compact file separates statements that could have been
+# written on separate lines. Read each semicolon as a visual line break.
+
 # Absolute project paths used by every read, validation and output operation.
 ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'static'; DIST=ROOT/'dist'; IMAGES=CONTENT/'images'
 
 # Shared validation state and the small set of values accepted from content.
+# ERRORS starts empty and gathers readable messages throughout validation.
+# BOOL translates the words used in CSV files into Python True/False values.
+# IMG_EXT lists the image file endings the build knows how to publish safely.
 ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
 
 # A build cannot succeed unless every content source in this list exists.
@@ -40,6 +80,8 @@ LEGAL_BLOCK_TYPES={'paragraph','list','definitions','fields','table'}
 def err(f,k,r): ERRORS.append(f'{f} {k}: {r}')
 
 # All content-originated text passes through this helper before entering HTML.
+# Escaping changes characters such as < and > into safe HTML text, preventing a
+# content entry from accidentally becoming a real HTML tag or attribute.
 def esc(v): return html.escape(str(v), quote=True)
 
 # Return trimmed text or record which required field is missing.
@@ -76,7 +118,8 @@ def read_json(rel):
     except FileNotFoundError: err(str(Path('content')/rel),'$','missing required file'); return {}
     except json.JSONDecodeError as e: err(str(Path('content')/rel),f'line {e.lineno}',f'malformed JSON: {e.msg}'); return {}
 
-# Read CSV rows as dictionaries keyed by their header names.
+# Read CSV rows as dictionaries keyed by their header names. For example, a CSV
+# heading named "question" becomes row['question'] inside the build.
 def read_csv(rel):
     try:
         with (CONTENT/rel).open(newline='',encoding='utf-8') as fh: return list(csv.DictReader(fh))
@@ -84,7 +127,8 @@ def read_csv(rel):
     except csv.Error as e: err('content/'+rel,'$','malformed CSV: '+str(e)); return []
 
 # Validate homepage structure, navigation contracts, image references and the
-# content fragments reused by the packages page.
+# content fragments reused by the packages page. "Validate" means check and
+# report mistakes; this function does not create or alter the page.
 def validate_home(h):
     f='content/homepage.json'
     for k in ['meta','navigation','navigation_groups','header','hero','reassurance','testimonials_section','how_it_works','gallery_section','faq_section','final_cta','footer','packages_page','addons_section']:
@@ -171,7 +215,9 @@ def validate_packages(data):
     return sorted(out,key=lambda r:r['_order'])
 
 # Apply common CSV rules plus type-specific checks for add-ons, gallery images,
-# testimonials and FAQs. Invisible rows validate but are not rendered.
+# testimonials and FAQs. This one shared function avoids repeating the same ID,
+# visibility and display-order checks for every CSV. Invisible rows are checked
+# for correctness but deliberately omitted from the finished website.
 def validate_rows(rel, required, kind, pkg_ids=None):
     rows=read_csv(rel); out=[]; ids=set(); orders=set(); file='content/'+rel
     for n,r in enumerate(rows,start=2):
@@ -278,6 +324,8 @@ def validate_legal(rel):
 
 # Recreate dist/ from scratch, copy browser code/assets, then copy only approved
 # content image formats. Never hand-edit dist/: the next build deletes it.
+# shutil.rmtree removes the previous generated folder; copytree then copies the
+# complete static/ source tree before original content images are added.
 def copy_assets():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir(); shutil.copytree(STATIC,DIST,dirs_exist_ok=True)
@@ -326,8 +374,11 @@ def head(home,title=None,desc=None):
 # Contact form rendering
 # ================================================================
 
-# Render the reusable enquiry form. Without a Web3Forms key, submission is
-# disabled and the direct email route remains available.
+# Render the reusable enquiry form. "Render" here means return a long HTML text
+# string. It looks dense because the complete form is kept in one f-string, but
+# the browser reads it as the normal nested <form>, <label> and <input> elements.
+# The same form is inserted on the contact page and inside the packages panel.
+# Without a Web3Forms key, submission is disabled and direct email remains.
 def contact_form(form_id='contact-form', default_intent='question', default_package='unsure', inline=False, access_key='', allow_event_disclosure=False):
     event_hidden=' hidden' if default_intent=='question' and not inline else ''
     online='true' if access_key else 'false'
@@ -384,6 +435,8 @@ def render_reassurance(items):
 # ================================================================
 
 # Assemble the complete homepage from the validated content components above.
+# The additions join shared head/header/footer HTML with page-specific sections.
+# Every visible content value is read from the validated dictionaries/CSV rows.
 def home_page(home,gallery,faq_rows,testimonials,web3forms_access_key):
     h=home['hero']; reass=render_reassurance(home['reassurance']); cta=home['final_cta']
     return head(home)+'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main" class="site-shell"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-pan"><div class="hero__media-breathe"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt=""><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt=""></div></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button button--key" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--secondary" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2><p>{esc(home['how_it_works'].get('description','Choose your hosted experience, share the venue details and let us handle setup, hosting and pack-down.'))}</p></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button button--key" href="{esc(cta['button'].get('href','/contact/?intent=booking'))}">{esc(cta['button']['label'])}</a></div></section></main>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
@@ -409,6 +462,9 @@ def compact_package_faq(rows):
 # ================================================================
 
 # Assemble the packages page, add-on groups and three-mode decision panel.
+# HTML data-* attributes such as data-decision-mode do not change appearance by
+# themselves; they give main.js reliable labels for finding interactive parts.
+# aria-* attributes describe the same controls to assistive technology.
 def package_page(home, pkgs, addons, package_faq_rows, web3forms_access_key):
     pp=home['packages_page']; ph=pp['hero']
     light=ph.get('image') or ph.get('fallback_image'); dark=ph.get('image') or ph.get('fallback_image_dark', light)
@@ -500,10 +556,13 @@ def legal_page(home,d,slug):
 # ================================================================
 
 # Validate everything before touching dist/. Only a fully valid content set may
-# replace the currently generated site.
+# replace the currently generated site. This two-phase order is important: a
+# typo in one content file cannot leave dist/ half rebuilt or partly missing.
 def main():
+    # PHASE 1 — confirm every required source file exists.
     for rel in REQUIRED_FILES:
         if not (CONTENT/rel).exists(): err('content/'+rel,'$','missing required file')
+    # PHASE 2 — read and validate all JSON/CSV content in memory.
     home=read_json(Path('homepage.json')); validate_home(home)
     pkgs=validate_packages(read_json(Path('packages.json'))); pkg_ids={p['id'] for p in pkgs}
     addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
@@ -513,16 +572,23 @@ def main():
     live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     terms=validate_legal('terms'); privacy=validate_legal('privacy')
+    # Render supplies this secret through the environment. It is escaped before
+    # being inserted into the hidden form field and is never stored in content/.
     web3forms_access_key=esc(os.environ.get('WEB3FORMS_ACCESS_KEY','').strip())
+    # Stop here if any earlier check called err(). The old dist/ is still intact.
     if ERRORS:
         print('Build failed with content validation errors:',file=sys.stderr); print('\n'.join('- '+e for e in ERRORS),file=sys.stderr); sys.exit(1)
+    # PHASE 3 — validation passed, so it is safe to recreate generated assets.
     copy_assets()
+    # PHASE 4 — write one index.html inside each public route folder. Static web
+    # hosts treat /packages/index.html as the page visitors see at /packages/.
     (DIST/'index.html').write_text(home_page(home,gallery,faq_rows,live,web3forms_access_key),encoding='utf-8')
     (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo,web3forms_access_key),encoding='utf-8')
     (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons,package_faq_rows,web3forms_access_key),encoding='utf-8')
     (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms,'terms'),encoding='utf-8')
     (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy,'privacy'),encoding='utf-8')
     (DIST/'contact').mkdir(); (DIST/'contact'/'index.html').write_text(contact_page(home,web3forms_access_key),encoding='utf-8')
+    # This summary is for the developer/build log; visitors never see it.
     print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials, {len(faq_rows)} landing FAQs and {len(package_faq_rows)} package FAQs.')
 
 # Importing build.py is safe for tools/tests; generation runs only as a script.

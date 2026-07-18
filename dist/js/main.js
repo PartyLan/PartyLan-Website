@@ -1,3 +1,5 @@
+// The outer function creates a private scope. Names declared in this file stay
+// inside it instead of becoming global variables that other scripts could alter.
 (function(){
 'use strict';
 
@@ -8,8 +10,38 @@
 // and reveal-on-scroll effects. Each feature checks for its own markup first,
 // so the same file can run safely on every generated page.
 
+// BEGINNER'S JAVASCRIPT / BROWSER GLOSSARY
+// ----------------------------------------
+// The DOM is the browser's in-memory version of the HTML page. JavaScript finds
+// DOM elements, reads their state, and changes classes/attributes when visitors
+// interact with them. It does not permanently edit the generated HTML files.
+//
+// document.querySelector('.name') finds the first element with class="name".
+// document.querySelectorAll(...)   finds every matching element.
+// .addEventListener('click', ...)  says what should happen after an event.
+// .classList.add/remove/toggle     changes CSS classes on an element.
+// .getAttribute/.setAttribute     reads or changes an HTML attribute.
+// [data-example] / element.dataset are custom labels joining HTML and JavaScript.
+// aria-expanded="true/false"      tells assistive software if a control is open.
+// hidden                          removes content from display/accessibility flow.
+// disabled                        prevents a form control being used or submitted.
+// matchMedia(...)                 checks screen width or reduced-motion preference.
+// requestAnimationFrame(...)      waits for the browser's next visual update.
+// Promise / .then(...)            waits for asynchronous work such as image decode.
+//
+// var introduces a stored value; function introduces reusable instructions.
+// if chooses whether code runs, and forEach repeats code for matching elements.
+// A leading dot in a selector means a CSS class; # means a unique HTML id.
+//
+// MOST FEATURES FOLLOW THE SAME FOUR STEPS
+// 1. Find the relevant HTML elements with querySelector/querySelectorAll.
+// 2. Define small functions that describe possible state changes.
+// 3. Attach those functions to click, keyboard, scroll or form events.
+// 4. Set a correct initial state before the visitor interacts with the page.
+
 // The .js class lets CSS progressively enhance controls only when JavaScript is
-// available. Without JavaScript, the core page content remains readable.
+// available. This is called progressive enhancement: without JavaScript, the
+// core page content remains readable rather than becoming a blank/broken page.
 document.documentElement.classList.add('js');
 
 // The query flag is a convenience preview route for example testimonials.
@@ -19,8 +51,9 @@ if(new URLSearchParams(location.search).get('demo')==='testimonials' && !locatio
 // Theme selection
 // ================================================================
 
-// Keep the chosen theme in localStorage and synchronise the visible icon plus
-// accessible labels every time the theme changes.
+// localStorage is a small browser-owned store that survives page changes and
+// return visits. Keep the chosen theme there, then synchronise the visible icon
+// and accessible labels every time the theme changes.
 var key='partyLanTheme', toggle=document.querySelector('.theme-toggle');
 function apply(t,save){document.documentElement.dataset.theme=t;if(toggle){var d=t==='dark', label=d?'Dark mode active. Switch to light mode':'Light mode active. Switch to dark mode', icon=d?'☾':'☀';toggle.setAttribute('aria-pressed',String(d));toggle.setAttribute('aria-label',label);toggle.setAttribute('title',label);var i=toggle.querySelector('.theme-toggle__icon'); if(i)i.textContent=icon;} if(save)try{localStorage.setItem(key,t)}catch(e){}}
 apply(document.documentElement.dataset.theme||'light',false); if(toggle)toggle.addEventListener('click',function(){apply(document.documentElement.dataset.theme==='dark'?'light':'dark',true)});
@@ -29,15 +62,18 @@ apply(document.documentElement.dataset.theme||'light',false); if(toggle)toggle.a
 // Header and complete navigation menu
 // ================================================================
 
-// Shared menu references and helpers. isMobile() is retained for compatibility
+// Save references to the menu button and menu so later functions can reuse them
+// without searching the DOM repeatedly. isMobile() is retained for compatibility
 // with earlier menu logic; current responsive behaviour is primarily CSS-led.
 var mt=document.querySelector('.menu-toggle'), menu=document.getElementById('site-menu');
 function isMobile(){return matchMedia('(max-width: 920px)').matches;}
 function closeMenu(focus){if(!mt||!menu)return;menu.classList.remove('is-open');mt.setAttribute('aria-expanded','false');mt.setAttribute('aria-label','Open navigation menu');document.body.classList.remove('nav-open');if(focus)mt.focus();}
 function openMenu(){menu.classList.add('is-open');mt.setAttribute('aria-expanded','true');mt.setAttribute('aria-label','Close navigation menu');document.body.classList.add('nav-open');var first=menu.querySelector('a'); if(first)first.focus({preventScroll:true});}
 
-// Hide the header while scrolling down, reveal it while scrolling up, and keep
-// it visible whenever the menu or keyboard focus needs it.
+// Hide the header while scrolling down and reveal it while scrolling up. The
+// ticking flag allows only one calculation per animation frame, which prevents
+// a fast scroll from queueing hundreds of layout updates. Keyboard focus and an
+// open menu always force the header to stay visible.
 var header=document.querySelector('.site-header');
 if(header){var lastY=window.pageYOffset||0,ticking=false,threshold=10,topLimit=80,reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;function forceHeader(){header.classList.remove('is-hidden')}function canHide(){return !document.body.classList.contains('nav-open')&&!header.contains(document.activeElement)}function onScroll(){var y=window.pageYOffset||document.documentElement.scrollTop||0,delta=y-lastY;if(y<topLimit||!canHide()){forceHeader();lastY=y;ticking=false;return;}if(Math.abs(delta)>=threshold){if(delta>0){header.classList.add('is-hidden')}else{forceHeader()}lastY=y;}ticking=false;}window.addEventListener('scroll',function(){if(!ticking){ticking=true;requestAnimationFrame(onScroll)}},{passive:true});header.addEventListener('focusin',forceHeader);if(mt){mt.addEventListener('click',forceHeader)}document.addEventListener('keydown',function(e){if(e.key==='Tab')forceHeader});if(reducedMotion){header.style.transition='none';}}
 
@@ -48,7 +84,8 @@ if(mt&&menu){mt.addEventListener('click',function(e){e.stopPropagation();menu.cl
 // Reusable rollout controls and accordions
 // ================================================================
 
-// Change a rollout button's text to its data-label-open/closed value.
+// Change a rollout button's text to its data-label-open/closed value. The HTML
+// stores both possible labels; this helper chooses the one matching aria-expanded.
 function syncRolloutLabel(button){var label=button&&button.querySelector('[data-rollout-label]');if(!button||!label)return;var open=button.getAttribute('aria-expanded')==='true';label.textContent=open?(button.dataset.labelOpen||label.textContent):(button.dataset.labelClosed||label.textContent);}
 document.querySelectorAll('[data-label-open][data-label-closed]').forEach(syncRolloutLabel);
 
@@ -77,15 +114,18 @@ if(addonsToggle){
   window.addEventListener('hashchange',openAddonsFromHash);
 }
 
-// Landing-page FAQs use a single-open accordion pattern.
+// Landing-page FAQs use a single-open accordion pattern: opening one answer
+// closes the others, and the CSS reads .is-open to animate the visible answer.
 document.querySelectorAll('.faq-item button').forEach(function(b){b.addEventListener('click',function(){document.querySelectorAll('.faq-item button').forEach(function(x){if(x!==b){x.setAttribute('aria-expanded','false');x.closest('.faq-item').classList.remove('is-open')}});var open=b.getAttribute('aria-expanded')!=='true';b.setAttribute('aria-expanded',String(open));b.closest('.faq-item').classList.toggle('is-open',open);});});
 
 // ================================================================
 // Shared testimonial and gallery slider
 // ================================================================
 
-// Build a slider controller around existing slides. It provides dots, timed
-// advance, pause/play, pointer dragging, touch swipes and reduced-motion support.
+// Build a slider controller around existing slides. "root" is the outer carousel
+// element; the selector arguments tell the same reusable function where its
+// slides and dot container live. It provides dots, timed advance, pause/play,
+// pointer dragging, touch swipes and reduced-motion support.
 function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){
   var all=[].slice.call(root.querySelectorAll(slideSelector));
   var dotBox=root.querySelector(dotBoxSelector),slides=all,idx=0,timer;
@@ -157,6 +197,8 @@ function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){
     [].slice.call(dotBox?dotBox.children:[]).forEach(function(d,i){d.setAttribute('aria-current',String(i===idx))});
   }
   // Wrap the requested index and wait until its image is ready before swapping.
+  // The modulo (%) calculation turns an index after the last slide back into 0,
+  // and an index before 0 back into the final slide.
   function go(n,manual){
     if(!slides.length)return;
     var target=(n+slides.length)%slides.length;
@@ -201,8 +243,9 @@ document.querySelectorAll('.showcase').forEach(function(showcase){var section=sh
 // Package selection and decision panel
 // ================================================================
 
-// On small screens one package tab/panel is shown at a time. Desktop keeps both
-// cards visible for direct comparison while retaining accessible tab controls.
+// On small screens one package tab/panel is shown at a time because two wide
+// cards would be cramped. Desktop keeps both visible for direct comparison while
+// retaining the same accessible tab controls and keyboard arrow navigation.
 document.querySelectorAll('.package-tabs').forEach(function(tablist){
   var tabs=[].slice.call(tablist.querySelectorAll('[role="tab"]'));
   var panels=tabs.map(function(t){return document.getElementById(t.getAttribute('aria-controls'));});
@@ -219,8 +262,9 @@ document.querySelectorAll('.package-tabs').forEach(function(tablist){
 // Each packages-decision section owns its expansion, content and form state.
 document.querySelectorAll('.packages-decision').forEach(initPackagesDecision);
 
-// Coordinate the Reserve, Ask and Common questions modes. Only enquiry modes
-// enable form controls, preventing hidden fields from being submitted.
+// Coordinate the Reserve, Ask and Common questions modes. currentMode is the
+// single source of truth for which content is open. Only enquiry modes enable
+// form controls, preventing fields hidden in other modes from being submitted.
 function initPackagesDecision(section){
   var currentMode='none';
   var controls=[].slice.call(section.querySelectorAll('[data-decision-mode]'));
@@ -273,7 +317,8 @@ function initPackagesDecision(section){
     return expansion;
   }
 
-  // Use two animation frames so layout is measurable after content changes.
+  // Use two animation frames so the browser first applies the new content, then
+  // calculates its final size. Measuring immediately would use the old height.
   function scrollDecisionContentIntoView(mode, correctionOnly){
     requestAnimationFrame(function(){requestAnimationFrame(function(){
       if(currentMode!==mode)return;
@@ -394,8 +439,10 @@ document.querySelectorAll('[data-legal-accordion]').forEach(initLegalAccordion);
 // Contact forms and Web3Forms submission
 // ================================================================
 
-// Initialise one standalone or inline form. The same component supports booking,
-// general party, collaboration, venue, media and other enquiries.
+// Initialise one standalone or inline form. "component" is the outer wrapper;
+// the first lines find the form, status message and success panel inside it.
+// The same component supports booking, general party, collaboration, venue,
+// media and other enquiries without duplicating form-handling code.
 function initContact(component){
   var form=component.querySelector('[data-contact-form]'), success=component.querySelector('[data-contact-success]'), status=component.querySelector('[data-contact-status]'); if(!form)return;
   form.noValidate=true;
@@ -405,7 +452,8 @@ function initContact(component){
   function supportedIntent(value){if(value==='availability')return 'booking'; if(value==='question')return 'party_question'; return intents.indexOf(value)>=0?value:'party_question';}
   function supportedPackage(value){return packages.indexOf(value)>=0?value:'unsure';}
 
-  // URL values override component defaults, allowing links to preselect intent.
+  // URL values override component defaults. For example, the query string in
+  // /contact/?intent=booking opens the same page with Booking already selected.
   var params=new URLSearchParams(location.search), resetIntent=supportedIntent(params.get('intent')||component.dataset.defaultIntent), resetPackage=supportedPackage(params.get('package')||component.dataset.defaultPackage);
 
   // Web3Forms receives a readable email subject based on the current context.
@@ -452,8 +500,10 @@ function initContact(component){
     bad.forEach(function(x){err(x[0],x[1])}); if(bad[0]&&form.elements[bad[0][0]])form.elements[bad[0][0]].focus({preventScroll:false}); return !bad.length;
   }
 
-  // Submit as FormData and treat both the HTTP status and Web3Forms success flag
-  // as required; callers handle any rejection through the visible fallback.
+  // FormData gathers the enabled named fields exactly as a normal browser form
+  // would. fetch() sends them to Web3Forms without reloading the page. Both the
+  // HTTP status and Web3Forms success flag must confirm success; any rejection
+  // is handled through the visible email fallback.
   function submitWeb3Form(targetForm){
     syncContactContext();
     return fetch(targetForm.action,{method:'POST',body:new FormData(targetForm),headers:{'Accept':'application/json'}}).then(function(response){return response.json().then(function(payload){if(response.ok===true&&payload&&payload.success===true)return payload; throw {status:response.status,json:payload};});});
@@ -481,7 +531,8 @@ document.querySelectorAll('[data-contact-component]').forEach(initContact);
 // ================================================================
 
 // Move the oversized middle background layer at half scroll speed on desktop.
-// The offset is clamped to keep the layer covering the viewport at page ends.
+// This creates the subtle parallax effect. The offset is clamped to keep the
+// decorative layer covering the viewport at the top and bottom of the page.
 var atmosphere=document.querySelector('.site-background__middle');
 if(atmosphere){
   var reduceBg=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -512,7 +563,8 @@ if(atmosphere){
 // This avoids extra transform/compositing work during scrolling.
 var allowReveal=!matchMedia('(max-width: 920px)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Observe each .reveal element once; unsupported/reduced-motion environments
-// receive the final visible state immediately.
+// IntersectionObserver reports when an element enters the viewport. Observe each
+// .reveal element once, then stop observing after it appears. Browsers without
+// support—and visitors requesting reduced motion—receive the visible state at once.
 var io=('IntersectionObserver'in window&&allowReveal)?new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('is-visible');io.unobserve(e.target)}})},{threshold:.12}):null;document.querySelectorAll('.reveal').forEach(function(el){io?io.observe(el):el.classList.add('is-visible')});
 }());

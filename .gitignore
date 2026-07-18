@@ -1,3 +1,4 @@
-# Generated copies of content images are intentionally excluded; build.py
-# recreates them in dist/assets/images/ from the authoritative content/images/.
+# .gitignore lists files Git should leave out of commits. Generated copies of
+# content images are excluded because build.py recreates them in
+# dist/assets/images/ from the authoritative originals in content/images/.
 dist/assets/images/
