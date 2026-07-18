@@ -1,1 +1,3 @@
+# Generated copies of content images are intentionally excluded; build.py
+# recreates them in dist/assets/images/ from the authoritative content/images/.
 dist/assets/images/

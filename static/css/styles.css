@@ -13,6 +13,19 @@
    12. Responsive and reduced motion
 */
 
+/*
+   CASCADE GUIDE
+   This file records the site's visual development in chronological layers.
+   The readable base system comes first; later revision blocks deliberately
+   override earlier selectors. When the same selector appears more than once,
+   the declaration nearest the end is normally authoritative. The final blocks
+   document especially sensitive decisions such as static imagery, mobile
+   performance, logo cropping, hero fades and shared responsive widths.
+
+   Keep behaviour-changing edits in static/css/styles.css. dist/css/styles.css
+   is a generated copy and will be replaced whenever python build.py runs.
+*/
+
 /* ==================================================
    01. Design tokens and themes
    ================================================== */
@@ -365,6 +378,13 @@ html[data-theme="dark"] .hero__image--dark { opacity: 1; }
   .hero__image { transition-duration: .12s; }
   .js .testimonials.is-enhanced .testimonial-slide { transition: none; }
 }
+/*
+   Historical component layers
+   The following compact revision blocks are retained because later corrections
+   depend on their cascade order. Read them from top to bottom; do not assume the
+   first declaration of a selector is the value visitors currently receive.
+*/
+
 /* content-system feature overrides */
 :root{--brand-size:150px;--transition-theme:background-color var(--theme-transition),color var(--theme-transition),border-color var(--theme-transition),box-shadow var(--theme-transition);--card:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface-soft) 45%,var(--surface)));--ring:color-mix(in srgb,var(--accent) 55%,transparent)}
 body:before,body:after{content:"";position:fixed;z-index:-10;pointer-events:none;border-radius:999px;filter:blur(70px);opacity:.35;transform:translate3d(0,0,0);animation:ambient 26s ease-in-out infinite alternate}body:before{width:44vw;height:44vw;left:-18vw;top:22vh;background:radial-gradient(circle,rgba(134,103,167,.55),transparent 65%)}body:after{width:38vw;height:38vw;right:-16vw;top:58vh;background:radial-gradient(circle,rgba(126,183,158,.36),transparent 62%)}
@@ -1208,6 +1228,12 @@ body { padding-bottom: 0 !important; }
 .packages-inline-contact .contact-form-shell { margin: 0 auto; text-align: left; }
 @media (max-width: 720px) { .contact-form__grid { grid-template-columns: 1fr; } }
 
+
+/*
+   Authoritative shared shell and component consolidation
+   This later layer standardises page widths and contains the current legal,
+   carousel and contact layouts that supersede matching historical rules above.
+*/
 
 /* PR #20 correction: authoritative shared shell and carousel/contact consolidation */
 .section,
