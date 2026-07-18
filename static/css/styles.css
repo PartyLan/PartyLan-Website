@@ -1614,17 +1614,15 @@ body { padding-bottom: 0 !important; }
     radial-gradient(circle at 50% 30%, transparent 0%, rgba(0, 0, 0, .42) 68%, transparent 100%);
 }
 .faq-section {
-  width: min(100%, var(--faq-max-width)) !important;
+  width: var(--container) !important;
   max-width: var(--faq-max-width) !important;
-
-  margin-left: auto !important;
-  margin-right: auto !important;
+  margin-inline: auto !important;
 
   justify-self: center;
   box-sizing: border-box;
 }
 .final-cta {
-  --final-cta-panel-width: 50%;
+  --final-cta-panel-width: min(100%, 58rem);
 }
 
 .final-cta > div {
