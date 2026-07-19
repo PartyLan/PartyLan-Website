@@ -75,7 +75,7 @@ Add a row to `content/gallery.csv`. Put the image file in `content/images/` firs
 
 ### Add a real testimonial
 
-Add it to `content/testimonials.csv` only when approved. Use a local existing image under `/content/images/...`, add meaningful `alt` text, set `visible` to `true`, and choose package `onyx` or `jade` if relevant.
+Add it to `content/testimonials.csv` only when approved. Use `Header` for the testimonial’s main line and `Subtext` for its supporting attribution or context. Use a local existing image under `/content/images/...`, add meaningful `alt` text and set `visible` to `true`.
 
 ### Demo testimonials
 

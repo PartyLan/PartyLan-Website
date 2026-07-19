@@ -392,7 +392,13 @@ def contact_form(form_id='contact-form', default_intent='question', default_pack
 # Convert testimonial CSV rows into accessible slides and dot controls.
 def testimonial_section(home, rows):
     if not rows: return ''
-    slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}"><div class="testimonial-slide__content"><blockquote><p>“{esc(r["quote"])}”</p></blockquote><p><b>{esc(r["name"])}</b>{", age "+esc(r["age"]) if r.get("age") else ""}</p><p>{esc(r.get("location",""))} {esc(r.get("package",""))}</p></div></article>' for i,r in enumerate(rows))
+    def text(r):
+        if (r.get('Header') or '').strip(): return r['Header'].strip(),r['Subtext'].strip()
+        header='“'+(r.get('quote') or '').strip()+'”'
+        person=(r.get('name') or '').strip()+(', age '+r['age'].strip() if (r.get('age') or '').strip() else '')
+        context=' · '.join(v for v in [(r.get('location') or '').strip(),(r.get('package') or '').strip()] if v)
+        return header,' · '.join(v for v in [person,context] if v)
+    slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}"><div class="testimonial-slide__content"><strong class="testimonial-caption__header">{esc(text(r)[0])}</strong><span class="testimonial-caption__subtext">{esc(text(r)[1])}</span></div></article>' for i,r in enumerate(rows))
     dots=''.join(f'<button class="testimonial-dot" type="button" aria-label="Show testimonial {i+1} of {len(rows)}"><span></span></button>' for i,_ in enumerate(rows))
     s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><button class="showcase-toggle testimonial-toggle" type="button" aria-pressed="false" aria-label="Pause testimonials"><span aria-hidden="true">Ⅱ</span></button><div class="testimonial-dots">{dots}</div></div></section>'
 # Split gallery rows by category and render them into the shared slider shell.
@@ -572,7 +578,7 @@ def main():
     gallery=validate_rows('gallery.csv',['category','image','Header','Subtext'],'gallery')
     faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
     package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
-    live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
+    live=validate_rows('testimonials.csv',['Header','Subtext','image','alt'],'testimonial',pkg_ids)
     demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     terms=validate_legal('terms'); privacy=validate_legal('privacy')
     # Render supplies this secret through the environment. It is escaped before
