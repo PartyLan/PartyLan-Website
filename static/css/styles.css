@@ -669,10 +669,10 @@ body::before, body::after { display: none; }
     max-width: 88%;
     padding: 1rem;
   }
-  .media-caption__header { font-size: clamp(1.69rem, 7.8vw, 2.405rem); }
-  .media-caption__subtext { font-size: clamp(1.066rem, 4.81vw, 1.3rem); }
-  .testimonial-slide__content .media-caption__header { font-size: clamp(1.82rem, 8.45vw, 2.73rem); }
-  .testimonial-slide__content .media-caption__subtext { font-size: clamp(1.092rem, 4.94vw, 1.3rem); }
+  .media-caption__header { font-size: clamp(1.3rem, 6vw, 1.85rem); }
+  .media-caption__subtext { font-size: clamp(.82rem, 3.7vw, 1rem); }
+  .testimonial-slide__content .media-caption__header { font-size: clamp(1.4rem, 6.5vw, 2.1rem); }
+  .testimonial-slide__content .media-caption__subtext { font-size: clamp(.84rem, 3.8vw, 1rem); }
 }
 .hero__media-motion { animation: none; }
 .hero__media-pan, .hero__media-breathe { position: absolute; inset: -2%; transform-origin: center; }
