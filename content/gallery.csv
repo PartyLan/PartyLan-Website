@@ -1,11 +1,11 @@
-id,category,image,Header,Subtext,visible,display_order
-multiplayer-gaming-setup,equipment,/content/images/equipment/gallery-hardware-setup01.png,"A Full Gaming Arena, Delivered","Multiple screens, consoles and controllers bring several games together in one ready-to-play setup.",TRUE,1
-controllers-and-handhelds,equipment,/content/images/equipment/gallery-hardware-party03.png,Something for Every Player,A varied selection of controllers and portable systems gives guests more ways to play.,TRUE,2
-gaming-headsets,equipment,/content/images/equipment/gallery-hardware-party02.png,"Immersive Sound, Less Distraction",Comfortable headsets help players stay focused while keeping competing game audio under control.,TRUE,3
-multiplayer-controllers,equipment,/content/images/equipment/gallery-hardware-party01.png,Ready for the Whole Party,"Plenty of controllers make it easy for more guests to join, rotate and play together.",TRUE,4
-gaming-network,equipment,/content/images/equipment/gallery-hardware-wifi01.png,A Setup Built to Stay Connected,"Dedicated networking hardware supports a smooth, uninterrupted multiplayer environment.",TRUE,5
-virtual-reality,equipment,/content/images/equipment/gallery-hardware-vr01.png,Step Into the Action,"Immersive virtual reality adds movement, discovery and unforgettable reactions to the party.",TRUE,6
-racing-simulator,equipment,/content/images/equipment/gallery-hardware-sim01.png,Take Your Place on the Grid,"A complete cockpit with steering, pedals and a supportive racing seat delivers a convincing driving experience.",TRUE,7
-racing-controls,equipment,/content/images/equipment/gallery-hardware-sim02.png,Every Turn Feels Real,"Responsive steering and precision pedals create a more engaging, hands-on racing experience.",TRUE,8
-Experience-all-ages,experience,/content/images/experience/experience-allages01.png,Gaming for Every Age,"A flexible gaming setup designed for children, teenagers and adults to enjoy together.",TRUE,101
-Experience-cta,experience,/content/images/experience/experience-cta.png, , ,TRUE,102
+id,category,Platform,image,Header,Subtext,visible,display_order
+multiplayer-gaming-setup,equipment,All,/content/images/equipment/gallery-hardware-setup01.png,"A Full Gaming Arena, Delivered","Multiple screens, consoles and controllers bring several games together in one ready-to-play setup.",TRUE,1
+controllers-and-handhelds,equipment,All,/content/images/equipment/gallery-hardware-party03.png,Something for Every Player,A varied selection of controllers and portable systems gives guests more ways to play.,TRUE,2
+gaming-headsets,equipment,All,/content/images/equipment/gallery-hardware-party02.png,"Immersive Sound, Less Distraction",Comfortable headsets help players stay focused while keeping competing game audio under control.,TRUE,3
+multiplayer-controllers,equipment,All,/content/images/equipment/gallery-hardware-party01.png,Ready for the Whole Party,"Plenty of controllers make it easy for more guests to join, rotate and play together.",TRUE,4
+gaming-network,equipment,All,/content/images/equipment/gallery-hardware-wifi01.png,A Setup Built to Stay Connected,"Dedicated networking hardware supports a smooth, uninterrupted multiplayer environment.",TRUE,5
+virtual-reality,equipment,All,/content/images/equipment/gallery-hardware-vr01.png,Step Into the Action,"Immersive virtual reality adds movement, discovery and unforgettable reactions to the party.",TRUE,6
+racing-simulator,equipment,All,/content/images/equipment/gallery-hardware-sim01.png,Take Your Place on the Grid,"A complete cockpit with steering, pedals and a supportive racing seat delivers a convincing driving experience.",TRUE,7
+racing-controls,equipment,All,/content/images/equipment/gallery-hardware-sim02.png,Every Turn Feels Real,"Responsive steering and precision pedals create a more engaging, hands-on racing experience.",TRUE,8
+Experience-all-ages,experience,All,/content/images/experience/experience-allages01.png,Gaming for Every Age,"A flexible gaming setup designed for children, teenagers and adults to enjoy together.",TRUE,101
+Experience-cta,experience,All,/content/images/experience/experience-cta.png,,,TRUE,102

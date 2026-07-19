@@ -9,7 +9,8 @@ This site is built from editable files in `content/`. For ordinary wording updat
 - `content/addons.csv` — optional or planned add-ons. Do not add fixed prices unless approved.
 - `content/testimonials.csv` — approved real testimonials for normal visitors.
 - `content/testimonials.example.csv` — demo testimonials only. These appear only in demo mode (`?demo=testimonials`).
-- `content/gallery.csv` — gallery images, captions and categories.
+- `content/gallery.csv` — responsive gallery images, captions, categories and platform selection.
+- `content/gallery.example.csv` — a validated template showing PC/Mobile pairs and All rows.
 - `content/faq.csv` — FAQ questions and answers.
 - `content/legal/terms.json` and `content/legal/privacy.json` — draft legal-page wording.
 
@@ -40,12 +41,13 @@ extra-time,Additional time,"Add time, if the diary allows.",both,Price confirmed
 ## Visibility and ordering
 
 - `visible` controls whether a record appears. Use `true` to show it and `false` to hide it without deleting it.
-- `display_order` controls the order. Use positive whole numbers such as `1`, `2`, `3`. Avoid duplicate numbers in the same file.
+- `display_order` controls the order. Use positive whole numbers such as `1`, `2`, `3`. Gallery-specific reuse rules are documented below; other CSV files still require file-wide unique order values.
 
 ## Accepted category values
 
 - `content/addons.csv` `available_for`: `onyx`, `jade`, or `both`.
 - `content/gallery.csv` `category`: `experience` or `equipment`.
+- `content/gallery.csv` `Platform`: `PC`, `Mobile`, or `All` (case-insensitive, with surrounding whitespace ignored).
 - `content/testimonials.csv` `package`: `onyx` or `jade`.
 
 ## Fixed Party.LAN package details
@@ -71,7 +73,35 @@ Add a row to `content/addons.csv` with a unique `id`, a title, description, `ava
 
 ### Add a gallery entry
 
-Add a row to `content/gallery.csv`. Put the image file in `content/images/` first, then reference it as `/content/images/file_name.jpg`. `Header` and `Subtext` are optional: use either, both or neither. A caption overlay is omitted when both are empty. Choose `experience` for people and atmosphere, or `equipment` for setup and hardware.
+Add a row to `content/gallery.csv` using this established schema:
+
+```csv
+id,category,Platform,image,Header,Subtext,visible,display_order
+gaming-all-ages,Experience,PC,/content/images/experience/desktop.webp,Gaming for Every Age,A flexible setup for everyone.,true,1
+gaming-all-ages,Experience,Mobile,/content/images/experience/mobile.webp,Gaming for Every Age,A flexible setup for everyone.,true,1
+hardware-overview,Equipment,All,/content/images/equipment/hardware.webp,Everything Ready to Play,Hardware prepared for the event.,true,1
+```
+
+Put every gallery image under `content/images/` and reference it as `/content/images/...`. `Header` and `Subtext` are optional: use either, both or neither. A caption overlay is omitted when both are empty. Choose `Experience` for people and atmosphere, or `Equipment` for setup and hardware; category capitalisation is normalised by the build.
+
+`Platform` controls responsive selection:
+
+- `PC` is used above the gallery mobile breakpoint, including tablet layouts.
+- `Mobile` is used at or below `920px`.
+- `All` uses one row in both modes.
+
+The browser listens to that breakpoint with `matchMedia`, so crossing it updates the current category without a refresh. Only the selected category's effective image sources are assigned. The selected tab, pause state and equivalent slide are preserved where possible.
+
+IDs and orders are scoped by gallery category and platform:
+
+- Experience and Equipment may reuse the same ID or `display_order`.
+- PC and Mobile rows in one category may reuse the same ID and `display_order`; this is the normal way to pair responsive variants.
+- IDs and orders must be unique within one category/platform combination.
+- An All row must not share its ID or order with a PC or Mobile row in the same category, because their effective layouts overlap.
+- Raw CSV IDs are author-facing values only. The build creates a composite `category + Platform + id + display_order` key and a separate sanitised DOM ID.
+- Exact duplicate rows, missing/unsupported fields, non-positive or partially parsed orders, paths outside `/content/images/`, and categories lacking effective PC or Mobile content fail the build with line-specific correction guidance.
+
+Both gallery categories are intentionally enabled. The build fails instead of presenting an empty selectable tab when either category lacks effective PC or Mobile content.
 
 ### Add a real testimonial
 
@@ -180,7 +210,7 @@ The Packages page supports a future hero image without requiring one today. In `
 
 ## Gallery autoplay, indicators and play/pause
 
-The Shared Moments gallery shows one large image at a time. JavaScript creates one indicator button per visible item in the selected category. Changing between `experience` and `equipment` resets the gallery to the first item in that category.
+The Shared Moments gallery shows one large image at a time. JavaScript creates one indicator button per effective item in the selected category and responsive platform. Each category remembers its previous slide; a first visit starts on that category's first ordered slide.
 
 The small circular control on the image pauses or plays automatic advancement. Clicking an indicator, swiping or dragging pauses the gallery. Under reduced-motion settings, automatic advancement remains off, but indicators and tabs still work.
 

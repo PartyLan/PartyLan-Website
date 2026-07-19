@@ -8,7 +8,8 @@ A small static homepage prototype for Party.LAN, a hosted gaming-party service. 
 build.py                 # standard-library static build and validation
 content/homepage.json    # editable general homepage and subpage content
 content/packages.json    # editable package content
-content/gallery.csv      # editable gallery entries
+content/gallery.csv      # responsive Experience/Equipment gallery entries
+content/gallery.example.csv # valid responsive gallery template
 content/testimonials.csv # future real testimonials only
 render.yaml              # Render static-site Blueprint
 docs/                    # manual code and visual editing guide
@@ -30,7 +31,7 @@ Use stable keys in `content/site.json` for metadata, navigation, hero content, r
 
 ## Editing CSV
 
-`content/gallery.csv` supports `id,image_light,image_dark,alt,caption,href,visible,display_order`. Set `visible=false` for draft rows. Visible image paths must point to local assets and include useful alternative text.
+`content/gallery.csv` uses `id,category,Platform,image,Header,Subtext,visible,display_order`. `Platform` accepts `PC`, `Mobile`, or `All` case-insensitively; surrounding whitespace is trimmed. Gallery images must use `/content/images/...`. See `content/CONTENT_GUIDE.md` and `content/gallery.example.csv` for the category-scoped ID/order rules and responsive pairing examples.
 
 `content/testimonials.csv` must only contain real, permitted customer testimonials. It starts with only a header, and the generated testimonial section is hidden until visible entries exist.
 

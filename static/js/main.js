@@ -227,17 +227,138 @@ function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){
   });
   if(toggle)toggle.addEventListener('click',togglePaused);
 
-  /* Start fetching every carousel image while the first slide is visible. */
+  /* Start fetching only the slides currently owned by this controller. */
   all.forEach(prepareSlide);
   updateToggle();
-  return{setSlides:function(next){slides=next;idx=0;renderDots();go(0,false);start();}};
+  return{
+    getCurrentSlide:function(){return slides[idx]||null;},
+    setSlides:function(next,initialIndex){
+      stop();
+      activationToken++;
+      all.forEach(function(slide){slide.classList.remove('is-active');slide.setAttribute('aria-hidden','true');});
+      slides=next.slice();
+      all=slides.slice();
+      idx=slides.length?Math.max(0,Math.min(Number.isInteger(initialIndex)?initialIndex:0,slides.length-1)):0;
+      renderDots();
+      if(!slides.length)return;
+      all.forEach(prepareSlide);
+      go(idx,false);
+      start();
+    }
+  };
 }
 
 // Every testimonial stage uses the same slider with an eight-second interval.
 document.querySelectorAll('.testimonial-stage').forEach(function(stage){var slider=makeSlider(stage,'.testimonial-slide','.testimonial-dots',function(i){return 'Show testimonial '+(i+1);},8000);slider.setSlides([].slice.call(stage.querySelectorAll('.testimonial-slide')));});
-// Gallery images remain completely static; only the active slide cross-fades.
-// This final argument is the automatic slide-change interval in milliseconds.
-document.querySelectorAll('.showcase').forEach(function(showcase){var section=showcase.closest('.showcase-section'), tabs=[].slice.call(section.querySelectorAll('[data-gallery-tab]')), all=[].slice.call(showcase.querySelectorAll('.showcase-slide')), activeCat='experience', slider=makeSlider(showcase,'.showcase-slide','.showcase-indicators',function(i){return 'Show '+activeCat+' image '+(i+1);},9000); function select(cat){activeCat=cat;tabs.forEach(function(t){t.setAttribute('aria-selected',String(t.dataset.galleryTab===cat))});slider.setSlides(all.filter(function(s){return s.dataset.category===cat}));} tabs.forEach(function(t,i){t.addEventListener('click',function(){select(t.dataset.galleryTab)});t.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'){e.preventDefault();var n=(i+(e.key==='ArrowRight'?1:-1)+tabs.length)%tabs.length;tabs[n].focus();tabs[n].click();}})});select(activeCat);});
+// Select the records effective for one category and responsive platform. All is
+// deliberately additive, while PC and Mobile never leak into the opposite mode.
+function filterGalleryRecords(records,category,platform){
+  return records.filter(function(record){return record.category===category&&(record.platform===platform||record.platform==='All');}).sort(function(a,b){return a.order-b.order;});
+}
+
+// Build semantic slide markup only after category/platform selection. Assigning
+// src here prevents unused responsive variants in the JSON payload downloading.
+function createGallerySlide(record,index){
+  var figure=document.createElement('figure');
+  figure.className='showcase-slide';
+  figure.id=record.domId;
+  figure.dataset.category=record.category;
+  figure.dataset.recordKey=record.recordKey;
+  figure.dataset.equivalentKey=record.equivalentKey;
+  figure.dataset.authorId=record.authorId;
+  figure.dataset.order=String(record.order);
+  figure.setAttribute('aria-hidden','true');
+
+  var pan=document.createElement('div'); pan.className='showcase-slide__pan';
+  var breathe=document.createElement('div'); breathe.className='showcase-slide__breathe';
+  var image=document.createElement('img');
+  image.src=record.image;
+  image.alt=[record.header,record.subtext].filter(Boolean).join(' ');
+  image.loading=index===0?'eager':'lazy'; image.decoding='async';
+  breathe.appendChild(image); pan.appendChild(breathe); figure.appendChild(pan);
+
+  if(record.header||record.subtext){
+    var caption=document.createElement('figcaption'); caption.className='media-caption';
+    if(record.header){var title=document.createElement('h3');title.className='media-caption__header';title.textContent=record.header;caption.appendChild(title);}
+    if(record.subtext){var copy=document.createElement('p');copy.className='media-caption__subtext';copy.textContent=record.subtext;caption.appendChild(copy);}
+    figure.appendChild(caption);
+  }
+  return figure;
+}
+
+function initialiseGallery(section){
+  var showcase=section.querySelector('.showcase');
+  var tabs=[].slice.call(section.querySelectorAll('[data-gallery-tab]'));
+  var panels=[].slice.call(showcase.querySelectorAll('[data-gallery-panel]'));
+  var dataNode=section.querySelector('.gallery-data');
+  var records=JSON.parse(dataNode.textContent||'[]');
+  var activeCategory=(tabs.find(function(tab){return tab.getAttribute('aria-selected')==='true';})||tabs[0]).dataset.galleryTab;
+  var remembered={};
+  var mobileQuery=showcase.dataset.galleryMobileQuery||'(max-width: 920px)';
+  var platformMedia=matchMedia(mobileQuery);
+  var slider=makeSlider(showcase,'.showcase-slide','.showcase-indicators',function(i){return 'Show '+activeCategory+' image '+(i+1);},9000);
+
+  function setRovingTab(tab){
+    tabs.forEach(function(candidate){candidate.tabIndex=candidate===tab?0:-1;});
+  }
+  function rememberActiveSlide(){
+    var current=slider.getCurrentSlide();
+    if(current)remembered[activeCategory]={equivalentKey:current.dataset.equivalentKey,index:[].indexOf.call(current.parentNode.children,current)};
+  }
+  function teardownSlides(){
+    slider.setSlides([]);
+    panels.forEach(function(panel){panel.querySelector('[data-gallery-track]').replaceChildren();});
+  }
+  function syncSelection(){
+    tabs.forEach(function(tab){tab.setAttribute('aria-selected',String(tab.dataset.galleryTab===activeCategory));});
+    panels.forEach(function(panel){panel.hidden=panel.dataset.galleryPanel!==activeCategory;});
+  }
+  function renderActiveCategory(){
+    var prior=remembered[activeCategory];
+    var platform=platformMedia.matches?'Mobile':'PC';
+    var selected=filterGalleryRecords(records,activeCategory,platform);
+    var panel=panels.find(function(candidate){return candidate.dataset.galleryPanel===activeCategory;});
+    var track=panel.querySelector('[data-gallery-track]');
+    teardownSlides();
+    var slides=selected.map(function(record,index){var slide=createGallerySlide(record,index);track.appendChild(slide);return slide;});
+    var initialIndex=0;
+    if(prior){
+      var equivalentIndex=selected.findIndex(function(record){return record.equivalentKey===prior.equivalentKey;});
+      initialIndex=equivalentIndex>=0?equivalentIndex:Math.min(prior.index,Math.max(0,slides.length-1));
+    }
+    slider.setSlides(slides,initialIndex);
+  }
+  function activateCategory(category){
+    if(category===activeCategory)return;
+    rememberActiveSlide();
+    activeCategory=category;
+    syncSelection();
+    renderActiveCategory();
+  }
+  function handleTabKeydown(event){
+    var current=tabs.indexOf(event.currentTarget),next=current;
+    if(event.key==='ArrowRight')next=(current+1)%tabs.length;
+    else if(event.key==='ArrowLeft')next=(current-1+tabs.length)%tabs.length;
+    else if(event.key==='Home')next=0;
+    else if(event.key==='End')next=tabs.length-1;
+    else return; // Native button Enter/Space dispatches click for manual activation.
+    event.preventDefault(); setRovingTab(tabs[next]); tabs[next].focus();
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click',function(){setRovingTab(tab);activateCategory(tab.dataset.galleryTab);});
+    tab.addEventListener('keydown',handleTabKeydown);
+  });
+  function handlePlatformChange(){rememberActiveSlide();renderActiveCategory();}
+  if(platformMedia.addEventListener)platformMedia.addEventListener('change',handlePlatformChange);
+  else platformMedia.addListener(handlePlatformChange);
+
+  syncSelection();
+  setRovingTab(tabs.find(function(tab){return tab.dataset.galleryTab===activeCategory;}));
+  renderActiveCategory();
+}
+
+document.querySelectorAll('.showcase-section').forEach(initialiseGallery);
 
 // ================================================================
 // Package selection and decision panel
