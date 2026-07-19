@@ -119,8 +119,14 @@
     "heading": "See the experience. Explore the setup.",
     "description": "Switch between the atmosphere of the party and the equipment used to create it.",
     "tabs": {
-      "experience": "The experience",
-      "equipment": "The equipment"
+      "experience": {
+        "label": "The experience",
+        "subtitle": "Party atmosphere"
+      },
+      "equipment": {
+        "label": "The equipment",
+        "subtitle": "Hardware & setup"
+      }
     }
   },
   "room_planning": {

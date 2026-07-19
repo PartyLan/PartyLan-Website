@@ -1,0 +1,4 @@
+id,category,Platform,image,Header,Subtext,visible,display_order
+experience-example,Experience,PC,/content/images/experience/experience-allages01.png,Desktop experience example,Used at desktop and tablet widths.,true,1
+experience-example,Experience,Mobile,/content/images/experience/experience-cta.png,Mobile experience example,Used below the gallery breakpoint.,true,1
+equipment-example,Equipment,All,/content/images/equipment/gallery-hardware-setup01.png,Equipment example,One row may serve both platform modes.,true,1

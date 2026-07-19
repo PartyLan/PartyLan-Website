@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Standard-library static build and content validation for Party.LAN."""
 from __future__ import annotations
-import csv, hashlib, html, json, os, shutil, sys
+import csv, hashlib, html, json, os, re, shutil, sys
 from pathlib import Path
 
 # BUILD PIPELINE OVERVIEW
@@ -66,7 +66,14 @@ STYLESHEET_VERSION=hashlib.sha256((STATIC/'css'/'styles.css').read_bytes()).hexd
 ERRORS=[]; BOOL={'true':True,'false':False}; IMG_EXT={'.jpg','.jpeg','.png','.webp','.avif'}
 
 # A build cannot succeed unless every content source in this list exists.
-REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','faq.csv','packages_faq.csv','legal/terms.json','legal/privacy.json']
+REQUIRED_FILES=['homepage.json','packages.json','addons.csv','testimonials.csv','testimonials.example.csv','gallery.csv','gallery.example.csv','faq.csv','packages_faq.csv','legal/terms.json','legal/privacy.json']
+
+# Gallery records keep their author-facing fields, but the build normalises the
+# category/platform values and adds separate composite/internal identifiers.
+GALLERY_FIELDS=('id','category','Platform','image','Header','Subtext','visible','display_order')
+GALLERY_CATEGORIES=('experience','equipment')
+GALLERY_PLATFORMS=('PC','Mobile','All')
+GALLERY_MOBILE_QUERY='(max-width: 920px)'  # Keep aligned with the gallery CSS media query.
 
 # These commercial package facts are deliberately fixed in code. Validation
 # prevents an accidental content edit from changing the advertised offer.
@@ -132,6 +139,148 @@ def read_csv(rel):
     except FileNotFoundError: err('content/'+rel,'$','missing required file'); return []
     except csv.Error as e: err('content/'+rel,'$','malformed CSV: '+str(e)); return []
 
+# Read gallery CSV separately because detailed conflict errors need the original
+# line number and header shape. Parsing, normalisation and validation deliberately
+# remain independent so each stage can be tested without rendering HTML.
+def read_gallery_source(rel):
+    file='content/'+rel; path=CONTENT/rel
+    try:
+        with path.open(newline='',encoding='utf-8') as fh:
+            reader=csv.DictReader(fh); fieldnames=reader.fieldnames or []; rows=[]
+            try:
+                for row in reader: rows.append((reader.line_num,row))
+            except csv.Error as e:
+                err(file,f'line {reader.line_num} gallery "<unknown>"',f'malformed CSV: {e}. Fix: correct the quoting or column separators on this line')
+            return fieldnames,rows
+    except FileNotFoundError:
+        err(file,'line 1 gallery "<file>"','missing required file. Fix: create the CSV with the documented gallery header')
+        return [],[]
+
+def gallery_record_key(row):
+    """Deterministic internal identity; raw CSV IDs are never used alone."""
+    return '|'.join((row.get('category',''),row.get('Platform',''),row.get('id',''),str(row.get('display_order',''))))
+
+def gallery_equivalent_key(row):
+    """Identity used to preserve a slide while changing responsive platform."""
+    return '|'.join((row.get('category',''),row.get('id',''),str(row.get('display_order',''))))
+
+def gallery_dom_id(record_key):
+    slug=re.sub(r'[^a-z0-9]+','-',record_key.lower()).strip('-')[:58] or 'gallery-slide'
+    digest=hashlib.sha1(record_key.encode('utf-8')).hexdigest()[:8]
+    return f'gallery-slide-{slug}-{digest}'
+
+def normalise_gallery_rows(source_rows):
+    """Trim editable values and canonicalise recognised category/platform data."""
+    category_names={value.lower():value for value in GALLERY_CATEGORIES}
+    platform_names={value.lower():value for value in GALLERY_PLATFORMS}
+    normalised=[]
+    for line,raw in source_rows:
+        row={field:((raw.get(field) or '').strip() if raw.get(field) is not None else '') for field in GALLERY_FIELDS}
+        row['_source_row']=line
+        row['_missing_cells']=[field for field in GALLERY_FIELDS if raw.get(field) is None]
+        row['_extra_cells']=[str(value) for value in (raw.get(None) or [])]
+        category_key=row['category'].lower(); platform_key=row['Platform'].lower()
+        row['category']=category_names.get(category_key,row['category'])
+        row['Platform']=platform_names.get(platform_key,row['Platform'])
+        visible_key=row['visible'].lower(); row['_visible_valid']=visible_key in BOOL
+        row['visible']=BOOL.get(visible_key,False)
+        raw_order=row['display_order']; row['_order_valid']=bool(re.fullmatch(r'[1-9][0-9]*',raw_order))
+        row['display_order']=int(raw_order) if row['_order_valid'] else None
+        row['_record_key']=gallery_record_key(row)
+        row['_equivalent_key']=gallery_equivalent_key(row)
+        row['_dom_id']=gallery_dom_id(row['_record_key'])
+        normalised.append(row)
+    return normalised
+
+def gallery_validation_error(file,row,explanation,fix,*,platform=None,conflict=None,earlier=None):
+    category=row.get('category') or '<missing>'
+    detail=[]
+    if platform: detail.append(f'platform {platform}')
+    if conflict: detail.append(conflict)
+    if earlier: detail.append(f'earlier line {earlier["_source_row"]} (platform {earlier.get("Platform") or "<missing>"})')
+    detail.append(explanation); detail.append('Fix: '+fix)
+    err(file,f'line {row.get("_source_row",1)} gallery "{category}"','; '.join(detail))
+
+def validate_gallery_rows(rel):
+    """Validate gallery scope independently by category and responsive platform."""
+    file='content/'+rel; fieldnames,source_rows=read_gallery_source(rel)
+    missing=[field for field in GALLERY_FIELDS if field not in fieldnames]
+    unexpected=[field for field in fieldnames if field not in GALLERY_FIELDS]
+    file_row={'_source_row':1,'category':'<file>'}
+    if missing:
+        gallery_validation_error(file,file_row,'missing required column(s): '+', '.join(missing),'use exactly this header: '+','.join(GALLERY_FIELDS))
+    if unexpected:
+        gallery_validation_error(file,file_row,'unsupported column(s): '+', '.join(unexpected),'remove or rename these columns to match the documented schema')
+    if missing: return []  # One schema error is clearer than one missing-field error per row.
+
+    rows=normalise_gallery_rows(source_rows); exact_seen={}; accepted=[]
+    for row in rows:
+        platform=row.get('Platform') or '<missing>'
+        if row['_missing_cells'] or row['_extra_cells']:
+            problem=[]
+            if row['_missing_cells']: problem.append('missing cell(s): '+', '.join(row['_missing_cells']))
+            if row['_extra_cells']: problem.append('unexpected trailing cell(s): '+', '.join(row['_extra_cells']))
+            gallery_validation_error(file,row,'malformed row ('+'; '.join(problem)+')','add or remove CSV cells so the row matches the header',platform=platform)
+            continue
+        if not row['id']:
+            gallery_validation_error(file,row,'ID is missing','add a stable author-facing ID',platform=platform)
+        if row['category'] not in GALLERY_CATEGORIES:
+            gallery_validation_error(file,row,'unsupported or blank gallery category','use Experience or Equipment',platform=platform)
+        if row['Platform'] not in GALLERY_PLATFORMS:
+            gallery_validation_error(file,row,'unsupported or missing Platform value','use PC, Mobile or All (capitalisation is optional)')
+        if not row['image']:
+            gallery_validation_error(file,row,'image path is missing','add an existing image path under /content/images/',platform=platform)
+        elif not row['image'].startswith('/content/images/'):
+            gallery_validation_error(file,row,f'image path "{row["image"]}" is outside the required gallery content location','move the image under content/images and use /content/images/...',platform=platform)
+        elif Path(row['image']).suffix.lower() not in IMG_EXT:
+            gallery_validation_error(file,row,'image has an unsupported extension','use a JPG, JPEG, PNG, WebP or AVIF image under /content/images/',platform=platform)
+        elif not (IMAGES/row['image'].removeprefix('/content/images/')).is_file():
+            gallery_validation_error(file,row,f'image path "{row["image"]}" does not exist','add the file under content/images or correct the path',platform=platform)
+        if not row['_visible_valid']:
+            gallery_validation_error(file,row,'visible must be true or false','set visible to true or false',platform=platform)
+        if not row['_order_valid']:
+            gallery_validation_error(file,row,'display_order is missing or invalid','use a positive whole number such as 1, without decimals or trailing text',platform=platform)
+
+        signature=tuple(row.get(field) for field in GALLERY_FIELDS)
+        if signature in exact_seen:
+            gallery_validation_error(file,row,'exact duplicate row', 'remove the duplicate or change the intended record',platform=platform,earlier=exact_seen[signature])
+            row['_exact_duplicate']=True
+            continue
+        exact_seen[signature]=row; row['_exact_duplicate']=False; accepted.append(row)
+
+    # Same-platform uniqueness and All-vs-specific overlap are category-scoped.
+    id_seen={}; order_seen={}; prior_by_category={category:[] for category in GALLERY_CATEGORIES}
+    for row in accepted:
+        category=row.get('category'); platform=row.get('Platform'); rid=row.get('id'); order=row.get('display_order')
+        if category not in GALLERY_CATEGORIES or platform not in GALLERY_PLATFORMS: continue
+        if rid:
+            key=(category,platform,rid)
+            if key in id_seen:
+                gallery_validation_error(file,row,'duplicate ID within the same gallery and platform','change one ID or move the intended variant to the other specific platform',platform=platform,conflict=f'conflicting ID "{rid}"',earlier=id_seen[key])
+            else: id_seen[key]=row
+        if order is not None:
+            key=(category,platform,order)
+            if key in order_seen:
+                gallery_validation_error(file,row,'duplicate display_order within the same gallery and platform','give each row in this gallery/platform a unique positive display_order',platform=platform,conflict=f'conflicting order {order}',earlier=order_seen[key])
+            else: order_seen[key]=row
+        for earlier in prior_by_category[category]:
+            if 'All' not in {platform,earlier['Platform']} or platform==earlier['Platform']: continue
+            matches=[]
+            if rid and rid==earlier.get('id'): matches.append(f'ID "{rid}"')
+            if order is not None and order==earlier.get('display_order'): matches.append(f'order {order}')
+            if matches:
+                gallery_validation_error(file,row,'All overlaps a PC or Mobile row by '+(' and '.join(matches)),'change the All ID/order, or replace All with separate PC and Mobile rows',platform=platform,conflict='conflicting '+(' and '.join(matches)),earlier=earlier)
+        prior_by_category[category].append(row)
+
+    # Both tabs are intentionally always enabled, so both need effective content.
+    visible=[row for row in accepted if row.get('visible')]
+    for category in GALLERY_CATEGORIES:
+        for mode in ('PC','Mobile'):
+            if not any(row.get('category')==category and row.get('Platform') in {mode,'All'} for row in visible):
+                category_row={'_source_row':1,'category':category}
+                gallery_validation_error(file,category_row,f'category has no effective {mode} content',f'add at least one visible {mode} or All row for {category}',platform=mode)
+    return sorted(visible,key=lambda row:(GALLERY_CATEGORIES.index(row['category']) if row['category'] in GALLERY_CATEGORIES else 99,row['display_order'] or 999999,row['_source_row']))
+
 # Validate homepage structure, navigation contracts, image references and the
 # content fragments reused by the packages page. "Validate" means check and
 # report mistakes; this function does not create or alter the page.
@@ -192,6 +341,14 @@ def validate_home(h):
     for i,item in enumerate(h.get('reassurance',[])):
         icon=item.get('icon','').strip()
         if icon: image_ok(f,f'reassurance[{i}].icon',icon)
+    gallery_tabs=h.get('gallery_section',{}).get('tabs',{})
+    for category in GALLERY_CATEGORIES:
+        tab=gallery_tabs.get(category,{})
+        if not isinstance(tab,dict):
+            err(f,f'gallery_section.tabs.{category}','must contain label and subtitle text')
+            continue
+        req_text(f,tab,'label',f'gallery_section.tabs.{category}')
+        req_text(f,tab,'subtitle',f'gallery_section.tabs.{category}')
 
 # Validate package records against PACKAGE_FACTS and return visible packages in
 # their requested display order. The private _order key is build-only metadata.
@@ -220,8 +377,9 @@ def validate_packages(data):
     if ids != {'onyx','jade'}: err(f,'packages','both ONYX and JADE must exist')
     return sorted(out,key=lambda r:r['_order'])
 
-# Apply common CSV rules plus type-specific checks for add-ons, gallery images,
-# testimonials and FAQs. This one shared function avoids repeating the same ID,
+# Apply common CSV rules plus type-specific checks for add-ons, testimonials and
+# FAQs. Gallery records use their own category/platform-aware validator above.
+# This shared function avoids repeating the same ID,
 # visibility and display-order checks for every CSV. Invisible rows are checked
 # for correctness but deliberately omitted from the finished website.
 def validate_rows(rel, required, kind, pkg_ids=None):
@@ -234,9 +392,6 @@ def validate_rows(rel, required, kind, pkg_ids=None):
         for key in required:
             if visible and not (r.get(key) or '').strip(): err(file,ctx,f'{key} is required')
         if kind=='addon' and r.get('available_for') not in {'onyx','jade','both'}: err(file,ctx,f'unknown available_for value "{r.get("available_for")}"; expected onyx, jade or both')
-        if kind=='gallery':
-            if r.get('category') not in {'experience','equipment'}: err(file,ctx,'invalid gallery category; expected experience or equipment')
-            if visible: image_ok(file,ctx+'.image',r.get('image',''))
         if kind=='testimonial' and visible:
             if r.get('package') and r.get('package') not in pkg_ids: err(file,ctx,'invalid testimonial package reference')
             image_ok(file,ctx+'.image',r.get('image',''))
@@ -417,12 +572,24 @@ def testimonial_section(home, rows):
     slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}">{media_caption(*text(r),class_name="testimonial-slide__content")}</article>' for i,r in enumerate(rows))
     dots=''.join(f'<button class="testimonial-dot" type="button" aria-label="Show testimonial {i+1} of {len(rows)}"><span></span></button>' for i,_ in enumerate(rows))
     s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><button class="showcase-toggle testimonial-toggle" type="button" aria-pressed="false" aria-label="Pause testimonials"><span aria-hidden="true">Ⅱ</span></button><div class="testimonial-dots">{dots}</div></div></section>'
-# Split gallery rows by category and render them into the shared slider shell.
+def gallery_tab_icon(category):
+    if category=='experience':
+        return '<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="7" r="3"/><circle cx="5.5" cy="9" r="2.3"/><circle cx="18.5" cy="9" r="2.3"/><path d="M7 19v-2.2A5 5 0 0 1 12 12a5 5 0 0 1 5 4.8V19M2 18v-1.4A3.6 3.6 0 0 1 5.6 13h1.1M22 18v-1.4a3.6 3.6 0 0 0-3.6-3.6h-1.1"/></svg>'
+    return '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M9 21h6M12 17v4"/></svg>'
+
+# Render one accessible tab system and a single responsive slider controller.
+# Slide records stay as inert JSON until the selected category/platform is known,
+# preventing the browser from downloading unused desktop or mobile variants.
 def showcase(home,gallery):
-    # Gallery images are a small, fixed set. Load them up front so a click can
-    # cross-fade to decoded pixels instead of briefly showing an empty frame.
-    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}"><div class="showcase-slide__pan"><div class="showcase-slide__breathe"><img src="{r["image"]}" alt="{esc(" ".join(v for v in [(r.get("Header") or "").strip(),(r.get("Subtext") or "").strip()] if v))}" loading="eager" decoding="async"></div></div>{media_caption(r.get("Header",""),r.get("Subtext",""),tag="figcaption")}</figure>' for i,r in enumerate(gallery))
-    g=home['gallery_section']; return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist"><button role="tab" aria-selected="true" data-gallery-tab="experience">{esc(g["tabs"]["experience"])}</button><button role="tab" aria-selected="false" data-gallery-tab="equipment">{esc(g["tabs"]["equipment"])}</button></div><div class="showcase" role="region" aria-label="Party.LAN image showcase"><div class="showcase-track">{slides}</div><button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div></section>'
+    records=[{'authorId':r['id'],'category':r['category'],'platform':r['Platform'],'image':r['image'],'header':r.get('Header',''),'subtext':r.get('Subtext',''),'order':r['display_order'],'recordKey':r['_record_key'],'equivalentKey':r['_equivalent_key'],'domId':r['_dom_id']} for r in gallery]
+    payload=json.dumps(records,ensure_ascii=False,separators=(',',':')).replace('&','\\u0026').replace('<','\\u003c').replace('>','\\u003e')
+    g=home['gallery_section']
+    def tab(category,selected):
+        content=g['tabs'][category]
+        return f'<button class="gallery-tab" type="button" role="tab" id="gallery-tab-{category}" aria-controls="gallery-panel-{category}" aria-selected="{str(selected).lower()}" tabindex="{0 if selected else -1}" data-gallery-tab="{category}"><span class="gallery-tab__icon" aria-hidden="true">{gallery_tab_icon(category)}</span><span class="gallery-tab__copy"><span class="gallery-tab__title">{esc(content["label"])}</span><span class="gallery-tab__subtitle">{esc(content["subtitle"])}</span></span></button>'
+    switch='<span class="gallery-tabs__switch" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M7 8h11m0 0-3-3m3 3-3 3M17 16H6m0 0 3 3m-3-3 3-3"/></svg></span>'
+    panels=''.join(f'<div class="showcase-panel" id="gallery-panel-{category}" role="tabpanel" aria-labelledby="gallery-tab-{category}" data-gallery-panel="{category}"{" hidden" if category!="experience" else ""}><div class="showcase-track" data-gallery-track="{category}"></div></div>' for category in GALLERY_CATEGORIES)
+    return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist" aria-label="Choose gallery view">{tab("experience",True)}{switch}{tab("equipment",False)}</div><div class="showcase" role="region" aria-label="Party.LAN image showcase" data-gallery-mobile-query="{esc(GALLERY_MOBILE_QUERY)}">{panels}<button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div><script class="gallery-data" type="application/json">{payload}</script></section>'
 # Render numbered "How it works" cards, with a placeholder when no image exists.
 def steps(home):
     out=[]
@@ -591,7 +758,8 @@ def main():
     home=read_json(Path('homepage.json')); validate_home(home)
     pkgs=validate_packages(read_json(Path('packages.json'))); pkg_ids={p['id'] for p in pkgs}
     addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
-    gallery=validate_rows('gallery.csv',['category','image'],'gallery')
+    gallery=validate_gallery_rows('gallery.csv')
+    validate_gallery_rows('gallery.example.csv')
     faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
     package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
     live=validate_rows('testimonials.csv',['image','alt'],'testimonial',pkg_ids)
