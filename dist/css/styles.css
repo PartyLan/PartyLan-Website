@@ -791,25 +791,20 @@ body::before, body::after { display: none; }
 /*
  * GALLERY IMAGE CAPTION — THEME BOX CONFIGURATION
  * ---------------------------------------------------------------
- * Adjust these local variables to tune the Header/Subtext overlay. Text
- * follows the site's theme tokens; the box uses 10% light in light mode
- * and 15% dark in dark mode.
+ * Adjust these local variables to tune the Header/Subtext overlay. The
+ * bright text and 22% dark box remain consistent in both site themes.
  */
 .showcase {
-  --gallery-caption-text-color: var(--text);
-  --gallery-caption-subtext-color: var(--muted);
-  --gallery-caption-box-color: #fff;
-  --gallery-caption-box-opacity: 10%;
+  --gallery-caption-text-color: #fff;
+  --gallery-caption-subtext-color: rgba(255, 255, 255, .9);
+  --gallery-caption-box-color: #000;
+  --gallery-caption-box-opacity: 22%;
   --gallery-caption-box-padding: clamp(1rem, 2.4vw, 1.7rem);
   --gallery-caption-box-radius: var(--radius-button);
   --gallery-caption-box-blur: 2px;
 
   background: var(--page-bg-elevated);
   border: 1px solid var(--border);
-}
-html[data-theme="dark"] .showcase {
-  --gallery-caption-box-color: #000;
-  --gallery-caption-box-opacity: 15%;
 }
 .showcase-slide { transform: none; transition: opacity .5s ease; }
 .showcase-slide__pan, .showcase-slide__breathe, .showcase-slide__breathe img { position: absolute; inset: 0; width: 100%; height: 100%; }
