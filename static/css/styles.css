@@ -1720,3 +1720,45 @@ body { padding-bottom: 0 !important; }
   max-width: none;
   margin-inline: auto;
 }
+
+/* Gallery captions use the same two-level format in both gallery tabs. */
+.showcase-slide figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(.45rem, 1vw, .75rem);
+  width: min(760px, 82%);
+  max-width: 82%;
+  padding: clamp(1rem, 2.4vw, 1.7rem);
+  font-size: 1rem;
+}
+
+.showcase-caption__header {
+  display: block;
+  max-width: 22ch;
+  font-size: clamp(1.45rem, 3vw, 3rem);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+
+.showcase-caption__subtext {
+  display: block;
+  max-width: 52ch;
+  color: rgba(255, 255, 255, .9);
+  font-size: clamp(.9rem, 1.3vw, 1.15rem);
+  font-weight: 620;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+
+@media (max-width: 560px) {
+  .showcase-slide figcaption {
+    width: 88%;
+    max-width: 88%;
+    padding: 1rem;
+  }
+
+  .showcase-caption__header { font-size: clamp(1.3rem, 6vw, 1.85rem); }
+  .showcase-caption__subtext { font-size: clamp(.82rem, 3.7vw, 1rem); }
+}

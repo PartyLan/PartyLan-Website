@@ -3,7 +3,7 @@
     "title": "Party.LAN hosted gaming parties",
     "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
     "canonical_url": "https://partylan.co.uk/",
-    "og_image": "/assets/images/gallery_hero_light.jpg",
+    "og_image": "/content/images/gallery_hero_light.jpg",
     "theme_color_light": "#f6efe4",
     "theme_color_dark": "#141827"
   },
@@ -26,8 +26,8 @@
       "label": "Booking enquiry",
       "href": "/contact/?intent=booking"
     },
-    "logo_light": "/assets/images/Logo_Black_T.png",
-    "logo_dark": "/assets/images/Logo_White_T.png"
+    "logo_light": "/content/images/Logo_Black_T.png",
+    "logo_dark": "/content/images/Logo_White_T.png"
   },
   "hero": {
     "eyebrow": "Hosted gaming parties",
@@ -42,8 +42,8 @@
       "href": "#gallery"
     },
     "media": {
-      "light": "/assets/images/gallery_hero_light.jpg",
-      "dark": "/assets/images/gallery_hero_dark.jpg",
+      "light": "/content/images/gallery_hero_light.jpg",
+      "dark": "/content/images/gallery_hero_dark.jpg",
       "alt": "Guests enjoying a hosted gaming party together across multiple displays."
     }
   },
@@ -91,7 +91,7 @@
         "id": "choose",
         "title": "Choose a package",
         "description": "Pick the hosted experience that best fits your group size and style of play.",
-        "image": "/assets/images/gallery_group-fun_01.jpg",
+        "image": "/content/images/gallery_group-fun_01.jpg",
         "image_alt": "Guests comparing hosted Party.LAN package options.",
         "image_position": "center"
       },
@@ -99,7 +99,7 @@
         "id": "venue",
         "title": "Tell us about the venue",
         "description": "Share the room type, access notes and anything useful for planning the setup.",
-        "image": "/assets/images/gallery_venue-ambient.jpg",
+        "image": "/content/images/gallery_venue-ambient.jpg",
         "image_alt": "A room prepared for a flexible Party.LAN setup.",
         "image_position": "center"
       },
@@ -107,7 +107,7 @@
         "id": "host",
         "title": "We deliver, set up and host",
         "description": "Your host brings the equipment, keeps play moving and packs everything away.",
-        "image": "/assets/images/gallery_host_01.jpg",
+        "image": "/content/images/gallery_host_01.jpg",
         "image_alt": "A Party.LAN host helping prepare gaming equipment.",
         "image_position": "center"
       }
@@ -175,8 +175,8 @@
       "heading": "Two epic ways to party",
       "description": "Choose the hosted experience that suits your group best.",
       "image": "",
-      "fallback_image": "/assets/images/gallery_hero_light.jpg",
-      "fallback_image_dark": "/assets/images/gallery_hero_dark.jpg",
+      "fallback_image": "/content/images/gallery_hero_light.jpg",
+      "fallback_image_dark": "/content/images/gallery_hero_dark.jpg",
       "alt": "Party.LAN gaming party setup with guests playing together."
     },
     "intro": {

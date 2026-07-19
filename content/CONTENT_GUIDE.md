@@ -71,15 +71,17 @@ Add a row to `content/addons.csv` with a unique `id`, a title, description, `ava
 
 ### Add a gallery entry
 
-Add a row to `content/gallery.csv`. Put the image file in `content/images/` first, then reference it as `/assets/images/file_name.jpg`. Choose `experience` for people and atmosphere, or `equipment` for setup and hardware.
+Add a row to `content/gallery.csv`. Put the image file in `content/images/` first, then reference it as `/content/images/file_name.jpg`. Use `Header` for the main promotional line and `Subtext` for the supporting description. Choose `experience` for people and atmosphere, or `equipment` for setup and hardware.
 
 ### Add a real testimonial
 
-Add it to `content/testimonials.csv` only when approved. Use a local existing image under `/assets/images/...`, add meaningful `alt` text, set `visible` to `true`, and choose package `onyx` or `jade` if relevant.
+Add it to `content/testimonials.csv` only when approved. Use a local existing image under `/content/images/...`, add meaningful `alt` text, set `visible` to `true`, and choose package `onyx` or `jade` if relevant.
 
 ### Demo testimonials
 
 `content/testimonials.example.csv` is only for clearly labelled demo examples. Normal visitors do not see this file. Demo mode is available at `/?demo=testimonials`.
+
+This existing demo file still uses the legacy `/assets/images/...` compatibility route. New live gallery and testimonial content should use `/content/images/...`.
 
 ### Add or edit FAQ entries
 
@@ -172,7 +174,7 @@ The Packages page supports a future hero image without requiring one today. In `
 
 - Leave `image` as an empty string (`""`) to use the existing fallback.
 - `fallback_image` and `fallback_image_dark` must always point to valid existing images.
-- When a new approved image is added later, put it in `content/images/` and set `image` to `/assets/images/new-file-name.jpg`.
+- When a new approved image is added later, put it in `content/images/` and set `image` to `/content/images/new-file-name.jpg`.
 - The build validates a non-empty `image`, but it will not fail just because `image` is empty.
 - Do not add or rename image files unless the site is being deliberately updated with approved assets.
 
@@ -212,7 +214,7 @@ Each `how_it_works.steps` entry can include an optional future image:
 "image_position": "center"
 ```
 
-Leave `image` empty until an approved asset exists. The build will render a polished placeholder area and will not output a broken image. When adding an approved future image, place it under `content/images/`, reference it as `/assets/images/file-name.jpg`, and write meaningful `image_alt` text. Accepted `image_position` values are `center`, `top`, `bottom`, `left`, and `right`.
+Leave `image` empty until an approved asset exists. The build will render a polished placeholder area and will not output a broken image. When adding an approved future image, place it under `content/images/`, reference it as `/content/images/file-name.jpg`, and write meaningful `image_alt` text. Accepted `image_position` values are `center`, `top`, `bottom`, `left`, and `right`.
 
 ## Testimonial layout and controls
 
@@ -220,15 +222,15 @@ Testimonials use centred text over the image with a local readability scrim rath
 
 ## Logo source and generated paths
 
-The authoritative logo files live in `content/images/Logo_Black_T.png` and `content/images/Logo_White_T.png`. The build validates and copies them through the content-image pipeline to `dist/assets/images/`, and rendered pages use `/assets/images/Logo_Black_T.png` and `/assets/images/Logo_White_T.png`. Do not edit, rename or duplicate the logo binaries.
+The authoritative logo files live in `content/images/Logo_Black_T.png` and `content/images/Logo_White_T.png`. The build validates and copies them through the content-image pipeline to `dist/content/images/`, and rendered pages use `/content/images/Logo_Black_T.png` and `/content/images/Logo_White_T.png`. Do not edit, rename or duplicate the logo binaries.
 
 ## Temporary How it works placeholder images
 
-The How it works cards currently use existing repository images as temporary placeholders. These paths live in `content/homepage.json` under each `how_it_works.steps` item. They must use generated browser paths such as `/assets/images/gallery_group-fun_01.jpg`, not `content/images/...` paths. Replace them later only with approved images already added to `content/images/`.
+The How it works cards currently use existing repository images as temporary placeholders. These paths live in `content/homepage.json` under each `how_it_works.steps` item. They must use generated browser paths such as `/content/images/gallery_group-fun_01.jpg`. Replace them later only with approved images already added to `content/images/`.
 
 ## Reassurance icon slots
 
-Each reassurance item may include an optional `icon` path and `icon_alt`. Leave `icon` empty to show the current polished placeholder slot. If a future approved icon is added, reference it as `/assets/images/file-name.png` or another supported generated asset path. The build validates non-empty icon paths.
+Each reassurance item may include an optional `icon` path and `icon_alt`. Leave `icon` empty to show the current polished placeholder slot. If a future approved icon is added, reference it as `/content/images/file-name.png` or another supported generated image path. The build validates non-empty icon paths.
 
 ## FAQ links and Terms entry
 
@@ -243,8 +245,8 @@ Hero, gallery and testimonial photos are intentionally static. Do not add pan, z
 
 - Header navigation is intentionally limited to **Home**, **Packages** and **FAQ**, with **Booking enquiry** as the separate header CTA. Do not add permanent How it works or Gallery links.
 - The Packages page uses a shared enquiry block in `packages_page.shared_enquiry` for “Not sure which package fits?” and the `Ask about packages` CTA. Individual package cards should not carry separate ONYX/JADE enquiry buttons.
-- How it works image fields currently use existing repository images as temporary placeholders. Replace each `image` value with a future `/assets/images/<filename>` path only after adding the source file to `content/images/`; keep `image_alt` meaningful and adjust `image_position` only to `center`, `top`, `bottom`, `left` or `right`.
-- Reassurance items reserve an icon-ready slot. Leave `icon` empty for the CSS placeholder, or set it to an existing `/assets/images/<filename>` asset when a future approved graphic is available.
+- How it works image fields currently use existing repository images as temporary placeholders. Replace each `image` value with a future `/content/images/<filename>` path only after adding the source file to `content/images/`; keep `image_alt` meaningful and adjust `image_position` only to `center`, `top`, `bottom`, `left` or `right`.
+- Reassurance items reserve an icon-ready slot. Leave `icon` empty for the CSS placeholder, or set it to an existing `/content/images/<filename>` asset when a future approved graphic is available.
 - FAQ records may include `link_label` and `link_href` together. The Terms & Conditions link is part of the FAQ answer itself, not a separate button below the accordion.
 - The wide visual container scales major image-led compositions for large CSS viewports; ordinary body copy remains constrained, so content editors do not need to shorten text for wide screens.
 - Hero, testimonial and showcase photos remain static in every motion preference. Only the active slide/theme image may cross-fade.

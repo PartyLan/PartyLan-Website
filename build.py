@@ -107,9 +107,11 @@ def req_order(file,row,ctx,orders):
 # Restrict content images to the local image pipeline and supported formats.
 def image_ok(file,ctx,value):
     if not value: err(file,ctx,'referenced image is required'); return
-    if not value.startswith('/assets/images/'): err(file,ctx,'unsupported asset path; expected /assets/images/...'); return
+    prefixes=('/content/images/','/assets/images/')
+    prefix=next((candidate for candidate in prefixes if value.startswith(candidate)),None)
+    if prefix is None: err(file,ctx,'unsupported image path; expected /content/images/...'); return
     if Path(value).suffix.lower() not in IMG_EXT: err(file,ctx,'unsupported image extension'); return
-    if not (IMAGES/value.removeprefix('/assets/images/')).is_file(): err(file,ctx,'referenced image does not exist')
+    if not (IMAGES/value.removeprefix(prefix)).is_file(): err(file,ctx,'referenced image does not exist')
 
 # Read a content JSON file and convert file/parser failures into build errors.
 def read_json(rel):
@@ -329,10 +331,11 @@ def validate_legal(rel):
 def copy_assets():
     if DIST.exists(): shutil.rmtree(DIST)
     DIST.mkdir(); shutil.copytree(STATIC,DIST,dirs_exist_ok=True)
-    dest=DIST/'assets'/'images'; dest.mkdir(parents=True,exist_ok=True)
+    destinations=(DIST/'content'/'images',DIST/'assets'/'images')
     for p in IMAGES.rglob('*'):
         if p.is_file() and p.suffix.lower() in IMG_EXT:
-            d=dest/p.relative_to(IMAGES); d.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,d)
+            for dest in destinations:
+                d=dest/p.relative_to(IMAGES); d.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,d)
 # ================================================================
 # Shared page chrome
 # ================================================================
@@ -396,7 +399,7 @@ def testimonial_section(home, rows):
 def showcase(home,gallery):
     # Gallery images are a small, fixed set. Load them up front so a click can
     # cross-fade to decoded pixels instead of briefly showing an empty frame.
-    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}" data-caption="{esc(r["caption"])}"><div class="showcase-slide__pan"><div class="showcase-slide__breathe"><img src="{r["image"]}" alt="{esc(r["alt"])}" loading="eager" decoding="async"></div></div><figcaption>{esc(r["caption"])}</figcaption></figure>' for i,r in enumerate(gallery))
+    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}"><div class="showcase-slide__pan"><div class="showcase-slide__breathe"><img src="{r["image"]}" alt="{esc(r["Header"]+". "+r["Subtext"])}" loading="eager" decoding="async"></div></div><figcaption><strong class="showcase-caption__header">{esc(r["Header"])}</strong><span class="showcase-caption__subtext">{esc(r["Subtext"])}</span></figcaption></figure>' for i,r in enumerate(gallery))
     g=home['gallery_section']; return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist"><button role="tab" aria-selected="true" data-gallery-tab="experience">{esc(g["tabs"]["experience"])}</button><button role="tab" aria-selected="false" data-gallery-tab="equipment">{esc(g["tabs"]["equipment"])}</button></div><div class="showcase" role="region" aria-label="Party.LAN image showcase"><div class="showcase-track">{slides}</div><button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div></section>'
 # Render numbered "How it works" cards, with a placeholder when no image exists.
 def steps(home):
@@ -566,7 +569,7 @@ def main():
     home=read_json(Path('homepage.json')); validate_home(home)
     pkgs=validate_packages(read_json(Path('packages.json'))); pkg_ids={p['id'] for p in pkgs}
     addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
-    gallery=validate_rows('gallery.csv',['category','image','alt','caption'],'gallery')
+    gallery=validate_rows('gallery.csv',['category','image','Header','Subtext'],'gallery')
     faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
     package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
     live=validate_rows('testimonials.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
