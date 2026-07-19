@@ -479,10 +479,6 @@ body:before,body:after{content:"";position:fixed;z-index:-10;pointer-events:none
   --gallery-tabs-switch-overlap: 0px;
   --gallery-tabs-shadow: 0 18px 42px color-mix(in srgb, var(--accent-shared) 22%, transparent);
   --gallery-tabs-transition-duration: .2s;
-  --gallery-tabs-copy-box-color: #fff;
-  --gallery-tabs-copy-box-opacity: 10%;
-  --gallery-tabs-copy-box-padding: .308rem .572rem;
-  --gallery-tabs-copy-box-radius: .715rem;
   --gallery-tabs-mobile-height: 4.5rem;
   --gallery-tabs-mobile-gap: .48rem;
   --gallery-tabs-mobile-padding: .58rem clamp(.55rem, 2.8vw, .8rem);
@@ -501,10 +497,6 @@ body:before,body:after{content:"";position:fixed;z-index:-10;pointer-events:none
   border-radius: var(--gallery-tabs-radius);
   background: var(--surface);
   box-shadow: var(--gallery-tabs-shadow);
-}
-html[data-theme="dark"] .gallery-tabs {
-  --gallery-tabs-copy-box-color: #000;
-  --gallery-tabs-copy-box-opacity: 15%;
 }
 .gallery-tab {
   position: relative;
@@ -547,16 +539,11 @@ html[data-theme="dark"] .gallery-tabs {
   stroke-linejoin: round;
 }
 .gallery-tab__copy {
-  box-sizing: border-box;
   min-width: 0;
   max-width: calc(100% - var(--gallery-tabs-icon-size) - var(--gallery-tabs-icon-gap));
   display: grid;
   gap: .15rem;
-  padding: var(--gallery-tabs-copy-box-padding);
-  border-radius: var(--gallery-tabs-copy-box-radius);
-  background: color-mix(in srgb, var(--gallery-tabs-copy-box-color) var(--gallery-tabs-copy-box-opacity), transparent);
   text-align: center;
-  transition: background-color var(--gallery-tabs-transition-duration) ease;
 }
 .gallery-tab__title { font-size: var(--gallery-tabs-title-size); font-weight: 860; line-height: 1.05; }
 .gallery-tab__subtitle { font-size: var(--gallery-tabs-subtitle-size); font-weight: 650; line-height: 1.15; opacity: .78; }
@@ -615,8 +602,6 @@ html[data-theme="dark"] .gallery-tabs {
     --gallery-tabs-title-size: clamp(.98rem, 1.4vw, 1.1rem);
     --gallery-tabs-subtitle-size: clamp(.72rem, 1vw, .8rem);
     --gallery-tabs-switch-size: 3rem;
-    --gallery-tabs-copy-box-padding: .28rem .52rem;
-    --gallery-tabs-copy-box-radius: .65rem;
     height: var(--gallery-tabs-mobile-height);
     margin-bottom: var(--gallery-tabs-mobile-gap);
   }
@@ -803,7 +788,29 @@ body::before, body::after { display: none; }
 .how-section:before { display: none; }
 .step-card { overflow: hidden; }
 .step-card__media img { border-radius: calc(var(--radius-card) - 4px); }
-.showcase { background: var(--page-bg-elevated); border: 1px solid var(--border); }
+/*
+ * GALLERY IMAGE CAPTION — THEME BOX CONFIGURATION
+ * ---------------------------------------------------------------
+ * Adjust these local variables to tune the Header/Subtext overlay. Text
+ * follows the site's theme tokens; the box uses 10% light in light mode
+ * and 15% dark in dark mode.
+ */
+.showcase {
+  --gallery-caption-text-color: var(--text);
+  --gallery-caption-subtext-color: var(--muted);
+  --gallery-caption-box-color: #fff;
+  --gallery-caption-box-opacity: 10%;
+  --gallery-caption-box-padding: clamp(1rem, 2.4vw, 1.7rem);
+  --gallery-caption-box-radius: var(--radius-button);
+  --gallery-caption-box-blur: 2px;
+
+  background: var(--page-bg-elevated);
+  border: 1px solid var(--border);
+}
+html[data-theme="dark"] .showcase {
+  --gallery-caption-box-color: #000;
+  --gallery-caption-box-opacity: 15%;
+}
 .showcase-slide { transform: none; transition: opacity .5s ease; }
 .showcase-slide__pan, .showcase-slide__breathe, .showcase-slide__breathe img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .showcase-slide__breathe img { object-fit: cover; }
@@ -838,11 +845,16 @@ body::before, body::after { display: none; }
   align-items: center;
   width: min(760px, 82%);
   max-width: 82%;
-  padding: clamp(1rem, 2.4vw, 1.7rem);
-  border-radius: var(--radius-button);
+  padding: var(--gallery-caption-box-padding);
+  border-radius: var(--gallery-caption-box-radius);
+  background: color-mix(in srgb, var(--gallery-caption-box-color) var(--gallery-caption-box-opacity), transparent);
+  color: var(--gallery-caption-text-color);
   text-align: center;
   font-size: 1rem;
+  text-shadow: none;
+  backdrop-filter: blur(var(--gallery-caption-box-blur));
 }
+.showcase-slide .media-caption__subtext { color: var(--gallery-caption-subtext-color); }
 .testimonial-slide__content.media-caption {
   align-items: flex-start;
   text-align: left;
