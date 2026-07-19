@@ -71,11 +71,11 @@ Add a row to `content/addons.csv` with a unique `id`, a title, description, `ava
 
 ### Add a gallery entry
 
-Add a row to `content/gallery.csv`. Put the image file in `content/images/` first, then reference it as `/content/images/file_name.jpg`. Use `Header` for the main promotional line and `Subtext` for the supporting description. Choose `experience` for people and atmosphere, or `equipment` for setup and hardware.
+Add a row to `content/gallery.csv`. Put the image file in `content/images/` first, then reference it as `/content/images/file_name.jpg`. `Header` and `Subtext` are optional: use either, both or neither. A caption overlay is omitted when both are empty. Choose `experience` for people and atmosphere, or `equipment` for setup and hardware.
 
 ### Add a real testimonial
 
-Add it to `content/testimonials.csv` only when approved. Use `Header` for the testimonial’s main line and `Subtext` for its supporting attribution or context. Use a local existing image under `/content/images/...`, add meaningful `alt` text and set `visible` to `true`.
+Add it to `content/testimonials.csv` only when approved. `Header` and `Subtext` are optional: use either, both or neither. A caption overlay is omitted when both are empty. Use a local existing image under `/content/images/...`, add meaningful `alt` text and set `visible` to `true`.
 
 ### Demo testimonials
 
