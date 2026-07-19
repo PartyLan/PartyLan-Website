@@ -223,7 +223,7 @@ function makeSlider(root, slideSelector, dotBoxSelector, labelFn, interval){
     dragging=false;
     var dx=e.clientX-sx,dy=e.clientY-sy;
     if(Math.abs(dx)>50){paused=true;go(idx+(dx<0?1:-1),true);updateToggle();}
-    else if(Math.abs(dx)<8&&Math.abs(dy)<8&&root.classList.contains('showcase'))togglePaused();
+    else if(Math.abs(dx)<8&&Math.abs(dy)<8&&root.classList.contains('showcase'))go(idx+1,true);
   });
   if(toggle)toggle.addEventListener('click',togglePaused);
 
