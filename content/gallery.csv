@@ -1,9 +1,9 @@
 id,category,image,Heading,caption,visible,display_order
-multiplayer-gaming-setup,experience,content\images\experience\gallery-hardware-setup01.jpg,"A Full Gaming Arena, Delivered","Multiple screens, consoles and controllers bring several games together in one ready-to-play setup.",true,1
-controllers-and-handhelds,experience,content\images\experience\gallery-hardware-party03.jpg,Something for Every Player,A varied selection of controllers and portable systems gives guests more ways to play.,true,2
-gaming-headsets,experience,content\images\experience\gallery-hardware-party02.jpg,"Immersive Sound, Less Distraction",Comfortable headsets help players stay focused while keeping competing game audio under control.,true,3
-multiplayer-controllers,experience,content\images\experience\gallery-hardware-party01.jpg,Ready for the Whole Party,"Plenty of controllers make it easy for more guests to join, rotate and play together.",true,4
-gaming-network,equipment,content\images\experience\gallery-hardware-wifi01.jpg,A Setup Built to Stay Connected,"Dedicated networking hardware supports a smooth, uninterrupted multiplayer environment.",true,5
-virtual-reality,equipment,content\images\experience\gallery-hardware-vr01.jpg,Step Into the Action,"Immersive virtual reality adds movement, discovery and unforgettable reactions to the party.",true,6
-racing-simulator,equipment,content\images\experience\gallery-hardware-sim01.jpg,Take Your Place on the Grid,"A complete cockpit with steering, pedals and a supportive racing seat delivers a convincing driving experience.",true,7
-racing-controls,equipment,content\images\experience\gallery-hardware-sim03.jpg,Every Turn Feels Real,"Responsive steering and precision pedals create a more engaging, hands-on racing experience. ",true,8
+multiplayer-gaming-setup,experience,content/images/experience/gallery-hardware-setup01.jpg,"A Full Gaming Arena, Delivered","Multiple screens, consoles and controllers bring several games together in one ready-to-play setup.",true,1
+controllers-and-handhelds,experience,content/images/experience/gallery-hardware-party03.jpg,Something for Every Player,A varied selection of controllers and portable systems gives guests more ways to play.,true,2
+gaming-headsets,experience,content/images/experience/gallery-hardware-party02.jpg,"Immersive Sound, Less Distraction",Comfortable headsets help players stay focused while keeping competing game audio under control.,true,3
+multiplayer-controllers,experience,content/images/experience/gallery-hardware-party01.jpg,Ready for the Whole Party,"Plenty of controllers make it easy for more guests to join, rotate and play together.",true,4
+gaming-network,equipment,content/images/experience/gallery-hardware-wifi01.jpg,A Setup Built to Stay Connected,"Dedicated networking hardware supports a smooth, uninterrupted multiplayer environment.",true,5
+virtual-reality,equipment,content/images/experience/gallery-hardware-vr01.jpg,Step Into the Action,"Immersive virtual reality adds movement, discovery and unforgettable reactions to the party.",true,6
+racing-simulator,equipment,content/images/experience/gallery-hardware-sim01.jpg,Take Your Place on the Grid,"A complete cockpit with steering, pedals and a supportive racing seat delivers a convincing driving experience.",true,7
+racing-controls,equipment,content/images/experience/gallery-hardware-sim03.jpg,Every Turn Feels Real,"Responsive steering and precision pedals create a more engaging, hands-on racing experience. ",true,8
