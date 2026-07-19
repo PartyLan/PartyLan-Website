@@ -632,7 +632,7 @@ body::before, body::after { display: none; }
 .media-caption__subtext { margin: 0; }
 .media-caption__header {
   max-width: 22ch;
-  font-size: clamp(1.45rem, 3vw, 3rem);
+  font-size: clamp(1.885rem, 3.9vw, 3.9rem);
   font-weight: 850;
   line-height: 1.08;
   letter-spacing: -.02em;
@@ -640,7 +640,7 @@ body::before, body::after { display: none; }
 .media-caption__subtext {
   max-width: 52ch;
   color: rgba(255, 255, 255, .9);
-  font-size: clamp(.9rem, 1.3vw, 1.15rem);
+  font-size: clamp(1.17rem, 1.69vw, 1.495rem);
   font-weight: 620;
   line-height: 1.45;
   text-wrap: balance;
@@ -659,7 +659,7 @@ body::before, body::after { display: none; }
   text-align: left;
 }
 .testimonial-slide__content .media-caption__header {
-  font-size: clamp(1.55rem, 3vw, 3rem);
+  font-size: clamp(2.015rem, 3.9vw, 3.9rem);
   text-shadow: 0 2px 18px rgba(0, 0, 0, .58);
 }
 .testimonial-slide__content .media-caption__subtext { font-weight: 650; }
