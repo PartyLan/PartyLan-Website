@@ -1,10 +1,24 @@
+# Render Blueprint for the static Party.LAN website.
+#
+# BEGINNER'S DEPLOYMENT MODEL
+# YAML is configuration, not program code. Indentation shows which settings
+# belong together, so spaces at the start of each line are meaningful.
+#
+# When a commit is deployed, Render temporarily runs "python build.py". Python
+# validates content and creates dist/. After that, Render serves the files from
+# dist/ to visitors. There is no Python server running for each visitor and no
+# database: the published result is ordinary static HTML, CSS, JavaScript/images.
 services:
+  # A static service runs the build command once, then serves only dist/ files.
   - type: web
     name: partylan-website
     runtime: static
+    # build.py validates content and regenerates every deployable page.
     buildCommand: python build.py
+    # Render publishes the generated folder; no long-running server is needed.
     staticPublishPath: dist
     routes:
+      # Serve the generated homepage file for requests to the domain root.
       - type: rewrite
         source: /
         destination: /index.html

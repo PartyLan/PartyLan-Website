@@ -13,9 +13,69 @@
    12. Responsive and reduced motion
 */
 
+/*
+   CASCADE GUIDE
+   This file records the site's visual development in chronological layers.
+   The readable base system comes first; later revision blocks deliberately
+   override earlier selectors. When the same selector appears more than once,
+   the declaration nearest the end is normally authoritative. The final blocks
+   document especially sensitive decisions such as static imagery, mobile
+   performance, logo cropping, hero fades and shared responsive widths.
+
+   Keep behaviour-changing edits in static/css/styles.css. dist/css/styles.css
+   is a generated copy and will be replaced whenever python build.py runs.
+*/
+
+/*
+   BEGINNER'S CSS READING GUIDE
+   CSS does not create page content. It selects HTML elements and gives them
+   visual/layout rules. A rule has a selector, then declarations inside braces:
+
+     .button { color: white; background: purple; }
+
+   .button       selects every element whose HTML includes class="button".
+   #faq          selects the one element whose HTML includes id="faq".
+   .card p       selects paragraphs inside an element with class="card".
+   .a, .b        applies the same declarations to both selectors.
+   :hover        applies while a pointer is over an element.
+   ::before      creates a decorative pseudo-element, not real page content.
+   [aria-expanded] selects elements by an HTML attribute.
+   >             means a direct child rather than any deeper descendant.
+
+   A declaration is a property/value pair such as width: 100%. Common units:
+   px   = a fixed CSS pixel; rem = relative to the base text size.
+   %    = relative to available size; vw/vh = viewport width/height.
+   ch   = approximately the width of one text character.
+   clamp(min, preferred, max) grows a value responsively within safe limits.
+
+   Values beginning -- are reusable custom properties (CSS variables).
+   var(--accent) inserts the current value of --accent. Theme variables can
+   therefore recolour many components without editing every individual rule.
+
+   Layout terms used here:
+   flex = arrange items primarily in one row or column.
+   grid = arrange items using explicit rows and columns.
+   gap = space between items; padding = inside space; margin = outside space.
+   position:absolute places an item relative to its positioned parent.
+
+   @media rules apply only under a condition. max-width: 920px is the main
+   mobile/tablet breakpoint. prefers-reduced-motion removes non-essential motion
+   for visitors who request it in their operating-system accessibility settings.
+
+   Class names mostly follow a component pattern: .package-card is a component,
+   .package-card__summary is a part, and .package-card--jade is a variation.
+   !important deliberately wins over ordinary declarations and is used near the
+   end to protect final corrections from historical layers above them.
+*/
+
 /* ==================================================
    01. Design tokens and themes
    ================================================== */
+/*
+   :root holds site-wide default values, which are the light theme. Think of
+   these variables as a shared control panel for colour, spacing, width, radius
+   and animation timing. Components consume them with var(...).
+*/
 :root {
   color-scheme: light;
   --bg: #f7efe5;
@@ -79,6 +139,8 @@
   --header-height: 72px;
 }
 
+/* JavaScript puts data-theme="dark" on <html>; these values then replace the
+   matching light defaults everywhere that uses the shared variables. */
 html[data-theme="dark"] {
   color-scheme: dark;
   --bg: #121723;
@@ -127,7 +189,10 @@ html[data-theme="dark"] {
   --hero-glow: radial-gradient(circle at 76% 14%, rgba(181, 150, 230, .16), transparent 34%), radial-gradient(circle at 56% 68%, rgba(126, 183, 158, .1), transparent 40%);
 }
 
-/* Reset and document defaults */
+/* Reset and document defaults
+   These establish predictable sizing, typography, images and keyboard focus
+   before component-specific styling begins. box-sizing:border-box means a
+   declared width includes padding and border, which simplifies layout maths. */
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: var(--header-height); }
 body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; font-size: clamp(1rem, .35vw + .92rem, 1.08rem); line-height: 1.62; transition: background-color var(--theme-transition), color var(--theme-transition); overflow-x: hidden; }
@@ -137,7 +202,9 @@ button, .button { font: inherit; }
 :focus-visible { outline: 3px solid var(--accent-2); outline-offset: 3px; }
 [id] { scroll-margin-top: calc(var(--header-height) + 18px); }
 
-/* Layout utilities */
+/* Layout utilities
+   .section and .section-heading provide shared page width and vertical rhythm.
+   The skip link stays off-screen until keyboard focus makes it visible. */
 .skip-link { position: fixed; left: 1rem; top: -5rem; z-index: 20; background: var(--accent); color: var(--accent-contrast); padding: .7rem 1rem; border-radius: 999px; }
 .skip-link:focus { top: 1rem; }
 .section { max-width: var(--container); margin: 0 auto; padding: clamp(4rem, 7vw, 6rem) var(--pad); }
@@ -153,7 +220,9 @@ h3 { margin-bottom: .55rem; font-size: clamp(1.18rem, 1.2vw, 1.55rem); line-heig
 p { max-width: 66ch; }
 .section-heading p, .hero__content p, .faq-section__heading p, .faq-item__answer p, .final-cta p { color: var(--muted); }
 
-/* Buttons and controls */
+/* Buttons and controls
+   One base shape covers links styled as buttons and real <button> elements.
+   Modifier classes choose key, secondary, rollout, small or disabled appearance. */
 .button, .theme-toggle, .menu-toggle { min-height: 42px; display: inline-flex; align-items: center; justify-content: center; gap: .45rem; border: 1px solid var(--border); border-radius: 999px; padding: .68rem 1rem; text-decoration: none; font-weight: 720; transform-origin: center; transition: transform var(--button-hover-duration) ease-in-out, background-color var(--theme-transition), color var(--theme-transition), border-color var(--theme-transition), box-shadow var(--theme-transition); }
 .button--key, .button:not(.button--secondary):not(.button--rollout) { background: var(--button-key-background); color: var(--button-key-text); border-color: var(--button-key-border); box-shadow: var(--button-key-shadow); }
 .button--key:hover, .button:not(.button--secondary):not(.button--rollout):hover { background: var(--button-key-hover-background); border-color: var(--button-key-hover-border); }
@@ -167,7 +236,9 @@ p { max-width: 66ch; }
 .button--disabled, .button--disabled:hover { cursor: not-allowed; opacity: .58; transform: none; box-shadow: none; filter: saturate(.65); }
 .button-row { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.45rem; }
 
-/* Header and navigation */
+/* Header and navigation
+   The header sticks to the viewport top. JavaScript toggles menu/header classes;
+   CSS decides how those states look and how desktop/mobile layouts differ. */
 .site-header { position: sticky; top: 0; z-index: 10; background: var(--header); border-bottom: 1px solid var(--border); backdrop-filter: blur(16px); }
 .nav-shell { max-width: var(--container); min-height: var(--header-height); margin: 0 auto; padding: .55rem var(--pad); display: flex; align-items: center; gap: .75rem; }
 .brand { margin-right: auto; flex: 0 0 auto; }
@@ -290,12 +361,16 @@ html[data-theme="dark"] .hero__image--dark { opacity: 1; }
 .site-footer nav { display: flex; gap: .9rem; flex-wrap: wrap; }
 .site-footer a { text-decoration: none; font-weight: 650; }
 
-/* Motion */
+/* Motion
+   @keyframes define animation stages. .reveal starts visually offset only when
+   JavaScript is active; main.js adds .is-visible as content enters the viewport. */
 .reveal { opacity: 1; transform: none; }
 .js .reveal { opacity: 0; transform: translateY(14px); transition: opacity .48s ease, transform .48s ease; }
 .js .reveal.is-visible { opacity: 1; transform: none; }
 
-/* Responsive breakpoints */
+/* Responsive breakpoints
+   These blocks override desktop-first rules as available width decreases. Read
+   each one as: "when the browser is no wider than this value, apply these rules." */
 @media (max-width: 920px) {
   .menu-toggle { display: inline-flex; }
   .site-menu { position: absolute; left: var(--pad); right: var(--pad); top: calc(100% + .45rem); display: none; flex-direction: column; align-items: stretch; padding: .8rem; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow); }
@@ -356,7 +431,9 @@ html[data-theme="dark"] .hero__image--dark { opacity: 1; }
   .hero__picture { width: clamp(860px, 42vw, 960px); right: max(3rem, calc((100vw - 1640px) / 2 + 4rem)); }
 }
 
-/* Reduced-motion handling */
+/* Reduced-motion handling
+   Accessibility override: content remains present, but animations, transitions
+   and hover movement are removed for visitors who prefer less motion. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
   .js .reveal { opacity: 1; transform: none; }
@@ -365,6 +442,13 @@ html[data-theme="dark"] .hero__image--dark { opacity: 1; }
   .hero__image { transition-duration: .12s; }
   .js .testimonials.is-enhanced .testimonial-slide { transition: none; }
 }
+/*
+   Historical component layers
+   The following compact revision blocks are retained because later corrections
+   depend on their cascade order. Read them from top to bottom; do not assume the
+   first declaration of a selector is the value visitors currently receive.
+*/
+
 /* content-system feature overrides */
 :root{--brand-size:150px;--transition-theme:background-color var(--theme-transition),color var(--theme-transition),border-color var(--theme-transition),box-shadow var(--theme-transition);--card:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface-soft) 45%,var(--surface)));--ring:color-mix(in srgb,var(--accent) 55%,transparent)}
 body:before,body:after{content:"";position:fixed;z-index:-10;pointer-events:none;border-radius:999px;filter:blur(70px);opacity:.35;transform:translate3d(0,0,0);animation:ambient 26s ease-in-out infinite alternate}body:before{width:44vw;height:44vw;left:-18vw;top:22vh;background:radial-gradient(circle,rgba(134,103,167,.55),transparent 65%)}body:after{width:38vw;height:38vw;right:-16vw;top:58vh;background:radial-gradient(circle,rgba(126,183,158,.36),transparent 62%)}
@@ -386,7 +470,7 @@ body:before,body:after{content:"";position:fixed;z-index:-10;pointer-events:none
 @media(prefers-reduced-motion:reduce){.showcase-slide,.testimonial-slide{transition:none;transform:none}.step-card:nth-child(n){transform:none}}
 /* revision 2: fluid depth, hero masks, package fade and gallery controls */
 .section,.nav-shell,.site-footer{max-width:var(--container)}.section-heading{max-width:min(70ch,100%)}.faq-section{max-width:var(--container)}
-body{background:var(--bg)}.hero,.hero--home{background:transparent;overflow:visible}.hero:after,.hero__shade{display:none!important}.hero--home{min-height:clamp(700px,74vw,900px);margin-bottom:0}.hero--home .hero__picture{width:clamp(860px,70vw,1360px);height:auto;aspect-ratio:16/9;right:max(-4vw,calc((100vw - 1760px)/2 - 2rem));top:clamp(.2rem,1.6vw,1rem);bottom:auto;overflow:hidden;border-radius:clamp(1.1rem,2vw,2rem);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 85%,transparent 100%),linear-gradient(180deg,#000 0%,#000 79%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 85%,transparent 100%),linear-gradient(180deg,#000 0%,#000 79%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect}.hero--home .hero__picture::before{z-index:1;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 28%,transparent),transparent 18%,transparent 82%,color-mix(in srgb,var(--bg) 28%,transparent))}.hero--home .hero__picture::after{z-index:2;background:linear-gradient(180deg,transparent 78%,var(--bg) 100%)}.hero--home .hero__content{max-width:clamp(34rem,38vw,48rem);padding:clamp(1rem,2vw,1.6rem);background:radial-gradient(ellipse at left,color-mix(in srgb,var(--bg) 86%,transparent),color-mix(in srgb,var(--bg) 42%,transparent) 62%,transparent 76%);box-shadow:none;backdrop-filter:none}.hero--home h1{max-width:14ch;font-size:clamp(2.8rem,5rem,5rem)}.reassurance{margin-top:clamp(-2.25rem,-2vw,-1.5rem)}.how-section{margin-top:clamp(5rem,7vw,7rem);padding-top:clamp(4rem,6vw,6rem);padding-bottom:clamp(5rem,7vw,7rem);max-width:100%;background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent 42%,color-mix(in srgb,var(--jade) 8%,transparent));}.how-section>.section-heading,.how-section>.steps-grid{width:var(--container);max-width:var(--container);margin-left:auto;margin-right:auto}.how-section:before{inset:3rem var(--layout-gutter) auto;height:260px;background:radial-gradient(ellipse at 20% 20%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 50%),radial-gradient(ellipse at 80% 60%,color-mix(in srgb,var(--jade) 14%,transparent),transparent 52%)}.step-card span{width:3.4rem;height:3.4rem;font-size:1.25rem}.showcase-section{max-width:var(--container);}.showcase{aspect-ratio:21/9;box-shadow:0 42px 110px rgba(21,12,32,.3)}.showcase:before,.showcase:after{width:12%;opacity:.65}.showcase-indicators{position:relative;bottom:auto;margin-top:.85rem}.slider-dot{width:1.9rem;height:1.9rem}.slider-dot span{width:8px;height:8px}.slider-dot[aria-current="true"] span{width:34px}.showcase-toggle{position:absolute;z-index:5;right:clamp(1rem,2vw,1.5rem);bottom:clamp(1rem,2vw,1.5rem);width:46px;height:46px;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.48);color:#fff;font-weight:900;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px)}.showcase-toggle:focus-visible{outline:3px solid #fff;outline-offset:3px}.showcase-feedback{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);display:grid;place-items:center;width:5rem;height:5rem;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;font-size:2rem;opacity:0;transition:opacity .22s ease,transform .22s ease;pointer-events:none}.showcase-feedback.is-visible{opacity:1;transform:translate(-50%,-50%) scale(1)}
+body{background:var(--bg)}.hero,.hero--home{background:transparent;overflow:visible}.hero:after,.hero__shade{display:none!important}.hero--home{min-height:clamp(700px,74vw,900px);margin-bottom:0}.hero--home .hero__picture{width:clamp(860px,70vw,1360px);height:auto;aspect-ratio:16/9;right:max(-4vw,calc((100vw - 1760px)/2 - 2rem));top:clamp(.2rem,1.6vw,1rem);bottom:auto;overflow:hidden;border-radius:clamp(1.1rem,2vw,2rem);-webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 85%,transparent 100%),linear-gradient(180deg,#000 0%,#000 79%,transparent 100%);mask-image:linear-gradient(90deg,transparent 0%,#000 15%,#000 85%,transparent 100%),linear-gradient(180deg,#000 0%,#000 79%,transparent 100%);-webkit-mask-composite:source-in;mask-composite:intersect}.hero--home .hero__picture::before{z-index:1;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 28%,transparent),transparent 18%,transparent 82%,color-mix(in srgb,var(--bg) 28%,transparent))}.hero--home .hero__picture::after{z-index:2;background:linear-gradient(180deg,transparent 78%,var(--bg) 100%)}.hero--home .hero__content{max-width:clamp(34rem,38vw,48rem);padding:clamp(1rem,2vw,1.6rem);background:radial-gradient(ellipse at left,color-mix(in srgb,var(--bg) 86%,transparent),color-mix(in srgb,var(--bg) 42%,transparent) 62%,transparent 76%);box-shadow:none;backdrop-filter:none}.hero--home h1{max-width:14ch;font-size:clamp(2.8rem,5rem,5rem)}.reassurance{margin-top:clamp(-2.25rem,-2vw,-1.5rem)}.how-section{margin-top:clamp(5rem,7vw,7rem);padding-top:clamp(4rem,6vw,6rem);padding-bottom:clamp(5rem,7vw,7rem);max-width:100%;background:linear-gradient(115deg,color-mix(in srgb,var(--accent) 10%,transparent),transparent 42%,color-mix(in srgb,var(--jade) 8%,transparent));}.how-section>.section-heading,.how-section>.steps-grid{width:var(--container);max-width:var(--container);margin-left:auto;margin-right:auto}.how-section:before{inset:3rem var(--layout-gutter) auto;height:260px;background:radial-gradient(ellipse at 20% 20%,color-mix(in srgb,var(--accent) 18%,transparent),transparent 50%),radial-gradient(ellipse at 80% 60%,color-mix(in srgb,var(--jade) 14%,transparent),transparent 52%)}.step-card span{width:3.4rem;height:3.4rem;font-size:1.25rem}.showcase-section{max-width:var(--container);}.showcase{aspect-ratio:21/9;box-shadow:0 42px 110px rgba(21,12,32,.3)}.showcase:before,.showcase:after{width:12%;opacity:.65}.showcase-indicators{position:relative;bottom:auto;margin-top:.85rem}.slider-dot{width:1.9rem;height:1.9rem}.slider-dot span{width:8px;height:8px}.slider-dot[aria-current="true"] span{width:34px}.showcase-toggle{position:absolute;z-index:5;right:clamp(1rem,2vw,1.5rem);bottom:clamp(1rem,2vw,1.5rem);width:69px;height:69px;font-size:1.5rem;border-radius:50%;border:1px solid rgba(255,255,255,.5);background:rgba(0,0,0,.48);color:#fff;font-weight:900;display:grid;place-items:center;cursor:pointer;backdrop-filter:blur(10px)}.showcase-toggle:focus-visible{outline:3px solid #fff;outline-offset:3px}.showcase-feedback{position:absolute;z-index:4;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);display:grid;place-items:center;width:5rem;height:5rem;border-radius:50%;background:rgba(0,0,0,.38);color:#fff;font-size:2rem;opacity:0;transition:opacity .22s ease,transform .22s ease;pointer-events:none}.showcase-feedback.is-visible{opacity:1;transform:translate(-50%,-50%) scale(1)}
 .packages-hero{min-height:clamp(550px,54vw,710px);overflow:visible}.packages-hero__media{bottom:-30px;height:calc(100% + 30px);overflow:hidden}.packages-hero__media:after{background:linear-gradient(180deg,rgba(0,0,0,.18) 0%,rgba(0,0,0,.52) 70%,var(--bg) 100%);z-index:1}.packages-hero__content{padding-bottom:9rem}.packages-overlap{margin-top:-7rem;max-width:var(--container);z-index:3}.packages-overlap .package-card{position:relative;z-index:4}.addons-panel--packages{border:0;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 10%,var(--surface)),color-mix(in srgb,var(--jade) 8%,var(--surface)));}.addon-grid{display:none}.addon-list-structured{list-style:none;margin:1.2rem 0 0;padding:0}.addon-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(220px,auto);gap:1rem;align-items:center;padding:1rem 0;border-top:1px solid color-mix(in srgb,var(--border) 70%,transparent)}.addon-row:first-child{border-top:0}.addon-marker{width:.72rem;height:.72rem;border-radius:50%;background:var(--muted);box-shadow:0 0 0 .32rem color-mix(in srgb,var(--muted) 12%,transparent)}.addon-row--onyx .addon-marker,.addon-row--onyx .addon-badge{background:var(--accent)}.addon-row--jade .addon-marker,.addon-row--jade .addon-badge{background:var(--jade)}.addon-copy h3{margin:0 0 .2rem;font-size:1.08rem}.addon-copy p{margin:0;color:var(--muted)}.addon-meta{display:flex;gap:.75rem;align-items:center;justify-content:flex-end}.addon-badge{display:inline-flex;align-items:center;min-height:2rem;padding:.25rem .65rem;border-radius:999px;background:color-mix(in srgb,var(--muted) 24%,var(--surface));color:var(--accent-contrast);font-weight:900;font-size:.8rem;letter-spacing:.05em}.addon-meta strong{font-size:.95rem;white-space:nowrap}.final-cta>div{border:0;background:radial-gradient(circle at 18% 8%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 38%),radial-gradient(circle at 85% 30%,color-mix(in srgb,var(--jade) 18%,transparent),transparent 42%),linear-gradient(135deg,color-mix(in srgb,var(--surface) 96%,transparent),color-mix(in srgb,var(--surface-soft) 58%,var(--surface)));box-shadow:0 34px 96px color-mix(in srgb,var(--accent) 20%,transparent)}
 @media(max-width:920px){.hero--home{min-height:clamp(620px,92vw,760px)}.hero--home .hero__picture{width:auto;left:8%;right:-12%;height:58%;aspect-ratio:auto}.how-section{margin-top:clamp(3.5rem,8vw,4.5rem)}.how-section>.section-heading,.how-section>.steps-grid{width:var(--container)}.showcase{aspect-ratio:16/10}.packages-hero__content{padding-bottom:7rem}.packages-overlap{margin-top:-6rem}.addon-row{grid-template-columns:auto 1fr;align-items:start}.addon-meta{grid-column:2;justify-content:flex-start;flex-wrap:wrap}}
 @media(max-width:560px){.hero--home{min-height:620px}.hero--home .hero__picture{left:0;right:-20%;height:48%}.hero--home h1{font-size:clamp(2.45rem,3.55rem,3.55rem);max-width:13ch}.hero--home .hero__inner{padding-top:calc(var(--header-height) + 9rem)}.reassurance{margin-top:-1.7rem}.how-section{margin-top:3rem;padding-top:3rem}.showcase{aspect-ratio:4/3}.addon-row{grid-template-columns:1fr}.addon-marker{display:none}.addon-meta{grid-column:auto}.addon-meta strong{white-space:normal}.packages-overlap{margin-top:-4rem}}
@@ -537,7 +621,59 @@ body::before, body::after { display: none; }
 .showcase-slide.is-active .showcase-slide__pan { animation: shared-pan 44s linear infinite alternate; will-change: transform; }
 .showcase-slide.is-active .showcase-slide__breathe { animation: shared-breathe 16s ease-in-out infinite alternate; will-change: transform; }
 .showcase.is-paused .showcase-slide__pan, .showcase.is-paused .showcase-slide__breathe { animation-play-state: paused; }
-.showcase-slide figcaption { border-radius: var(--radius-button); }
+/* Shared semantic caption component for gallery and testimonial media. */
+.media-caption {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(.45rem, 1vw, .75rem);
+  color: #fff;
+}
+.media-caption__header,
+.media-caption__subtext { margin: 0; }
+.media-caption__header {
+  max-width: 22ch;
+  font-size: clamp(2.0735rem, 4.29vw, 4.29rem);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+.media-caption__subtext {
+  max-width: 52ch;
+  color: rgba(255, 255, 255, .9);
+  font-size: clamp(1.287rem, 1.859vw, 1.6445rem);
+  font-weight: 620;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+.showcase-slide .media-caption {
+  align-items: center;
+  width: min(760px, 82%);
+  max-width: 82%;
+  padding: clamp(1rem, 2.4vw, 1.7rem);
+  border-radius: var(--radius-button);
+  text-align: center;
+  font-size: 1rem;
+}
+.testimonial-slide__content.media-caption {
+  align-items: flex-start;
+  text-align: left;
+}
+.testimonial-slide__content .media-caption__header {
+  font-size: clamp(2.2165rem, 4.29vw, 4.29rem);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .58);
+}
+.testimonial-slide__content .media-caption__subtext { font-weight: 650; }
+@media (max-width: 560px) {
+  .showcase-slide .media-caption {
+    width: 88%;
+    max-width: 88%;
+    padding: 1rem;
+  }
+  .media-caption__header { font-size: clamp(1.3rem, 6vw, 1.85rem); }
+  .media-caption__subtext { font-size: clamp(.82rem, 3.7vw, 1rem); }
+  .testimonial-slide__content .media-caption__header { font-size: clamp(1.4rem, 6.5vw, 2.1rem); }
+  .testimonial-slide__content .media-caption__subtext { font-size: clamp(.84rem, 3.8vw, 1rem); }
+}
 .hero__media-motion { animation: none; }
 .hero__media-pan, .hero__media-breathe { position: absolute; inset: -2%; transform-origin: center; }
 .hero__media-pan { animation: hero-pan-smooth 52s linear infinite alternate; will-change: transform; }
@@ -1208,6 +1344,12 @@ body { padding-bottom: 0 !important; }
 .packages-inline-contact .contact-form-shell { margin: 0 auto; text-align: left; }
 @media (max-width: 720px) { .contact-form__grid { grid-template-columns: 1fr; } }
 
+
+/*
+   Authoritative shared shell and component consolidation
+   This later layer standardises page widths and contains the current legal,
+   carousel and contact layouts that supersede matching historical rules above.
+*/
 
 /* PR #20 correction: authoritative shared shell and carousel/contact consolidation */
 .section,

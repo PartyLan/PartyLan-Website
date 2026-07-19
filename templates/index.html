@@ -1,6 +1,37 @@
 <!doctype html>
+<!--
+  LEGACY PROTOTYPE ONLY
+  The active pages are assembled by build.py and do not read this file. Keep it
+  as a reference for the original placeholder-based structure, but make live
+  markup changes in the renderer functions inside build.py instead.
+
+  Double-braced values are placeholders from the retired prototype system.
+
+  BEGINNER'S HTML READING GUIDE
+  HTML is a nested tree of elements. Most elements have an opening tag such as
+  <section> and a closing tag such as </section>; everything between belongs to
+  that element. Indentation makes the parent/child relationship easier to see.
+
+  <head> contains browser/search metadata that is not ordinary page content.
+  <body> contains everything displayed or interacted with on the page.
+  <header>, <main>, <section> and <footer> describe large structural regions.
+  <h1>/<h2>/<h3> are heading levels; <p> is a paragraph; <a> is a link.
+  <button> performs an action; <img> displays an image; <nav> groups links.
+
+  Attributes inside an opening tag provide extra information:
+  class="name" connects an element to CSS and sometimes JavaScript.
+  id="name" uniquely identifies one element and can be a link/ARIA target.
+  href="..." is a link destination; src="..." is an asset location.
+  aria-* attributes explain interactive relationships to assistive technology.
+  data-* attributes (used in current generated HTML) connect elements to main.js.
+-->
 <html lang="en-GB">
 <head>
+  <!--
+    Search, social sharing and browser appearance metadata. The viewport line is
+    essential for responsive layouts: it tells phones to use their real width.
+    Open Graph (og:*) values control how a shared link may appear on social apps.
+  -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{meta_title}}</title>
@@ -13,11 +44,17 @@
   <meta property="og:image" content="{{og_image}}">
   <meta name="theme-color" content="{{theme_color_light}}">
   <link rel="icon" href="/assets/logo-placeholder.svg" type="image/svg+xml">
+  <!-- Apply the saved/system theme before CSS loads to prevent a colour flash. -->
   <script>(function(){try{var s=localStorage.getItem('partyLanTheme');var d=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');document.documentElement.dataset.theme=d;}catch(e){}}());</script>
   <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body id="top">
+<!-- Keyboard users can bypass repeated navigation and jump to page content. -->
 <a class="skip-link" href="#main">Skip to content</a>
+<!--
+  Shared brand, navigation, theme and booking controls. aria-controls points the
+  menu button to site-menu; aria-expanded records whether that menu is open.
+-->
 <header class="site-header">
   <nav class="nav-shell" aria-label="Main navigation">
     <a class="brand" href="#top"><img src="/assets/logo-placeholder.svg" alt="Party.LAN" width="148" height="40"></a>
@@ -27,6 +64,11 @@
     <a class="button button--small header-cta" href="{{availability_href}}">{{availability_label}}</a>
   </nav>
 </header>
+<!--
+  Original landing-page section order retained for historical reference. The
+  one <main> element contains the unique content of the page. Each <section> has
+  a clear topic, while aria-labelledby connects it to its visible heading.
+-->
 <main id="main">
   <section class="hero" aria-labelledby="hero-title">
     <div class="hero__picture" aria-label="{{hero_alt}}" role="img">
@@ -54,6 +96,10 @@
   {{testimonials_section}}
   <section class="section final-cta" id="booking" aria-labelledby="booking-title"><div class="reveal"><h2 id="booking-title">{{final_heading}}</h2><p>{{final_description}}</p><button class="button button--disabled" type="button" disabled aria-disabled="true">{{final_button_label}}</button></div></section>
 </main>
+<!--
+  Shared site footer and progressively enhanced browser behaviour. defer means
+  main.js downloads now but runs after HTML parsing, when its elements exist.
+-->
 <footer class="site-footer"><p>{{footer_tagline}}</p><nav aria-label="Footer navigation">{{footer_links}}</nav></footer>
 <script src="/js/main.js" defer></script>
 </body>

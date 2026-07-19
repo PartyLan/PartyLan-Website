@@ -1,1 +1,7 @@
+# .gitignore lists files Git should leave out of commits. Generated copies of
+# content images are excluded because build.py recreates them in
+# dist/content/images/ from the authoritative originals in content/images/.
+# The legacy assets path remains generated for the existing demo-testimonial
+# file, but new content must use /content/images/.
 dist/assets/images/
+dist/content/images/

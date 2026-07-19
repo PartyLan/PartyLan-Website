@@ -3,7 +3,7 @@
     "title": "Party.LAN hosted gaming parties",
     "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
     "canonical_url": "https://partylan.co.uk/",
-    "og_image": "/assets/images/gallery_hero_light.jpg",
+    "og_image": "/content/images/gallery_hero_light.jpg",
     "theme_color_light": "#f6efe4",
     "theme_color_dark": "#141827"
   },
@@ -48,8 +48,8 @@
       "href": "#how-it-works"
     },
     "media": {
-      "light": "/assets/images/gallery_hero_light.jpg",
-      "dark": "/assets/images/gallery_hero_dark.jpg",
+      "light": "/content/images/gallery_hero_light.jpg",
+      "dark": "/content/images/gallery_hero_dark.jpg",
       "alt": "Guests enjoying a hosted gaming party together across multiple displays."
     }
   },
