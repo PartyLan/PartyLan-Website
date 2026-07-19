@@ -621,7 +621,59 @@ body::before, body::after { display: none; }
 .showcase-slide.is-active .showcase-slide__pan { animation: shared-pan 44s linear infinite alternate; will-change: transform; }
 .showcase-slide.is-active .showcase-slide__breathe { animation: shared-breathe 16s ease-in-out infinite alternate; will-change: transform; }
 .showcase.is-paused .showcase-slide__pan, .showcase.is-paused .showcase-slide__breathe { animation-play-state: paused; }
-.showcase-slide figcaption { border-radius: var(--radius-button); }
+/* Shared semantic caption component for gallery and testimonial media. */
+.media-caption {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(.45rem, 1vw, .75rem);
+  color: #fff;
+}
+.media-caption__header,
+.media-caption__subtext { margin: 0; }
+.media-caption__header {
+  max-width: 22ch;
+  font-size: clamp(1.45rem, 3vw, 3rem);
+  font-weight: 850;
+  line-height: 1.08;
+  letter-spacing: -.02em;
+}
+.media-caption__subtext {
+  max-width: 52ch;
+  color: rgba(255, 255, 255, .9);
+  font-size: clamp(.9rem, 1.3vw, 1.15rem);
+  font-weight: 620;
+  line-height: 1.45;
+  text-wrap: balance;
+}
+.showcase-slide .media-caption {
+  align-items: center;
+  width: min(760px, 82%);
+  max-width: 82%;
+  padding: clamp(1rem, 2.4vw, 1.7rem);
+  border-radius: var(--radius-button);
+  text-align: center;
+  font-size: 1rem;
+}
+.testimonial-slide__content.media-caption {
+  align-items: flex-start;
+  text-align: left;
+}
+.testimonial-slide__content .media-caption__header {
+  font-size: clamp(1.55rem, 3vw, 3rem);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, .58);
+}
+.testimonial-slide__content .media-caption__subtext { font-weight: 650; }
+@media (max-width: 560px) {
+  .showcase-slide .media-caption {
+    width: 88%;
+    max-width: 88%;
+    padding: 1rem;
+  }
+  .media-caption__header { font-size: clamp(1.3rem, 6vw, 1.85rem); }
+  .media-caption__subtext { font-size: clamp(.82rem, 3.7vw, 1rem); }
+  .testimonial-slide__content .media-caption__header { font-size: clamp(1.4rem, 6.5vw, 2.1rem); }
+  .testimonial-slide__content .media-caption__subtext { font-size: clamp(.84rem, 3.8vw, 1rem); }
+}
 .hero__media-motion { animation: none; }
 .hero__media-pan, .hero__media-breathe { position: absolute; inset: -2%; transform-origin: center; }
 .hero__media-pan { animation: hero-pan-smooth 52s linear infinite alternate; will-change: transform; }
@@ -1719,69 +1771,4 @@ body { padding-bottom: 0 !important; }
   width: var(--final-cta-panel-width);
   max-width: none;
   margin-inline: auto;
-}
-
-/* Gallery captions use the same two-level format in both gallery tabs. */
-.showcase-slide figcaption {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(.45rem, 1vw, .75rem);
-  width: min(760px, 82%);
-  max-width: 82%;
-  padding: clamp(1rem, 2.4vw, 1.7rem);
-  font-size: 1rem;
-}
-
-.showcase-caption__header {
-  display: block;
-  max-width: 22ch;
-  font-size: clamp(1.45rem, 3vw, 3rem);
-  font-weight: 850;
-  line-height: 1.08;
-  letter-spacing: -.02em;
-}
-
-.showcase-caption__subtext {
-  display: block;
-  max-width: 52ch;
-  color: rgba(255, 255, 255, .9);
-  font-size: clamp(.9rem, 1.3vw, 1.15rem);
-  font-weight: 620;
-  line-height: 1.45;
-  text-wrap: balance;
-}
-
-.testimonial-caption__header {
-  display: block;
-  max-width: 22ch;
-  font-size: clamp(1.55rem, 3vw, 3rem);
-  font-weight: 850;
-  line-height: 1.08;
-  letter-spacing: -.02em;
-  text-shadow: 0 2px 18px rgba(0, 0, 0, .58);
-}
-
-.testimonial-caption__subtext {
-  display: block;
-  max-width: 52ch;
-  margin-top: clamp(.55rem, 1.2vw, .85rem);
-  color: rgba(255, 255, 255, .9);
-  font-size: clamp(.9rem, 1.3vw, 1.15rem);
-  font-weight: 650;
-  line-height: 1.45;
-  text-wrap: balance;
-}
-
-@media (max-width: 560px) {
-  .showcase-slide figcaption {
-    width: 88%;
-    max-width: 88%;
-    padding: 1rem;
-  }
-
-  .showcase-caption__header { font-size: clamp(1.3rem, 6vw, 1.85rem); }
-  .showcase-caption__subtext { font-size: clamp(.82rem, 3.7vw, 1rem); }
-  .testimonial-caption__header { font-size: clamp(1.4rem, 6.5vw, 2.1rem); }
-  .testimonial-caption__subtext { font-size: clamp(.84rem, 3.8vw, 1rem); }
 }
