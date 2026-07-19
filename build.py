@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Standard-library static build and content validation for Party.LAN."""
 from __future__ import annotations
-import csv, html, json, os, shutil, sys
+import csv, hashlib, html, json, os, shutil, sys
 from pathlib import Path
 
 # BUILD PIPELINE OVERVIEW
@@ -54,6 +54,10 @@ from pathlib import Path
 
 # Absolute project paths used by every read, validation and output operation.
 ROOT=Path(__file__).parent.resolve(); CONTENT=ROOT/'content'; STATIC=ROOT/'static'; DIST=ROOT/'dist'; IMAGES=CONTENT/'images'
+
+# Change the stylesheet URL whenever its content changes so browsers cannot keep
+# serving an older caption layout after a deployment.
+STYLESHEET_VERSION=hashlib.sha256((STATIC/'css'/'styles.css').read_bytes()).hexdigest()[:12]
 
 # Shared validation state and the small set of values accepted from content.
 # ERRORS starts empty and gathers readable messages throughout validation.
@@ -371,7 +375,7 @@ def header(home,prefix=''):
 # Render document metadata and apply the chosen theme before CSS loads, avoiding
 # a light-theme flash for visitors who have selected dark mode.
 def head(home,title=None,desc=None):
-    m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css"></head>'''
+    m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css?v={STYLESHEET_VERSION}"></head>'''
 
 # ================================================================
 # Contact form rendering
@@ -389,23 +393,35 @@ def contact_form(form_id='contact-form', default_intent='question', default_pack
     disclosure_html='<div class="field field--full contact-disclosure"><button class="button button--rollout quiet-button" type="button" data-event-toggle aria-expanded="false" data-label-closed="Add event details" data-label-open="Hide event details"><span class="rollout-control__label" data-rollout-label>Add event details</span><span class="rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></button></div>' if allow_event_disclosure else ''
     return f"""<div class=\"contact-form-shell\" data-contact-component data-default-intent=\"{esc(default_intent)}\" data-default-package=\"{esc(default_package)}\" data-online-enabled=\"{online}\"><div class=\"contact-status\" data-contact-status role=\"status\" aria-live=\"polite\" tabindex=\"-1\"></div><form class=\"contact-form\" id=\"{esc(form_id)}\" data-contact-form action=\"https://api.web3forms.com/submit\" method=\"POST\"><input type=\"hidden\" name=\"access_key\" value=\"{access_key}\"><input type=\"hidden\" name=\"subject\" value=\"New Party.LAN question\"><input type=\"hidden\" name=\"from_name\" value=\"Party.LAN Website\"><input type=\"checkbox\" name=\"botcheck\" tabindex=\"-1\" aria-hidden=\"true\" autocomplete=\"off\" class=\"form-honeypot\"><div class=\"contact-form__grid\"><div class=\"field field--full\"><label for=\"{esc(form_id)}-intent\">Enquiry type</label><select id=\"{esc(form_id)}-intent\" name=\"intent\" required aria-describedby=\"{esc(form_id)}-intent-error\"><optgroup label=\"Party enquiries\"><option value=\"booking\">Booking enquiry</option><option value=\"party_question\">General party question</option></optgroup><optgroup label=\"Other enquiries\"><option value=\"collaboration\">Work with Party.LAN</option><option value=\"venue_partnership\">Venue or business partnership</option><option value=\"media\">Press or media enquiry</option><option value=\"other\">Other enquiry</option></optgroup></select><p class=\"field-error\" id=\"{esc(form_id)}-intent-error\" data-error-for=\"intent\"></p></div><div class=\"field\"><label for=\"{esc(form_id)}-name\">Name</label><input id=\"{esc(form_id)}-name\" name=\"name\" autocomplete=\"name\" required minlength=\"2\" maxlength=\"80\" aria-describedby=\"{esc(form_id)}-name-error\"><p class=\"field-error\" id=\"{esc(form_id)}-name-error\" data-error-for=\"name\"></p></div><div class=\"field\"><label for=\"{esc(form_id)}-email\">Email</label><input id=\"{esc(form_id)}-email\" name=\"email\" type=\"email\" autocomplete=\"email\" required maxlength=\"120\" aria-describedby=\"{esc(form_id)}-email-error\"><p class=\"field-error\" id=\"{esc(form_id)}-email-error\" data-error-for=\"email\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-date\">Preferred date</label><input id=\"{esc(form_id)}-date\" name=\"preferred_date\" type=\"date\" aria-describedby=\"{esc(form_id)}-date-error\"><p class=\"field-error\" id=\"{esc(form_id)}-date-error\" data-error-for=\"preferred_date\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-alt-date\">Alternative date</label><input id=\"{esc(form_id)}-alt-date\" name=\"alternative_date\" type=\"date\" aria-describedby=\"{esc(form_id)}-alt-date-error\"><p class=\"field-error\" id=\"{esc(form_id)}-alt-date-error\" data-error-for=\"alternative_date\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-location\">Town or postcode</label><input id=\"{esc(form_id)}-location\" name=\"location\" autocomplete=\"postal-code\" maxlength=\"100\" aria-describedby=\"{esc(form_id)}-location-error\"><p class=\"field-error\" id=\"{esc(form_id)}-location-error\" data-error-for=\"location\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-players\">Number of players</label><input id=\"{esc(form_id)}-players\" name=\"players\" type=\"number\" min=\"1\" max=\"40\" inputmode=\"numeric\" aria-describedby=\"{esc(form_id)}-players-error\"><p class=\"field-error\" id=\"{esc(form_id)}-players-error\" data-error-for=\"players\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-package\">Package</label><select id=\"{esc(form_id)}-package\" name=\"package\" aria-describedby=\"{esc(form_id)}-package-error\"><option value=\"unsure\">Not sure yet</option><option value=\"onyx\">ONYX</option><option value=\"jade\">JADE</option></select><p class=\"field-error\" id=\"{esc(form_id)}-package-error\" data-error-for=\"package\"></p></div><div class=\"field field--event\"{event_hidden}><label for=\"{esc(form_id)}-phone\">Phone</label><input id=\"{esc(form_id)}-phone\" name=\"phone\" type=\"tel\" autocomplete=\"tel\" maxlength=\"30\" aria-describedby=\"{esc(form_id)}-phone-error\"><p class=\"field-error\" id=\"{esc(form_id)}-phone-error\" data-error-for=\"phone\"></p></div><div class=\"field field--full\"><label for=\"{esc(form_id)}-message\">Message</label><textarea id=\"{esc(form_id)}-message\" name=\"message\" rows=\"5\" maxlength=\"2000\" aria-describedby=\"{esc(form_id)}-message-help {esc(form_id)}-message-error\"></textarea><p class=\"field-help\" id=\"{esc(form_id)}-message-help\">For booking enquiries, a preferred date or venue detail can provide enough context.</p><p class=\"field-error\" id=\"{esc(form_id)}-message-error\" data-error-for=\"message\"></p></div>{disclosure_html}<div class=\"field field--full privacy-check\"><label class=\"privacy-check__label\"><input name=\"privacy\" type=\"checkbox\" required aria-describedby=\"{esc(form_id)}-privacy-error\"><span class=\"privacy-check__copy\">I have read the <a href="/privacy/">Privacy Policy</a> and understand that Party.LAN will use these details to respond to my enquiry.</span></label><p class=\"field-error\" id=\"{esc(form_id)}-privacy-error\" data-error-for=\"privacy\"></p></div><div class=\"contact-form__actions\"><button class=\"button button--key contact-submit\" type=\"submit\" data-submit-label=\"Send enquiry\"{submit_disabled}>Send enquiry</button><a class=\"button button--secondary direct-email\" href=\"mailto:hello@partylan.co.uk\"><span>Email Party.LAN directly</span><small>hello@partylan.co.uk</small></a></div></div></form><div class=\"contact-success\" data-contact-success hidden tabindex=\"-1\"><h3>Thanks — your enquiry has been sent.</h3><p>We’ll get back to you as soon as possible.</p><button class=\"button button--secondary\" type=\"button\" data-send-another>Send another enquiry</button></div></div>"""
 
+# Render whichever parts of the optional Header/Subtext pair contain text.
+# Empty values do not create empty semantic elements or an unnecessary overlay.
+def media_caption(header, subtext, tag='div', class_name=''):
+    header=(header or '').strip(); subtext=(subtext or '').strip()
+    parts=[]
+    if header: parts.append(f'<h3 class="media-caption__header">{esc(header)}</h3>')
+    if subtext: parts.append(f'<p class="media-caption__subtext">{esc(subtext)}</p>')
+    if not parts: return ''
+    classes='media-caption'+((' '+class_name) if class_name else '')
+    return f'<{tag} class="{classes}">{"".join(parts)}</{tag}>'
+
 # Convert testimonial CSV rows into accessible slides and dot controls.
 def testimonial_section(home, rows):
     if not rows: return ''
     def text(r):
-        if (r.get('Header') or '').strip(): return r['Header'].strip(),r['Subtext'].strip()
+        if 'Header' in r or 'Subtext' in r:
+            return (r.get('Header') or '').strip(),(r.get('Subtext') or '').strip()
         header='“'+(r.get('quote') or '').strip()+'”'
         person=(r.get('name') or '').strip()+(', age '+r['age'].strip() if (r.get('age') or '').strip() else '')
         context=' · '.join(v for v in [(r.get('location') or '').strip(),(r.get('package') or '').strip()] if v)
         return header,' · '.join(v for v in [person,context] if v)
-    slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}"><div class="testimonial-slide__content"><strong class="testimonial-caption__header">{esc(text(r)[0])}</strong><span class="testimonial-caption__subtext">{esc(text(r)[1])}</span></div></article>' for i,r in enumerate(rows))
+    slides=''.join(f'<article class="testimonial-slide {"is-active" if i==0 else ""}" aria-hidden="{"false" if i==0 else "true"}"><img src="{r["image"]}" alt="{esc(r["alt"])}">{media_caption(*text(r),class_name="testimonial-slide__content")}</article>' for i,r in enumerate(rows))
     dots=''.join(f'<button class="testimonial-dot" type="button" aria-label="Show testimonial {i+1} of {len(rows)}"><span></span></button>' for i,_ in enumerate(rows))
     s=home['testimonials_section']; return f'<section class="section testimonials" id="testimonials" aria-labelledby="testimonials-title"><div class="section-heading reveal"><p class="eyebrow">{esc(s["eyebrow"])}</p><h2 id="testimonials-title">{esc(s["heading"])}</h2><p>{esc(s["description"])}</p></div><div class="testimonial-stage" role="region" aria-roledescription="carousel"><div class="testimonial-track">{slides}</div><button class="showcase-toggle testimonial-toggle" type="button" aria-pressed="false" aria-label="Pause testimonials"><span aria-hidden="true">Ⅱ</span></button><div class="testimonial-dots">{dots}</div></div></section>'
 # Split gallery rows by category and render them into the shared slider shell.
 def showcase(home,gallery):
     # Gallery images are a small, fixed set. Load them up front so a click can
     # cross-fade to decoded pixels instead of briefly showing an empty frame.
-    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}"><div class="showcase-slide__pan"><div class="showcase-slide__breathe"><img src="{r["image"]}" alt="{esc(r["Header"]+". "+r["Subtext"])}" loading="eager" decoding="async"></div></div><figcaption><strong class="showcase-caption__header">{esc(r["Header"])}</strong><span class="showcase-caption__subtext">{esc(r["Subtext"])}</span></figcaption></figure>' for i,r in enumerate(gallery))
+    slides=''.join(f'<figure class="showcase-slide {"is-active" if i==0 else ""}" data-category="{r["category"]}"><div class="showcase-slide__pan"><div class="showcase-slide__breathe"><img src="{r["image"]}" alt="{esc(" ".join(v for v in [(r.get("Header") or "").strip(),(r.get("Subtext") or "").strip()] if v))}" loading="eager" decoding="async"></div></div>{media_caption(r.get("Header",""),r.get("Subtext",""),tag="figcaption")}</figure>' for i,r in enumerate(gallery))
     g=home['gallery_section']; return f'<section class="section showcase-section" id="gallery" aria-labelledby="gallery-title"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(g["eyebrow"])}</p><h2 id="gallery-title">{esc(g["heading"])}</h2><p>{esc(g["description"])}</p></div><div class="gallery-tabs" role="tablist"><button role="tab" aria-selected="true" data-gallery-tab="experience">{esc(g["tabs"]["experience"])}</button><button role="tab" aria-selected="false" data-gallery-tab="equipment">{esc(g["tabs"]["equipment"])}</button></div><div class="showcase" role="region" aria-label="Party.LAN image showcase"><div class="showcase-track">{slides}</div><button class="showcase-toggle" type="button" aria-pressed="false" aria-label="Pause gallery"><span aria-hidden="true">Ⅱ</span></button><div class="showcase-feedback" aria-hidden="true"></div><div class="showcase-indicators" aria-label="Choose gallery image"></div></div></section>'
 # Render numbered "How it works" cards, with a placeholder when no image exists.
 def steps(home):
@@ -575,10 +591,10 @@ def main():
     home=read_json(Path('homepage.json')); validate_home(home)
     pkgs=validate_packages(read_json(Path('packages.json'))); pkg_ids={p['id'] for p in pkgs}
     addons=validate_rows('addons.csv',['title','description','available_for','price_note'],'addon')
-    gallery=validate_rows('gallery.csv',['category','image','Header','Subtext'],'gallery')
+    gallery=validate_rows('gallery.csv',['category','image'],'gallery')
     faq_rows=validate_rows('faq.csv',['question','answer'],'faq')
     package_faq_rows=validate_rows('packages_faq.csv',['question','answer'],'packages_faq')
-    live=validate_rows('testimonials.csv',['Header','Subtext','image','alt'],'testimonial',pkg_ids)
+    live=validate_rows('testimonials.csv',['image','alt'],'testimonial',pkg_ids)
     demo=validate_rows('testimonials.example.csv',['quote','name','image','alt'],'testimonial',pkg_ids)
     terms=validate_legal('terms'); privacy=validate_legal('privacy')
     # Render supplies this secret through the environment. It is escaped before
