@@ -19,7 +19,7 @@ dist/                    # generated static site
 
 The current HTML pages are rendered by `build.py`; `templates/index.html` is an older prototype and is not part of the active build.
 
-For layout, CSS, image-crop, mobile testing and pull-request instructions, see [the manual editing guide](docs/MANUAL_EDITING_GUIDE.md). For copy-only updates, see [the content guide](content/CONTENT_GUIDE.md).
+For the complete owner workflow—including change requests, file selection, layout and CSS edits, SEO maintenance, troubleshooting, mobile testing and pull requests—see [the owner maintenance and manual editing guide](docs/MANUAL_EDITING_GUIDE.md). For copy-only updates, see [the content guide](content/CONTENT_GUIDE.md).
 
 ## Content and presentation
 

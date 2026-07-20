@@ -75,6 +75,11 @@ GALLERY_CATEGORIES=('experience','equipment')
 GALLERY_PLATFORMS=('PC','Mobile','All')
 GALLERY_MOBILE_QUERY='(max-width: 920px)'  # Keep aligned with the gallery CSS media query.
 
+# SEO: These keys are the complete set of public, indexable routes. Keep this
+# tuple aligned with meta.pages in content/homepage.json and write_seo_files().
+# Demo/test URLs deliberately do not belong here.
+SEO_PAGE_KEYS=('home','packages','contact','terms','privacy')
+
 # These commercial package facts are deliberately fixed in code. Validation
 # prevents an accidental content edit from changing the advertised offer.
 PACKAGE_FACTS={'onyx':{'name':'ONYX','label':'Premium Experience','price':'£150','duration':'2 hours','capacity':'Up to 6 players','included':['PlayStation and Nintendo gaming','Racing simulator','VR hardware','Displays','Party host/operator','Free digital invitation']},'jade':{'name':'JADE','label':'Big Party','price':'£150','duration':'2 hours','capacity':'Up to 10 players','included':['Multiplayer gaming across multiple stations','Displays','Party host/operator','Free digital invitation']}}
@@ -289,6 +294,28 @@ def validate_home(h):
     for k in ['meta','navigation','navigation_groups','header','hero','reassurance','testimonials_section','how_it_works','gallery_section','faq_section','final_cta','footer','packages_page','addons_section']:
         if k not in h: err(f,k,'required top-level key is missing')
     req_text(f,h.get('hero',{}),'title','hero'); req_text(f,h.get('hero',{}),'description','hero')
+    # SEO: Validate the single editable metadata block before it is used for
+    # canonical URLs, social previews, structured data and the XML sitemap.
+    meta=h.get('meta',{})
+    for key in ['site_name','canonical_url','og_image','og_image_alt','logo','contact_email','locale']:
+        req_text(f,meta,key,'meta')
+    if not meta.get('canonical_url','').startswith('https://'):
+        err(f,'meta.canonical_url','must be the public HTTPS site URL')
+    image_ok(f,'meta.og_image',meta.get('og_image',''))
+    image_ok(f,'meta.logo',meta.get('logo',''))
+    pages=meta.get('pages',{})
+    if set(pages) != set(SEO_PAGE_KEYS):
+        err(f,'meta.pages',f'expected exactly {list(SEO_PAGE_KEYS)}')
+    seen_paths=set()
+    for page_key in SEO_PAGE_KEYS:
+        page=pages.get(page_key,{})
+        for key in ['path','title','description']:
+            req_text(f,page,key,f'meta.pages.{page_key}')
+        path=page.get('path','')
+        if not path.startswith('/') or ('?' in path or '#' in path):
+            err(f,f'meta.pages.{page_key}.path','must be a clean root-relative URL path')
+        if path in seen_paths: err(f,f'meta.pages.{page_key}.path','duplicates another SEO page path')
+        seen_paths.add(path)
     if h.get('hero',{}).get('primary_cta',{}).get('href')!='/packages/': err(f,'hero.primary_cta.href','expected /packages/')
     for key in ['light','dark']: image_ok(f,'hero.media.'+key,h.get('hero',{}).get('media',{}).get(key,''))
     for key in ['logo_light','logo_dark']: image_ok(f,'header.'+key,h.get('header',{}).get(key,''))
@@ -495,6 +522,18 @@ def copy_assets():
         if p.is_file() and p.suffix.lower() in IMG_EXT:
             for dest in destinations:
                 d=dest/p.relative_to(IMAGES); d.parent.mkdir(parents=True,exist_ok=True); shutil.copy2(p,d)
+
+# SEO: Generate crawler discovery files from the same canonical route records
+# used by page metadata. This prevents robots.txt, sitemap.xml and HTML links
+# from drifting apart when a route changes. The demo page is intentionally
+# excluded because it contains example content and is marked noindex.
+def write_seo_files(home):
+    pages=home['meta']['pages']
+    urls=''.join(f'  <url><loc>{esc(seo_absolute_url(home,pages[key]["path"]))}</loc></url>\n' for key in SEO_PAGE_KEYS)
+    sitemap='<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+urls+'</urlset>\n'
+    robots='''# SEO: Search crawlers may access the public site.\nUser-agent: *\nAllow: /\n\n# SEO: Canonical URL discovery.\nSitemap: {sitemap}\n'''.format(sitemap=seo_absolute_url(home,'/sitemap.xml'))
+    (DIST/'sitemap.xml').write_text(sitemap,encoding='utf-8')
+    (DIST/'robots.txt').write_text(robots,encoding='utf-8')
 # ================================================================
 # Shared page chrome
 # ================================================================
@@ -527,10 +566,86 @@ def header(home,prefix=''):
     c=home['header']['availability_cta']
     return f"""<header class="site-header"><nav class="nav-shell" aria-label="Main navigation"><a class="brand" href="/"><span class="brand__mark"><img class="brand__logo brand__logo--light" src="{home['header']['logo_light']}" alt="Party.LAN" width="168" height="58"><img class="brand__logo brand__logo--dark" src="{home['header']['logo_dark']}" alt="" aria-hidden="true" width="168" height="58"></span></a><a class="button button--key button--small header-cta" href="{rel_href(c['href'],prefix)}">{esc(c['label'])}</a><button class="button button--secondary button--icon theme-toggle" type="button" aria-pressed="false" aria-label="Light mode active. Switch to dark mode" title="Light mode active. Switch to dark mode"><span class="theme-toggle__icon" aria-hidden="true">☀</span></button><div class="menu-anchor"><button class="button button--secondary button--icon menu-toggle" type="button" aria-expanded="false" aria-controls="site-menu" aria-label="Open navigation menu"><span class="menu-toggle__bars" aria-hidden="true"><span></span><span></span><span></span></span></button><div class="site-menu" id="site-menu" aria-label="Complete navigation"><div class="site-menu__panel">{mega_nav(home)}</div></div></div></nav></header>"""
 
-# Render document metadata and apply the chosen theme before CSS loads, avoiding
-# a light-theme flash for visitors who have selected dark mode.
-def head(home,title=None,desc=None):
-    m=home['meta']; return f'''<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(title or m['title'])}</title><meta name="description" content="{esc(desc or m['description'])}"><link rel="canonical" href="{esc(m['canonical_url'])}"><meta property="og:image" content="{esc(m['og_image'])}"><meta name="theme-color" content="{m['theme_color_light']}"><link rel="icon" href="/content/images/Logo_fav_icon.png?v=3" type="image/png" sizes="256x256"><link rel="apple-touch-icon" href="/content/images/Logo_fav_icon.png?v=3"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css?v={STYLESHEET_VERSION}"></head>'''
+# ================================================================
+# SEO: metadata, canonical URLs and structured data
+# ================================================================
+# Edit the public wording and identity values in content/homepage.json under
+# "meta". Keep implementation changes inside this clearly labelled section so
+# all search/share behaviour remains easy to audit in one place.
+
+# Convert a site-relative path into one absolute HTTPS URL. Search metadata must
+# not publish relative image, logo or canonical references.
+def seo_absolute_url(home,path):
+    return home['meta']['canonical_url'].rstrip('/')+'/'+path.lstrip('/')
+
+# Return the approved metadata record for one public route.
+def seo_page(home,page_key): return home['meta']['pages'][page_key]
+
+# Safely place JSON-LD inside HTML. The replacements stop content text from
+# accidentally closing the script element while preserving valid JSON.
+def seo_json_ld(data):
+    payload=json.dumps(data,ensure_ascii=False,separators=(',',':')).replace('&','\\u0026').replace('<','\\u003c').replace('>','\\u003e')
+    return f'<script type="application/ld+json">{payload}</script>'
+
+# Describe the Party.LAN identity without inventing an address, phone number,
+# reviews, opening hours or service area that has not been approved in content.
+# Organization is intentionally used instead of LocalBusiness until a public
+# business address or confirmed service-area profile is available.
+def seo_organization(home):
+    m=home['meta']; base=seo_absolute_url(home,'/')
+    return {
+        '@type':'Organization','@id':base+'#organization','name':m['site_name'],
+        'url':base,'description':seo_page(home,'home')['description'],
+        'logo':{'@type':'ImageObject','url':seo_absolute_url(home,m['logo'])},
+        'image':seo_absolute_url(home,m['og_image']),'email':m['contact_email'],
+        'contactPoint':{'@type':'ContactPoint','contactType':'customer service','email':m['contact_email'],'availableLanguage':'English'},
+    }
+
+# Build the common Organization, WebSite and page entities. Page-specific
+# entities are appended by the homepage and packages helpers below.
+def seo_graph(home,page_key,page_type='WebPage',extra=None):
+    m=home['meta']; page=seo_page(home,page_key); base=seo_absolute_url(home,'/'); url=seo_absolute_url(home,page['path'])
+    graph=[
+        seo_organization(home),
+        {'@type':'WebSite','@id':base+'#website','url':base,'name':m['site_name'],'inLanguage':'en-GB','publisher':{'@id':base+'#organization'}},
+        {'@type':page_type,'@id':url+'#webpage','url':url,'name':page['title'],'description':page['description'],'inLanguage':'en-GB','isPartOf':{'@id':base+'#website'},'about':{'@id':base+'#organization'},'primaryImageOfPage':{'@type':'ImageObject','url':seo_absolute_url(home,m['og_image'])}},
+    ]
+    graph.extend(extra or [])
+    return {'@context':'https://schema.org','@graph':graph}
+
+# FAQ answers already visible in the homepage accordion become machine-readable
+# Question/Answer entities. Never place hidden or unapproved claims here.
+def seo_home_graph(home,faq_rows):
+    url=seo_absolute_url(home,seo_page(home,'home')['path'])
+    questions=[{'@type':'Question','name':r['question'],'acceptedAnswer':{'@type':'Answer','text':r['answer']}} for r in faq_rows]
+    faq_entity={'@type':'FAQPage','@id':url+'#faq','url':url+'#faq','isPartOf':{'@id':url+'#webpage'},'mainEntity':questions}
+    return seo_graph(home,'home','WebPage',[faq_entity])
+
+# Package records become accurate Service/Offer entities. This is descriptive
+# schema only; it does not claim availability, ratings or stock information.
+def seo_packages_graph(home,pkgs):
+    page=seo_page(home,'packages'); url=seo_absolute_url(home,page['path']); base=seo_absolute_url(home,'/')
+    services=[]; item_refs=[]
+    for position,pkg in enumerate(pkgs,1):
+        service_id=f'{url}#service-{pkg["id"]}'
+        services.append({'@type':'Service','@id':service_id,'name':f'{pkg["name"]} — {pkg["label"]}','description':pkg['summary'],'provider':{'@id':base+'#organization'},'offers':{'@type':'Offer','url':f'{url}#package-panel-{pkg["id"]}','price':pkg['price'].lstrip('£'),'priceCurrency':'GBP','description':f'{pkg["duration"]}; {pkg["capacity"]}'}})
+        item_refs.append({'@type':'ListItem','position':position,'item':{'@id':service_id}})
+    item_list={'@type':'ItemList','@id':url+'#packages','name':'Party.LAN gaming party packages','itemListElement':item_refs}
+    return seo_graph(home,'packages','CollectionPage',[item_list,*services])
+
+# Render complete page-specific search and social metadata. The demo route uses
+# index=False, keeping example testimonials out of search results and sitemaps.
+def head(home,page_key='home',structured_data=None,index=True,canonical_path=None):
+    m=home['meta']; page=seo_page(home,page_key); path=canonical_path or page['path']; canonical=seo_absolute_url(home,path); image=seo_absolute_url(home,m['og_image'])
+    robots='index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1' if index else 'noindex,follow'
+    schema='' if structured_data is False else seo_json_ld(structured_data or seo_graph(home,page_key))
+    return f'''<!doctype html><html lang="en-GB"><head>
+<!-- SEO: Core indexation and canonical metadata. Edit values in content/homepage.json > meta. -->
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{esc(page['title'])}</title><meta name="description" content="{esc(page['description'])}"><meta name="robots" content="{robots}"><link rel="canonical" href="{esc(canonical)}"><link rel="alternate" hreflang="en-GB" href="{esc(canonical)}"><link rel="alternate" hreflang="x-default" href="{esc(canonical)}">
+<!-- SEO: Open Graph and X/Twitter link-preview metadata. -->
+<meta property="og:type" content="website"><meta property="og:site_name" content="{esc(m['site_name'])}"><meta property="og:locale" content="{esc(m['locale'])}"><meta property="og:title" content="{esc(page['title'])}"><meta property="og:description" content="{esc(page['description'])}"><meta property="og:url" content="{esc(canonical)}"><meta property="og:image" content="{esc(image)}"><meta property="og:image:width" content="1576"><meta property="og:image:height" content="941"><meta property="og:image:alt" content="{esc(m['og_image_alt'])}"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="{esc(page['title'])}"><meta name="twitter:description" content="{esc(page['description'])}"><meta name="twitter:image" content="{esc(image)}"><meta name="twitter:image:alt" content="{esc(m['og_image_alt'])}">
+<!-- SEO: Schema.org JSON-LD describing the business and this page. -->
+{schema}<meta name="theme-color" content="{m['theme_color_light']}"><link rel="icon" href="/content/images/Logo_fav_icon.png?v=3" type="image/png" sizes="160x159"><link rel="apple-touch-icon" href="/content/images/Logo_fav_icon.png?v=3"><script>(function(){{try{{var s=localStorage.getItem('partyLanTheme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');}}catch(e){{document.documentElement.dataset.theme='light';}}}}());</script><link rel="stylesheet" href="/css/styles.css?v={STYLESHEET_VERSION}"></head>'''
 
 # ================================================================
 # Contact form rendering
@@ -629,9 +744,10 @@ def render_reassurance(items):
 # Assemble the complete homepage from the validated content components above.
 # The additions join shared head/header/footer HTML with page-specific sections.
 # Every visible content value is read from the validated dictionaries/CSV rows.
-def home_page(home,gallery,faq_rows,testimonials,web3forms_access_key):
+def home_page(home,gallery,faq_rows,testimonials,web3forms_access_key,demo=False):
     h=home['hero']; reass=render_reassurance(home['reassurance']); cta=home['final_cta']
-    return head(home)+'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main" class="site-shell"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-pan"><div class="hero__media-breathe"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt=""><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt=""></div></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button button--key" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--secondary" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2><p>{esc(home['how_it_works'].get('description','Choose your hosted experience, share the venue details and let us handle setup, hosting and pack-down.'))}</p></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button button--key" href="{esc(cta['button'].get('href','/contact/?intent=booking'))}">{esc(cta['button']['label'])}</a></div></section></main>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
+    page_head=head(home,'home',False if demo else seo_home_graph(home,faq_rows),index=not demo,canonical_path='/demo-testimonials.html' if demo else None)
+    return page_head+'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>'+header(home,'')+f'''<main id="main" class="site-shell"><section class="hero hero--home" aria-labelledby="hero-title"><div class="hero__picture" role="img" aria-label="{esc(h['media']['alt'])}"><div class="hero__media-pan"><div class="hero__media-breathe"><img class="hero__image hero__image--light" src="{h['media']['light']}" alt="" width="1576" height="941" fetchpriority="high"><img class="hero__image hero__image--dark" src="{h['media']['dark']}" alt="" width="1576" height="941" fetchpriority="high"></div></div></div><div class="hero__inner"><div class="hero__content reveal"><p class="eyebrow">{esc(h['eyebrow'])}</p><h1 id="hero-title">{esc(h['title'])}</h1><p>{esc(h['description'])}</p><div class="button-row"><a class="button button--key" href="{h['primary_cta']['href']}">{esc(h['primary_cta']['label'])}</a><a class="button button--secondary" href="{h['secondary_cta']['href']}">{esc(h['secondary_cta']['label'])}</a></div></div></div></section><section class="reassurance"><ul>{reass}</ul></section><section class="section how-section" id="how-it-works"><div class="section-intro section-heading reveal"><p class="eyebrow">{esc(home['how_it_works']['eyebrow'])}</p><h2>{esc(home['how_it_works']['heading'])}</h2><p>{esc(home['how_it_works'].get('description','Choose your hosted experience, share the venue details and let us handle setup, hosting and pack-down.'))}</p></div><div class="steps-grid">{steps(home)}</div></section>{testimonial_section(home,testimonials)}{showcase(home,gallery)}{faq(home,faq_rows)}<section class="section final-cta" id="booking"><div><h2>{esc(cta['heading'])}</h2><p>{esc(cta['description'])}</p><a class="button button--key" href="{esc(cta['button'].get('href','/contact/?intent=booking'))}">{esc(cta['button']['label'])}</a></div></section></main>'''+footer(home,'')+'<script src="/js/main.js" defer></script></body></html>'
 # Render ONYX and JADE summaries and their expandable detail regions.
 def package_cards(pkgs):
     out=[]
@@ -692,11 +808,11 @@ def package_page(home, pkgs, addons, package_faq_rows, web3forms_access_key):
         </div>
       </div>
     </section>'''
-    return head(home,pp['meta_title'],pp['hero']['description'])+f"""<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,'/packages')}<main id="main" class="site-shell"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt=""><img class="hero__image hero__image--dark" src="{dark}" alt=""></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-tabs" role="tablist" aria-label="Choose package">{tabs}</div><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages" id="make-your-own"><button class="button button--rollout addons-toggle" type="button" aria-expanded="true" aria-controls="addons-content" data-label-closed="Browse add-ons" data-label-open="Hide add-ons"><span class="addons-toggle__copy"><span class="eyebrow">Add-ons</span><strong>{esc(addon_label)}</strong><small>{esc(home['addons_section']['description'])}</small></span><span class="addons-toggle__control"><span class="addons-toggle__label rollout-control__label" data-rollout-label>Browse add-ons</span><span class="addons-toggle__icon rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></span></button><div class="addons-content" id="addons-content" role="region"><div class="addons-content__inner">{add}</div></div></section>{final}</section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>"""
+    return head(home,'packages',seo_packages_graph(home,pkgs))+f"""<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,'/packages')}<main id="main" class="site-shell"><section class="packages-hero" aria-labelledby="packages-title"><div class="packages-hero__media" role="img" aria-label="{esc(ph['alt'])}"><img class="hero__image hero__image--light" src="{light}" alt="" width="1576" height="941" fetchpriority="high"><img class="hero__image hero__image--dark" src="{dark}" alt="" width="1576" height="941" fetchpriority="high"></div><div class="packages-hero__content"><p class="eyebrow">{esc(ph['eyebrow'])}</p><h1 id="packages-title">{esc(ph['heading'])}</h1><p>{esc(ph['description'])}</p></div></section><section class="packages-overlap" aria-label="Party.LAN packages"><div class="package-tabs" role="tablist" aria-label="Choose package">{tabs}</div><div class="package-grid package-grid--overlap">{package_cards(pkgs)}</div><section class="addons-panel addons-panel--packages" id="make-your-own"><button class="button button--rollout addons-toggle" type="button" aria-expanded="true" aria-controls="addons-content" data-label-closed="Browse add-ons" data-label-open="Hide add-ons"><span class="addons-toggle__copy"><span class="eyebrow">Add-ons</span><strong>{esc(addon_label)}</strong><small>{esc(home['addons_section']['description'])}</small></span><span class="addons-toggle__control"><span class="addons-toggle__label rollout-control__label" data-rollout-label>Browse add-ons</span><span class="addons-toggle__icon rollout-control__icon" data-rollout-icon aria-hidden="true">⌄</span></span></button><div class="addons-content" id="addons-content" role="region"><div class="addons-content__inner">{add}</div></div></section>{final}</section></main>{footer(home,'/')}<script src="/js/main.js" defer></script></body></html>"""
 
 # Assemble the standalone contact page around the shared form component.
 def contact_page(home, web3forms_access_key):
-    return head(home,'Contact Party.LAN','Start a booking enquiry or ask Party.LAN a question.')+f"""<body id=\"top\"><div class=\"site-background\" aria-hidden=\"true\"><div class=\"site-background__top\"></div><div class=\"site-background__middle\"></div><div class=\"site-background__bottom\"></div></div><a class=\"skip-link\" href=\"#main\">Skip to content</a>{header(home,'/')}<main id=\"main\" class=\"site-shell contact-page\"><section class=\"section contact-section\" aria-labelledby=\"contact-title\"><div class=\"section-heading reveal\"><p class=\"eyebrow\">CONTACT</p><h1 id=\"contact-title\">How can we help?</h1><p>Start a booking enquiry or ask us anything before deciding.</p></div>{contact_form('contact-page-form', access_key=web3forms_access_key, allow_event_disclosure=False)}</section></main>{footer(home,'/')}<script src=\"/js/main.js\" defer></script></body></html>"""
+    return head(home,'contact',seo_graph(home,'contact','ContactPage'))+f"""<body id=\"top\"><div class=\"site-background\" aria-hidden=\"true\"><div class=\"site-background__top\"></div><div class=\"site-background__middle\"></div><div class=\"site-background__bottom\"></div></div><a class=\"skip-link\" href=\"#main\">Skip to content</a>{header(home,'/')}<main id=\"main\" class=\"site-shell contact-page\"><section class=\"section contact-section\" aria-labelledby=\"contact-title\"><div class=\"section-heading reveal\"><p class=\"eyebrow\">CONTACT</p><h1 id=\"contact-title\">How can we help?</h1><p>Start a booking enquiry or ask us anything before deciding.</p></div>{contact_form('contact-page-form', access_key=web3forms_access_key, allow_event_disclosure=False)}</section></main>{footer(home,'/')}<script src=\"/js/main.js\" defer></script></body></html>"""
 
 # ================================================================
 # Legal-page rendering
@@ -742,7 +858,7 @@ def legal_page(home,d,slug):
     updated=f'<p class="legal-page__updated">Last updated: {esc(d["last_updated"])}</p>' if d.get('last_updated') else ''
     notice=f'<p class="legal-page__notice">{esc(d["draft_warning"])}</p>' if d.get('draft_warning') else ''
     summary=f'<p class="legal-page__summary">{esc(d["summary"])}</p>' if d.get('summary') else ''
-    return head(home,d['title'])+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1>{updated}{notice}{summary}</header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
+    return head(home,slug,seo_graph(home,slug))+f'<body id="top"><div class="site-background" aria-hidden="true"><div class="site-background__top"></div><div class="site-background__middle"></div><div class="site-background__bottom"></div></div><a class="skip-link" href="#main">Skip to content</a>{header(home,"/")}<main id="main" class="site-shell legal-page"><section class="section legal-section" aria-labelledby="legal-page-title"><div class="legal-page__top"><a class="button button--secondary legal-page__back" href="/">← Homepage</a><header class="section-heading legal-page__heading"><h1 id="legal-page-title">{esc(d["title"])}</h1>{updated}{notice}{summary}</header></div><div class="legal-accordion" data-legal-accordion>{accordion}</div></section></main>{footer(home,"/")}<script src="/js/main.js" defer></script></body></html>'
 # ================================================================
 # Build orchestration
 # ================================================================
@@ -776,11 +892,14 @@ def main():
     # PHASE 4 — write one index.html inside each public route folder. Static web
     # hosts treat /packages/index.html as the page visitors see at /packages/.
     (DIST/'index.html').write_text(home_page(home,gallery,faq_rows,live,web3forms_access_key),encoding='utf-8')
-    (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo,web3forms_access_key),encoding='utf-8')
+    (DIST/'demo-testimonials.html').write_text(home_page(home,gallery,faq_rows,demo,web3forms_access_key,demo=True),encoding='utf-8')
     (DIST/'packages').mkdir(); (DIST/'packages'/'index.html').write_text(package_page(home,pkgs,addons,package_faq_rows,web3forms_access_key),encoding='utf-8')
     (DIST/'terms').mkdir(); (DIST/'terms'/'index.html').write_text(legal_page(home,terms,'terms'),encoding='utf-8')
     (DIST/'privacy').mkdir(); (DIST/'privacy'/'index.html').write_text(legal_page(home,privacy,'privacy'),encoding='utf-8')
     (DIST/'contact').mkdir(); (DIST/'contact'/'index.html').write_text(contact_page(home,web3forms_access_key),encoding='utf-8')
+    # SEO: Generate robots.txt and sitemap.xml only after every canonical page
+    # has been written successfully.
+    write_seo_files(home)
     # This summary is for the developer/build log; visitors never see it.
     print(f'Built dist with homepage, packages page, {len(addons)} add-ons, {len(gallery)} gallery items, {len(live)} live testimonials, {len(faq_rows)} landing FAQs and {len(package_faq_rows)} package FAQs.')
 

@@ -1,0 +1,6 @@
+# SEO: Search crawlers may access the public site.
+User-agent: *
+Allow: /
+
+# SEO: Canonical URL discovery.
+Sitemap: https://partylan.co.uk/sitemap.xml

@@ -4,7 +4,7 @@ This site is built from editable files in `content/`. For ordinary wording updat
 
 ## Safe files to edit
 
-- `content/homepage.json` — unique homepage copy: metadata, navigation, hero, reassurance strip, section introductions, add-on panel, how-it-works steps, gallery intro, room-planning copy, final CTA and footer.
+- `content/homepage.json` — unique homepage copy and the central `meta` SEO block: page titles, descriptions, canonical routes, social image, business identity, navigation, hero, reassurance strip, section introductions, add-on panel, how-it-works steps, gallery intro, room-planning copy, final CTA and footer.
 - `content/packages.json` — ONYX and JADE package wording and expandable details. The fixed business details below must not change unless Party.LAN approves it.
 - `content/addons.csv` — optional or planned add-ons. Do not add fixed prices unless approved.
 - `content/testimonials.csv` — approved real testimonials for normal visitors.
@@ -58,6 +58,18 @@ These are currently fixed and validated by the build:
 - JADE: Big Party, £150, 2 hours, up to 10 players, includes multiplayer gaming across multiple stations, displays, party host/operator and free digital invitation.
 
 ## Common tasks
+
+### Edit search and social metadata
+
+All editable SEO values are grouped under `meta` at the top of `content/homepage.json`:
+
+- `site_name`, `canonical_url`, `logo`, `contact_email` and `locale` describe the site identity used by search engines and link previews.
+- `og_image` and `og_image_alt` control the default large image used when a page is shared.
+- `pages` contains one canonical `path`, unique search-result `title` and unique `description` for every public page.
+
+Keep each page title specific and truthful. Keep descriptions readable rather than filling them with repeated keywords. Do not add a public address, phone number, service area, customer rating, social profile or review until that information is approved and also visible on the website.
+
+The implementation is grouped under comments beginning with `SEO:` in `build.py`. That section generates canonical links, robots directives, Open Graph/Twitter metadata and Schema.org JSON-LD. The `write_seo_files()` function generates `dist/robots.txt` and `dist/sitemap.xml`; never edit those generated files directly. `dist/demo-testimonials.html` is intentionally excluded from the sitemap and marked `noindex` because it contains example testimonials.
 
 ### Edit hero or CTA copy
 

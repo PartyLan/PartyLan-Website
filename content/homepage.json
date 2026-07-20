@@ -1,9 +1,39 @@
 {
   "meta": {
-    "title": "Party.LAN hosted gaming parties",
-    "description": "Hosted PlayStation, Nintendo, racing and VR party experiences delivered to your venue with setup and a dedicated host.",
+    "site_name": "Party.LAN",
     "canonical_url": "https://partylan.co.uk/",
     "og_image": "/content/images/gallery_hero_light.jpg",
+    "og_image_alt": "Guests enjoying a hosted Party.LAN gaming party across multiple displays.",
+    "logo": "/content/images/Logo_Black_T.png",
+    "contact_email": "hello@partylan.co.uk",
+    "locale": "en_GB",
+    "pages": {
+      "home": {
+        "path": "/",
+        "title": "Hosted Gaming Parties Delivered to Your Venue | Party.LAN",
+        "description": "Party.LAN delivers and hosts PlayStation, Nintendo, racing and VR gaming parties at your venue, including setup, support and pack-down."
+      },
+      "packages": {
+        "path": "/packages/",
+        "title": "Gaming Party Packages and Prices | Party.LAN",
+        "description": "Compare Party.LAN's ONYX and JADE hosted gaming party packages, with delivery, equipment setup, party hosting and optional add-ons."
+      },
+      "contact": {
+        "path": "/contact/",
+        "title": "Contact and Booking Enquiries | Party.LAN",
+        "description": "Contact Party.LAN to ask a question, discuss your venue or start a hosted gaming party booking enquiry."
+      },
+      "terms": {
+        "path": "/terms/",
+        "title": "Terms and Conditions | Party.LAN",
+        "description": "Read the Party.LAN terms and conditions for gaming party bookings, venue requirements, cancellations, supervision and equipment care."
+      },
+      "privacy": {
+        "path": "/privacy/",
+        "title": "Privacy Policy | Party.LAN",
+        "description": "Read how Party.LAN collects, uses, stores and protects personal information submitted through enquiries and event planning."
+      }
+    },
     "theme_color_light": "#f6efe4",
     "theme_color_dark": "#141827"
   },

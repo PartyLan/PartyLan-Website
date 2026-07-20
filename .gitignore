@@ -5,3 +5,7 @@
 # file, but new content must use /content/images/.
 dist/assets/images/
 dist/content/images/
+
+# Python creates these local bytecode caches while running the build and tests.
+__pycache__/
+*.py[cod]
