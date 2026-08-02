@@ -416,9 +416,15 @@ def validate_rows(rel, required, kind, pkg_ids=None):
         if not rid: err(file,ctx,'missing id'); continue
         if rid in ids: err(file,ctx,'duplicate ID')
         ids.add(rid); visible=req_bool(file,r,'visible',ctx); r['_order']=req_order(file,r,ctx,orders)
+        if kind=='addon':
+            # An empty scope is the legacy representation of a shared add-on.
+            # Canonicalising here keeps all downstream grouping case-insensitive.
+            r['available_for']=(r.get('available_for') or 'both').strip().lower() or 'both'
         for key in required:
             if visible and not (r.get(key) or '').strip(): err(file,ctx,f'{key} is required')
-        if kind=='addon' and r.get('available_for') not in {'onyx','jade','both'}: err(file,ctx,f'unknown available_for value "{r.get("available_for")}"; expected onyx, jade or both')
+        if kind=='addon':
+            available_for=r['available_for']
+            if available_for not in {'onyx','jade','both'}: err(file,ctx,f'unknown available_for value "{available_for}"; expected onyx, jade or both')
         if kind=='testimonial' and visible:
             if r.get('package') and r.get('package') not in pkg_ids: err(file,ctx,'invalid testimonial package reference')
             image_ok(file,ctx+'.image',r.get('image',''))
@@ -776,11 +782,13 @@ def compact_package_faq(rows):
 def package_page(home, pkgs, addons, package_faq_rows, web3forms_access_key):
     pp=home['packages_page']; ph=pp['hero']
     light=ph.get('image') or ph.get('fallback_image'); dark=ph.get('image') or ph.get('fallback_image_dark', light)
-    both=[a for a in addons if a['available_for']=='both']; specific=[a for a in addons if a['available_for']!='both']
+    both=[a for a in addons if a['available_for'].lower()=='both']; specific=[a for a in addons if a['available_for'].lower() in {'jade','onyx'}]
     # Format one add-on group; grouping itself is performed immediately above.
     def rows(items):
-        return ''.join(f'<li class="addon-row addon-row--{esc(a["available_for"])}"><span class="addon-marker" aria-hidden="true"></span><div class="addon-copy"><h3>{esc(a["title"])}</h3><p>{esc(a["description"])}</p></div><div class="addon-meta"><span class="addon-badge">{esc("Both" if a["available_for"]=="both" else a["available_for"].upper())}</span><strong>{esc(a["price_note"])}</strong></div></li>' for a in items)
-    add=f'<section class="addon-group"><h3>Available with both packages</h3><ul class="addon-list-structured">{rows(both)}</ul></section><section class="addon-group"><h3>Package-specific options</h3><ul class="addon-list-structured">{rows(specific)}</ul></section>'
+        return ''.join(f'<li class="addon-row addon-row--{esc(a["available_for"].lower())}"><span class="addon-marker" aria-hidden="true"></span><div class="addon-copy"><h3>{esc(a["title"])}</h3><p>{esc(a["description"])}</p></div><div class="addon-meta"><span class="addon-badge">{esc("Both" if a["available_for"].lower()=="both" else a["available_for"].upper())}</span><strong>{esc(a["price_note"])}</strong></div></li>' for a in items)
+    both_group=f'<section class="addon-group"><h3>Available with both packages</h3><ul class="addon-list-structured">{rows(both)}</ul></section>'
+    specific_group=f'<section class="addon-group"><h3>Package-specific options</h3><ul class="addon-list-structured">{rows(specific)}</ul></section>' if specific else ''
+    add=both_group+specific_group
     addon_label=home['addons_section'].get('accordion_label',home['addons_section']['heading'])
     tabs=''.join(f'<button id="package-tab-{p["id"]}" role="tab" type="button" aria-selected="{str(i==0).lower()}" aria-controls="package-panel-{p["id"]}" data-package-tab="{p["id"]}" class="package-tab package-tab--{p["id"]}"><span>{esc(p["name"])}</span><small>{esc(p["capacity"].replace(" players",""))}</small></button>' for i,p in enumerate(pkgs))
     fd=pp.get('final_decision',{})
