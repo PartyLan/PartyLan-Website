@@ -1,6 +1,6 @@
 id,title,description,available_for,price_note,visible,display_order
-extra-time,Additional time,Extend the hosted session if availability allows.,,"£30 for 30 minutes \n£50 for 1 hour",true,1
-extra-station,Additional gaming station,Ask about adding another station where room and power allow.,,Ask for options,true,2
-specialist-experience,Selected specialist experience,Ask about adding selected specialist experiences to suit the group.,,Ask for availability,true,3
-extra-equipment,Additional equipment,Extra displays or equipment may be possible depending on the venue.,,Price confirmed during enquiry,true,4
-future-upgrade,Future upgrade,Planned upgrades can be discussed when available.,,Ask for availability,false,5
+extra-time,Additional time,Extend the hosted session if availability allows.,both,£30 for 30 minutes \n£50 for 1 hour,true,1
+extra-station,Additional gaming station,Ask about adding another station where room and power allow.,both,Ask for options,true,2
+specialist-experience,Selected specialist experience,Ask about adding selected specialist experiences to suit the group.,both,Ask for availability,true,3
+extra-equipment,Additional equipment,Extra displays or equipment may be possible depending on the venue.,both,Price confirmed during enquiry,true,4
+future-upgrade,Future upgrade,Planned upgrades can be discussed when available.,both,Ask for availability,false,5
