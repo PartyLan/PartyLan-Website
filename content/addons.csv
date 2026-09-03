@@ -2,4 +2,5 @@ id,title,description,available_for,price_note,visible,display_order
 extra-time,Additional time,Extend the hosted session if availability allows.,,"£30 for 30 minutes \ £50 for 1 hour",true,1
 extra-station,Additional gaming station,Ask about adding another station where room and power allow.,,Ask for options,true,2
 snack-bar,Snack Bar,Ask about dietary requirement.,,Start form £9.50 for 5 person,true,3
-goodie-bag,Goodie Bag,Gaming-themed goodie bag to complete the party experience.,,£7.99 per bag,true,4
+goodie-bag,Goodie Bag,Gaming-themed goodie bag to complete the party experience.,,£35 for 5 bags,true,4
+additional,Custom Requirements,Customise the party experience to suit you.,,Ask for options,true,5
