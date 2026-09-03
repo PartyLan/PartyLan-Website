@@ -1,37 +1,40 @@
-{
+{ "meta.pages":{
+  "meta_name":"google-site-verification", 
+  "content":"-VIruz-7NLhQsjKSOPakqkhmETxavmH41jqr9w6AQ9I"
+},
   "meta": {
-    "site_name": "Party.LAN",
+    "site_name": "partyLAN",
     "canonical_url": "https://partylan.co.uk/",
     "og_image": "/content/images/gallery_hero_light.jpg",
-    "og_image_alt": "Guests enjoying a hosted Party.LAN gaming party across multiple displays.",
+    "og_image_alt": "Guests enjoying a hosted partyLAN gaming party across multiple displays.",
     "logo": "/content/images/Logo_Black_T.png",
     "contact_email": "hello@partylan.co.uk",
     "locale": "en_GB",
     "pages": {
       "home": {
         "path": "/",
-        "title": "Hosted Gaming Parties Delivered to Your Venue | Party.LAN",
-        "description": "Party.LAN delivers and hosts PlayStation, Nintendo, racing and VR gaming parties at your venue, including setup, support and pack-down."
+        "title": "Hosted Gaming Parties Delivered to Your Venue | partyLAN",
+        "description": "partyLAN delivers and hosts PlayStation, Nintendo, racing and VR gaming parties at your venue, including setup, support and pack-down."
       },
       "packages": {
         "path": "/packages/",
-        "title": "Gaming Party Packages and Prices | Party.LAN",
-        "description": "Compare Party.LAN's ONYX and JADE hosted gaming party packages, with delivery, equipment setup, party hosting and optional add-ons."
+        "title": "Gaming Party Packages and Prices | partyLAN",
+        "description": "Compare partyLAN's hosted gaming party packages, with delivery, equipment setup, party hosting and optional add-ons."
       },
       "contact": {
         "path": "/contact/",
-        "title": "Contact and Booking Enquiries | Party.LAN",
-        "description": "Contact Party.LAN to ask a question, discuss your venue or start a hosted gaming party booking enquiry."
+        "title": "Contact and Booking Enquiries | partyLAN",
+        "description": "Contact partyLAN to ask a question, discuss your venue or start a hosted gaming party booking enquiry. Birthday party, Kids birthday party, party hire, party entertainment."
       },
       "terms": {
         "path": "/terms/",
-        "title": "Terms and Conditions | Party.LAN",
-        "description": "Read the Party.LAN terms and conditions for gaming party bookings, venue requirements, cancellations, supervision and equipment care."
+        "title": "Terms and Conditions | partyLAN",
+        "description": "Read the partyLAN terms and conditions for gaming party bookings, venue requirements, cancellations, supervision and equipment care."
       },
       "privacy": {
         "path": "/privacy/",
-        "title": "Privacy Policy | Party.LAN",
-        "description": "Read how Party.LAN collects, uses, stores and protects personal information submitted through enquiries and event planning."
+        "title": "Privacy Policy | partyLAN",
+        "description": "Read how partyLAN collects, uses, stores and protects personal information submitted through enquiries and event planning. Serving area including Warwickshire, Leamington Spa, West Midland and surrounding area."
       }
     },
     "theme_color_light": "#f6efe4",
@@ -110,7 +113,7 @@
   "testimonials_section": {
     "eyebrow": "Party stories",
     "heading": "What the day felt like.",
-    "description": "Real experiences from hosted Party.LAN events.",
+    "description": "Real experiences from hosted partyLAN events.",
     "demo_label": "Demo testimonial"
   },
   "how_it_works": {
@@ -122,7 +125,7 @@
         "title": "Choose a package",
         "description": "Pick the hosted experience that best fits your group size and style of play.",
         "image": "/content/images/gallery-select01.jpg",
-        "image_alt": "Guests comparing hosted Party.LAN package options.",
+        "image_alt": "Guests comparing hosted partyLAN package options.",
         "image_position": "center"
       },
       {
@@ -130,7 +133,7 @@
         "title": "Tell us about the venue",
         "description": "Share the room type, access notes and anything useful for planning the setup.",
         "image": "/content/images/gallery-venue01.jpg",
-        "image_alt": "A room prepared for a flexible Party.LAN setup.",
+        "image_alt": "A room prepared for a flexible partyLAN setup.",
         "image_position": "center"
       },
       {
@@ -138,7 +141,7 @@
         "title": "We deliver, set up and host",
         "description": "Your host brings the equipment, keeps play moving and packs everything away.",
         "image": "/content/images/gallery-group-fun01.jpg",
-        "image_alt": "A Party.LAN host helping prepare gaming equipment.",
+        "image_alt": "A partyLAN host helping prepare gaming equipment.",
         "image_position": "center"
       }
     ],
@@ -162,7 +165,7 @@
   "room_planning": {
     "eyebrow": "Room planning",
     "heading": "More adaptable than it looks.",
-    "description": "Send us a room photo and we\u2019ll help plan the layout. Party.LAN helps assess the room, access and power so you do not need technical knowledge \u2014 a photograph or rough dimensions are enough.",
+    "description": "Send us a room photo and we\u2019ll help plan the layout. partyLAN helps assess the room, access and power so you do not need technical knowledge \u2014 a photograph or rough dimensions are enough.",
     "link_label": "Booking enquiry",
     "link_href": "#booking"
   },
@@ -205,7 +208,7 @@
     ]
   },
   "packages_page": {
-    "meta_title": "Party.LAN packages",
+    "meta_title": "partyLAN packages",
     "hero": {
       "eyebrow": "Packages",
       "heading": "Two epic ways to party",
@@ -213,7 +216,7 @@
       "image": "",
       "fallback_image": "/content/images/gallery_hero_light.jpg",
       "fallback_image_dark": "/content/images/gallery_hero_dark.jpg",
-      "alt": "Party.LAN gaming party setup with guests playing together."
+      "alt": "partyLAN gaming party setup with guests playing together."
     },
     "intro": {
       "heading": "Compare the experiences",
@@ -245,7 +248,7 @@
       "questions_label": "Common questions",
       "ask_heading": "Ask us before deciding",
       "ask_description": "Tell us about package choice, venue space, player numbers, add-ons, accessibility or setup and we can help you plan the right fit.",
-      "contact_label": "Contact Party.LAN",
+      "contact_label": "Contact partyLAN",
       "contact_href": "/#booking"
     }
   },
